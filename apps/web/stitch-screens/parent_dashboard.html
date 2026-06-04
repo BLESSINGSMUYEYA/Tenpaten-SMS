@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EduTrust Parent Portal - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .zebra-striping tr:nth-child(even) {
+            background-color: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#ff8b7f",
+                      "surface-container-low": "#eff4ff",
+                      "on-tertiary-fixed-variant": "#93000b",
+                      "tertiary": "#5d0004",
+                      "surface": "#f8f9ff",
+                      "on-primary": "#ffffff",
+                      "inverse-primary": "#b6c4ff",
+                      "error": "#ba1a1a",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-highest": "#d3e4fe",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed": "#dce1ff",
+                      "on-error-container": "#93000a",
+                      "primary-container": "#1e3a8a",
+                      "on-primary-container": "#90a8ff",
+                      "on-secondary-fixed-variant": "#005323",
+                      "on-error": "#ffffff",
+                      "secondary-fixed": "#95f8a7",
+                      "outline-variant": "#c5c5d3",
+                      "surface-tint": "#4059aa",
+                      "error-container": "#ffdad6",
+                      "surface-variant": "#d3e4fe",
+                      "surface-container": "#e5eeff",
+                      "tertiary-fixed": "#ffdad6",
+                      "on-surface-variant": "#444651",
+                      "primary": "#00236f",
+                      "surface-dim": "#cbdbf5",
+                      "outline": "#757682",
+                      "on-secondary-fixed": "#00210a",
+                      "tertiary-fixed-dim": "#ffb4ab",
+                      "surface-container-high": "#dce9ff",
+                      "on-secondary-container": "#007233",
+                      "inverse-on-surface": "#eaf1ff",
+                      "background": "#f8f9ff",
+                      "on-surface": "#0b1c30",
+                      "inverse-surface": "#213145",
+                      "secondary-fixed-dim": "#79db8d",
+                      "secondary-container": "#92f5a4",
+                      "tertiary-container": "#870009",
+                      "secondary": "#006d30",
+                      "on-tertiary-fixed": "#410002",
+                      "on-primary-fixed-variant": "#264191",
+                      "on-primary-fixed": "#00164e",
+                      "on-background": "#0b1c30",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed-dim": "#b6c4ff",
+                      "surface-bright": "#f8f9ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "xl": "40px",
+                      "margin-desktop": "32px",
+                      "xs": "4px",
+                      "gutter": "16px",
+                      "sm": "8px",
+                      "base": "4px",
+                      "margin-mobile": "16px",
+                      "md": "16px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "body-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-hidden flex h-screen">
+<!-- SideNavBar (Authority Source: JSON) -->
+<aside class="flex flex-col h-screen p-md space-y-base overflow-y-auto fixed left-0 top-0 h-full w-[280px] bg-surface-container-low border-r border-outline-variant z-50">
+<div class="mb-lg px-md">
+<div class="flex items-center space-x-sm mb-base">
+<div class="w-10 h-10 bg-primary flex items-center justify-center rounded-lg text-white">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">Academix Global</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Parent Portal</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-xs">
+<!-- Active Tab: Dashboard -->
+<a class="flex items-center space-x-md bg-secondary-container text-on-secondary-container font-bold rounded-full px-md py-sm active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center space-x-md text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-full transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Children</span>
+</a>
+<a class="flex items-center space-x-md text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-full transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+<span class="font-label-md text-label-md">Messages</span>
+</a>
+<a class="flex items-center space-x-md text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-full transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="pt-lg border-t border-outline-variant space-y-xs">
+<button class="w-full mb-md flex items-center justify-between bg-surface-container px-md py-sm rounded-xl border border-outline-variant text-primary font-bold">
+<span class="font-label-md text-label-md">Switch Child</span>
+<span class="material-symbols-outlined" data-icon="swap_horiz">swap_horiz</span>
+</button>
+<a class="flex items-center space-x-md text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-full transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</a>
+<a class="flex items-center space-x-md text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-full transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-[280px] flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar (Authority Source: JSON) -->
+<header class="flex justify-between items-center px-lg h-16 w-full sticky top-0 z-50 bg-surface border-b border-outline-variant">
+<div class="flex items-center space-x-lg flex-1">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">EduTrust Parent Portal</h2>
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full bg-surface-container-lowest border-outline-variant rounded-full pl-xl pr-md py-xs text-body-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="Search records, grades, or teachers..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-md">
+<div class="flex items-center space-x-sm cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container transition-colors p-xs rounded-full" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container transition-colors p-xs rounded-full" data-icon="apps">apps</span>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center space-x-sm px-sm py-xs hover:bg-surface-container rounded-full transition-colors cursor-pointer">
+<img alt="Parent Profile" class="w-8 h-8 rounded-full border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLbbr60My6RRHH-jvJBFd35X-BP9eU11z8kzVE4VNDwyeCvIWK_EZ4FLBdnJvXMOLdEDC-wAXmH971YuXBqmTW-qsapbBfa184exVRy4UN1bwlG58mS4nm6bXqut1iSAHBMmvrEKw_8w8Tk1J-Y2R0Lpr6YJDjbTQN0D3DF6B9jHUmaUB0VQTXq3BA86d3HTaiq8CjhISavpnVsniinofjRPh4xpxucLakMdK8WzkNMWfjF8jvAM7JUBkeExupjFMPQIoF04f5_fA"/>
+<span class="font-label-md text-label-md hidden lg:block">Sarah Jenkins</span>
+</div>
+</div>
+</header>
+<!-- Scrollable Canvas -->
+<div class="flex-1 overflow-y-auto p-lg custom-scrollbar">
+<!-- Child Selector & Greeting (Bento Top) -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-lg mb-lg">
+<div class="md:col-span-8 bg-surface-container-lowest p-lg rounded-xl border border-outline-variant relative overflow-hidden flex items-center">
+<div class="relative z-10">
+<p class="font-label-sm text-label-sm text-primary uppercase tracking-wider mb-xs">Welcome back, Sarah</p>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-md">Viewing Dashboard for <span class="text-primary underline decoration-primary-fixed-dim">Avery Jenkins</span></h1>
+<div class="flex space-x-sm">
+<button class="flex items-center space-x-sm bg-primary text-white px-md py-sm rounded-full active:scale-95 transition-transform">
+<img alt="Avery" class="w-6 h-6 rounded-full bg-white/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD99AOqjE6IHqOtfnT2_mqTRtI72batHmE_CGpxbVmE4AWMHJj7cs5qQt2K2cKbNQ9ALZWwCKDko3awZSyUOpLPUFuL7SxPXiQ4NghTQEUQ-a3YV-C9qm5j3KNsBiKhvbokyjDdlmk8qkr39i9TF9twrwFK46tdPWmIbqRygD7n18p7TqadsHZPmniqrqyJfx4FH3e-iHbDyQmIWpqhH3ZlIF6AfB6Ogo-lWWrj_Hayu0Xj8oUvSHQMo538kzNXA9KPSv4h6FlKPAE"/>
+<span class="font-label-md text-label-md">Avery</span>
+</button>
+<button class="flex items-center space-x-sm bg-surface-container text-on-surface-variant px-md py-sm rounded-full hover:bg-surface-container-high transition-colors active:scale-95">
+<img alt="Leo" class="w-6 h-6 rounded-full bg-on-surface/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOKaqStFcU8jqNx5IY_Vc1vs2ATtrBH7xqFxLUbPiEQxoL3NugjOEQgT3NII2aBqys9ULXiYCX7JAVbiNspvGyyojAuztxyo3WbMjvcpg5a6S7fYGD5s8egNesHT7SAP4Zr3yW7u4ZQo28r2y3ZZlbiyMA5H5fHw2eQodWiLr7wZTD2tMNknelnaJ5zeH9k1fLi9AkPIS5NgsKZyDUzTpi7JFa98Z9nXY2jlXqVbEH5vFRBkJoVGTwKO2ZR5hk1Lsj3c4A29Pts6k"/>
+<span class="font-label-md text-label-md">Leo</span>
+</button>
+</div>
+</div>
+<div class="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 pointer-events-none">
+<span class="material-symbols-outlined text-[12rem]" data-icon="family_history">family_history</span>
+</div>
+</div>
+<div class="md:col-span-4 bg-primary text-white p-lg rounded-xl border border-primary shadow-lg flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-sm">
+<p class="font-label-sm text-label-sm text-primary-fixed">Term 2 Fee Balance</p>
+<span class="material-symbols-outlined text-primary-fixed" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg mb-xs">$1,240.00</h3>
+<p class="font-body-sm text-body-sm text-primary-fixed opacity-90 italic">Due in 12 days (May 15th)</p>
+</div>
+<button class="w-full bg-white text-primary font-bold py-sm rounded-lg hover:bg-primary-fixed transition-colors active:scale-[0.98]">
+                        Pay Now
+                    </button>
+</div>
+</section>
+<!-- Main Status & History Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Today's Status Column -->
+<div class="lg:col-span-2 space-y-lg">
+<div class="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant">
+<div class="flex items-center justify-between mb-lg border-b border-outline-variant pb-md">
+<div class="flex items-center space-x-sm">
+<span class="material-symbols-outlined text-primary" data-icon="event_note">event_note</span>
+<h4 class="font-headline-sm text-headline-sm">Today's Status</h4>
+</div>
+<span class="bg-secondary-container text-on-secondary-container px-sm py-xs rounded-full font-label-sm text-label-sm flex items-center">
+<span class="w-2 h-2 bg-secondary rounded-full mr-2 animate-pulse"></span>
+                                Currently in Class
+                            </span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="bg-surface p-md rounded-lg border border-outline-variant flex items-center space-x-md">
+<div class="p-sm bg-primary-fixed text-primary rounded-lg">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Current Period</p>
+<p class="font-label-md text-label-md text-on-surface">Advanced Mathematics</p>
+<p class="font-body-sm text-body-sm text-outline">Room 402 • Mr. Henderson</p>
+</div>
+</div>
+<div class="bg-surface p-md rounded-lg border border-outline-variant flex items-center space-x-md">
+<div class="p-sm bg-secondary-fixed text-secondary rounded-lg">
+<span class="material-symbols-outlined" data-icon="how_to_reg">how_to_reg</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Attendance</p>
+<p class="font-label-md text-label-md text-secondary">Marked Present</p>
+<p class="font-body-sm text-body-sm text-outline">Logged at 08:02 AM</p>
+</div>
+</div>
+</div>
+<div class="mt-lg">
+<h5 class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-sm">Schedule Overview</h5>
+<div class="relative pt-xs">
+<div class="absolute left-4 top-0 bottom-0 w-[2px] bg-outline-variant"></div>
+<div class="space-y-md">
+<div class="relative pl-12">
+<div class="absolute left-[11px] top-1 w-3 h-3 rounded-full bg-outline border-2 border-surface"></div>
+<div class="flex justify-between items-center bg-surface-container-low p-sm rounded-lg">
+<span class="font-label-md text-label-md">Morning Assembly</span>
+<span class="text-body-sm text-on-surface-variant">08:15 AM</span>
+</div>
+</div>
+<div class="relative pl-12">
+<div class="absolute left-[11px] top-1 w-3 h-3 rounded-full bg-primary border-2 border-surface"></div>
+<div class="flex justify-between items-center bg-primary-container text-on-primary-container p-sm rounded-lg">
+<span class="font-label-md text-label-md">Advanced Math</span>
+<span class="text-body-sm">09:00 AM - 10:30 AM</span>
+</div>
+</div>
+<div class="relative pl-12">
+<div class="absolute left-[11px] top-1 w-3 h-3 rounded-full bg-outline-variant border-2 border-surface"></div>
+<div class="flex justify-between items-center p-sm rounded-lg border border-dashed border-outline-variant">
+<span class="font-label-md text-label-md text-outline">Physics Lab</span>
+<span class="text-body-sm text-outline">10:45 AM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Announcements Feed -->
+<div class="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant">
+<div class="flex items-center justify-between mb-lg">
+<div class="flex items-center space-x-sm">
+<span class="material-symbols-outlined text-primary" data-icon="campaign">campaign</span>
+<h4 class="font-headline-sm text-headline-sm">School Announcements</h4>
+</div>
+<button class="text-primary font-label-md text-label-md hover:underline">View All</button>
+</div>
+<div class="space-y-md">
+<article class="group cursor-pointer">
+<div class="bg-surface p-md rounded-lg border border-outline-variant group-hover:border-primary transition-colors">
+<div class="flex justify-between items-start mb-xs">
+<span class="font-label-sm text-label-sm px-xs bg-tertiary-fixed text-tertiary rounded">Urgent</span>
+<span class="text-body-sm text-outline">2 hours ago</span>
+</div>
+<h5 class="font-headline-sm text-headline-sm text-on-surface mb-xs group-hover:text-primary">Parent-Teacher Conference Rescheduled</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">The annual general parent-teacher association meeting originally scheduled for Friday has been moved to Monday next week due to administrative changes...</p>
+</div>
+</article>
+<article class="group cursor-pointer">
+<div class="bg-surface p-md rounded-lg border border-outline-variant group-hover:border-primary transition-colors">
+<div class="flex justify-between items-start mb-xs">
+<span class="font-label-sm text-label-sm px-xs bg-surface-container-highest text-primary rounded">Academic</span>
+<span class="text-body-sm text-outline">Yesterday</span>
+</div>
+<h5 class="font-headline-sm text-headline-sm text-on-surface mb-xs group-hover:text-primary">End of Term Examination Timetable</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Please find the attached timetable for the upcoming end-of-term examinations for Grade 7 to 12. Students are advised to start preparations.</p>
+</div>
+</article>
+</div>
+</div>
+</div>
+<!-- Notification History Sidebar (Canvas Level 2) -->
+<div class="space-y-lg">
+<div class="bg-surface-container-low p-lg rounded-xl border border-outline-variant h-full flex flex-col">
+<div class="flex items-center space-x-sm mb-lg">
+<span class="material-symbols-outlined text-primary" data-icon="notifications_active">notifications_active</span>
+<h4 class="font-headline-sm text-headline-sm">Activity Feed</h4>
+</div>
+<div class="flex-1 space-y-md overflow-y-auto pr-xs custom-scrollbar">
+<!-- Notification Item -->
+<div class="bg-surface-container-lowest p-md rounded-lg border border-outline-variant shadow-sm hover:translate-x-1 transition-transform">
+<div class="flex items-start space-x-md">
+<div class="p-xs bg-primary/10 rounded-full">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="grade">grade</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">New Grade Posted</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Avery scored 94% in 'Calculus Basics' quiz.</p>
+<span class="text-body-sm text-outline text-[12px]">10:24 AM Today</span>
+</div>
+</div>
+</div>
+<!-- Notification Item -->
+<div class="bg-surface-container-lowest p-md rounded-lg border border-outline-variant shadow-sm hover:translate-x-1 transition-transform">
+<div class="flex items-start space-x-md">
+<div class="p-xs bg-error-container/20 rounded-full">
+<span class="material-symbols-outlined text-error text-[20px]" data-icon="warning">warning</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Library Overdue</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">'The Great Gatsby' is 2 days overdue.</p>
+<span class="text-body-sm text-outline text-[12px]">08:15 AM Today</span>
+</div>
+</div>
+</div>
+<!-- Notification Item -->
+<div class="bg-surface-container-lowest p-md rounded-lg border border-outline-variant shadow-sm hover:translate-x-1 transition-transform">
+<div class="flex items-start space-x-md">
+<div class="p-xs bg-secondary/10 rounded-full">
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="description">description</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Report Card Available</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Monthly progress report for April is now ready.</p>
+<span class="text-body-sm text-outline text-[12px]">Yesterday</span>
+</div>
+</div>
+</div>
+<!-- Notification Item -->
+<div class="bg-surface-container-lowest p-md rounded-lg border border-outline-variant shadow-sm hover:translate-x-1 transition-transform">
+<div class="flex items-start space-x-md">
+<div class="p-xs bg-on-tertiary-container/10 rounded-full">
+<span class="material-symbols-outlined text-on-tertiary-container text-[20px]" data-icon="mail">mail</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Message from Principal</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Re: Regarding the upcoming sports gala.</p>
+<span class="text-body-sm text-outline text-[12px]">May 01, 2024</span>
+</div>
+</div>
+</div>
+</div>
+<button class="mt-lg w-full py-sm text-on-surface-variant font-label-md text-label-md border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors">
+                            Mark all as read
+                        </button>
+</div>
+<!-- Quick Contact Card -->
+<div class="bg-surface p-lg rounded-xl border border-outline-variant relative overflow-hidden">
+<h4 class="font-label-md text-label-md text-on-surface mb-md relative z-10">Need Assistance?</h4>
+<div class="space-y-sm relative z-10">
+<button class="w-full flex items-center space-x-sm bg-white p-sm rounded-lg border border-outline-variant hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined text-primary" data-icon="contact_support">contact_support</span>
+<span class="font-label-sm text-label-sm">Contact School Office</span>
+</button>
+<button class="w-full flex items-center space-x-sm bg-white p-sm rounded-lg border border-outline-variant hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined text-primary" data-icon="person_search">person_search</span>
+<span class="font-label-sm text-label-sm">Find Teacher Email</span>
+</button>
+</div>
+<div class="absolute -right-4 -bottom-4 text-primary opacity-5">
+<span class="material-symbols-outlined text-8xl" data-icon="support_agent">support_agent</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Transactions / Finances (Zebra Striped Table Example) -->
+<section class="mt-lg bg-surface-container-lowest p-lg rounded-xl border border-outline-variant">
+<div class="flex items-center justify-between mb-lg">
+<div class="flex items-center space-x-sm">
+<span class="material-symbols-outlined text-primary" data-icon="receipt_long">receipt_long</span>
+<h4 class="font-headline-sm text-headline-sm">Recent Financial Transactions</h4>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left zebra-striping">
+<thead class="bg-surface-container border-b border-outline-variant">
+<tr>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface">Date</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface">Description</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface">Reference</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface text-right">Amount</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface">Status</th>
+</tr>
+</thead>
+<tbody class="text-body-sm">
+<tr class="border-b border-outline-variant">
+<td class="px-md py-md">Apr 28, 2024</td>
+<td class="px-md py-md font-bold">Tuition Fee - Term 2 (Avery)</td>
+<td class="px-md py-md text-outline">#TRX-99812</td>
+<td class="px-md py-md text-right font-bold">$2,500.00</td>
+<td class="px-md py-md"><span class="bg-secondary-container text-on-secondary-container px-sm py-base rounded-full font-label-sm">Paid</span></td>
+</tr>
+<tr class="border-b border-outline-variant">
+<td class="px-md py-md">Apr 15, 2024</td>
+<td class="px-md py-md font-bold">School Bus Service - Apr</td>
+<td class="px-md py-md text-outline">#TRX-98234</td>
+<td class="px-md py-md text-right font-bold">$120.00</td>
+<td class="px-md py-md"><span class="bg-secondary-container text-on-secondary-container px-sm py-base rounded-full font-label-sm">Paid</span></td>
+</tr>
+<tr class="border-b border-outline-variant">
+<td class="px-md py-md">Mar 22, 2024</td>
+<td class="px-md py-md font-bold">Field Trip: Science Museum</td>
+<td class="px-md py-md text-outline">#TRX-97121</td>
+<td class="px-md py-md text-right font-bold">$45.00</td>
+<td class="px-md py-md"><span class="bg-error-container text-on-error-container px-sm py-base rounded-full font-label-sm">Unpaid</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+<!-- Contextual FAB (Only on dashboard) -->
+<button class="fixed bottom-lg right-lg w-14 h-14 bg-primary text-white rounded-full shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform z-50">
+<span class="material-symbols-outlined text-[32px]" data-icon="add">add</span>
+</button>
+<script>
+        // Simple logic for child switching interaction
+        document.querySelectorAll('button[alt]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update active state visuals
+                document.querySelectorAll('button[alt]').forEach(b => {
+                    b.classList.remove('bg-primary', 'text-white');
+                    b.classList.add('bg-surface-container', 'text-on-surface-variant');
+                });
+                this.classList.add('bg-primary', 'text-white');
+                this.classList.remove('bg-surface-container', 'text-on-surface-variant');
+            });
+        });
+    </script>
+</body></html>

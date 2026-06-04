@@ -1,0 +1,291 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════
+   BASE LAYER – CSS custom properties
+   ═══════════════════════════════════════════════════════════════ */
+@layer base {
+  :root {
+    /* ── shadcn/ui tokens (keep existing components working) ── */
+    --background: 220 33% 98%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 243.4 75.4% 58.6%;
+    --radius: 0.75rem;
+
+    /* ── MD3 Primary (Indigo-based) ── */
+    --md-primary:                    243 75% 59%;   /* #6366f1 */
+    --md-on-primary:                 0 0% 100%;
+    --md-primary-container:          240 100% 93%;  /* #e0e7ff */
+    --md-on-primary-container:       243 75% 25%;
+    --md-primary-fixed:              240 100% 93%;
+    --md-primary-fixed-dim:          243 75% 75%;
+    --md-on-primary-fixed:           243 75% 10%;
+    --md-on-primary-fixed-variant:   243 75% 25%;
+    --md-inverse-primary:            243 75% 75%;
+
+    /* ── MD3 Secondary (Violet) ── */
+    --md-secondary:                  258 59% 55%;
+    --md-on-secondary:               0 0% 100%;
+    --md-secondary-container:        258 100% 95%;
+    --md-on-secondary-container:     258 59% 20%;
+    --md-secondary-fixed:            258 100% 92%;
+    --md-on-secondary-fixed-variant: 258 59% 30%;
+
+    /* ── MD3 Tertiary (Cyan/Teal) ── */
+    --md-tertiary:                   189 60% 42%;
+    --md-on-tertiary:                0 0% 100%;
+    --md-tertiary-container:         186 100% 90%;
+    --md-on-tertiary-container:      189 60% 15%;
+
+    /* ── MD3 Error ── */
+    --md-error:                      0 84% 60%;
+    --md-on-error:                   0 0% 100%;
+    --md-error-container:            0 100% 94%;
+    --md-on-error-container:         0 84% 25%;
+
+    /* ── MD3 Surface ── */
+    --md-surface:                    220 33% 98%;   /* near-white */
+    --md-surface-dim:                220 20% 92%;
+    --md-surface-bright:             0 0% 100%;
+    --md-surface-border:             220 13% 87%;
+    --md-surface-container-lowest:   0 0% 100%;
+    --md-surface-container-low:      220 27% 97%;
+    --md-surface-container:          220 20% 95%;
+    --md-surface-container-high:     220 16% 92%;
+    --md-surface-container-highest:  220 13% 88%;
+    --md-on-surface:                 224 71% 8%;
+    --md-on-surface-variant:         220 10% 43%;
+    --md-inverse-surface:            224 30% 14%;
+    --md-inverse-on-surface:         220 27% 94%;
+
+    /* ── MD3 Outline ── */
+    --md-outline:                    220 10% 60%;
+    --md-outline-variant:            220 13% 83%;
+  }
+
+  /* ── Dark theme overrides ── */
+  .dark {
+    /* shadcn tokens */
+    --background: 224 71% 4%;
+    --foreground: 210 20% 98%;
+    --card: 224 71% 7%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 20% 98%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 12%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 50.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 244.5 77.9% 62.2%;
+
+    /* MD3 Primary */
+    --md-primary:                    243 75% 72%;
+    --md-on-primary:                 243 75% 15%;
+    --md-primary-container:          243 75% 28%;
+    --md-on-primary-container:       240 100% 93%;
+    --md-primary-fixed:              240 100% 93%;
+    --md-primary-fixed-dim:          243 75% 75%;
+    --md-on-primary-fixed:           243 75% 10%;
+    --md-on-primary-fixed-variant:   243 75% 28%;
+    --md-inverse-primary:            243 75% 59%;
+
+    /* MD3 Secondary */
+    --md-secondary:                  258 59% 72%;
+    --md-on-secondary:               258 59% 15%;
+    --md-secondary-container:        258 59% 28%;
+    --md-on-secondary-container:     258 100% 95%;
+    --md-secondary-fixed:            258 100% 92%;
+    --md-on-secondary-fixed-variant: 258 59% 28%;
+
+    /* MD3 Tertiary */
+    --md-tertiary:                   189 60% 65%;
+    --md-on-tertiary:                189 60% 12%;
+    --md-tertiary-container:         189 60% 22%;
+    --md-on-tertiary-container:      186 100% 90%;
+
+    /* MD3 Error */
+    --md-error:                      0 100% 77%;
+    --md-on-error:                   0 84% 25%;
+    --md-error-container:            0 84% 35%;
+    --md-on-error-container:         0 100% 94%;
+
+    /* MD3 Surface */
+    --md-surface:                    224 30% 8%;
+    --md-surface-dim:                224 30% 6%;
+    --md-surface-bright:             224 20% 20%;
+    --md-surface-border:             220 13% 22%;
+    --md-surface-container-lowest:   224 30% 4%;
+    --md-surface-container-low:      224 30% 10%;
+    --md-surface-container:          224 25% 13%;
+    --md-surface-container-high:     224 20% 17%;
+    --md-surface-container-highest:  224 15% 22%;
+    --md-on-surface:                 220 20% 94%;
+    --md-on-surface-variant:         220 10% 65%;
+    --md-inverse-surface:            220 27% 88%;
+    --md-inverse-on-surface:         224 30% 14%;
+
+    /* MD3 Outline */
+    --md-outline:                    220 10% 45%;
+    --md-outline-variant:            220 13% 25%;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BASE LAYER – element defaults
+   ═══════════════════════════════════════════════════════════════ */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased transition-colors duration-300;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Inter', sans-serif;
+    @apply tracking-tight font-semibold;
+  }
+
+  /* Material Symbols icon font */
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.5rem;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENT LAYER – typography utility classes
+   (Tailwind font-size utilities only set font-size; these helpers
+    bundle size + line-height + tracking together as MD3 specifies)
+   ═══════════════════════════════════════════════════════════════ */
+/* ─── MD3 Typography component classes (plain CSS, no @apply on custom sizes) ─── */
+@layer components {
+  /* Display */
+  .font-display-lg  { font-size: 3.5625rem; line-height: 4rem;     letter-spacing: -0.015625rem; font-weight: 400; }
+  .font-display-md  { font-size: 2.8125rem; line-height: 3.25rem;  letter-spacing: 0;            font-weight: 400; }
+  .font-display-sm  { font-size: 2.25rem;   line-height: 2.75rem;  letter-spacing: 0;            font-weight: 400; }
+  /* Headline */
+  .font-headline-lg { font-size: 2rem;    line-height: 2.5rem;  letter-spacing: 0; font-weight: 400; font-family: 'Outfit', 'Inter', sans-serif; }
+  .font-headline-md { font-size: 1.75rem; line-height: 2.25rem; letter-spacing: 0; font-weight: 400; font-family: 'Outfit', 'Inter', sans-serif; }
+  .font-headline-sm { font-size: 1.5rem;  line-height: 2rem;    letter-spacing: 0; font-weight: 400; font-family: 'Outfit', 'Inter', sans-serif; }
+  /* Title */
+  .font-title-lg    { font-size: 1.375rem; line-height: 1.75rem; letter-spacing: 0;            font-weight: 500; }
+  .font-title-md    { font-size: 1rem;     line-height: 1.5rem;  letter-spacing: 0.009375rem;  font-weight: 500; }
+  .font-title-sm    { font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.00625rem;   font-weight: 500; }
+  /* Body */
+  .font-body-lg     { font-size: 1rem;     line-height: 1.5rem;  letter-spacing: 0.03125rem;   font-weight: 400; }
+  .font-body-md     { font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.015625rem;  font-weight: 400; }
+  .font-body-sm     { font-size: 0.75rem;  line-height: 1rem;    letter-spacing: 0.025rem;     font-weight: 400; }
+  /* Label */
+  .font-label-lg    { font-size: 0.875rem;  line-height: 1.25rem;  letter-spacing: 0.00625rem;  font-weight: 500; }
+  .font-label-md    { font-size: 0.75rem;   line-height: 1rem;     letter-spacing: 0.03125rem;  font-weight: 500; }
+  .font-label-sm    { font-size: 0.6875rem; line-height: 1rem;     letter-spacing: 0.03125rem;  font-weight: 500; }
+  .font-label-sm-mobile { font-size: 0.625rem; line-height: 0.875rem; letter-spacing: 0.03125rem; font-weight: 500; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Premium glass card */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.dark .glassmorphism {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 9999px;
+  transition: background-color 150ms;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.35);
+}
+
+/* Background grid */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, hsl(var(--border) / 0.4) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--border) / 0.4) 1px, transparent 1px);
+}
+
+/* Glow loader */
+.loader-glow {
+  box-shadow: 0 0 15px 3px hsl(var(--md-primary) / 0.4);
+}
+
+/* Safe-area bottom padding helper */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* ── Dashboard typography shorthands ───────────────────────────
+   Apply these to dashboard elements to enforce the MD3 scale
+   without repeating the font-* text-* token pair every time.  */
+.dash-page-title    { @apply font-headline-md text-headline-md font-bold text-on-surface; }
+.dash-section-title { @apply font-title-lg text-title-lg font-semibold text-on-surface; }
+.dash-card-value    { @apply font-headline-sm text-headline-sm font-bold text-on-surface; }
+.dash-card-label    { @apply font-label-md text-label-md font-medium text-on-surface-variant uppercase tracking-wider; }
+
+/* ── Staggered stat-card entrance ──────────────────────────────
+   Add .cards-stagger to any grid/flex container to make its
+   direct children cascade in with slide-in-bottom animation.
+   The keyframe is defined in tailwind.config.js.               */
+.cards-stagger > * {
+  animation: slide-in-bottom 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.cards-stagger > *:nth-child(1) { animation-delay:   0ms; }
+.cards-stagger > *:nth-child(2) { animation-delay:  70ms; }
+.cards-stagger > *:nth-child(3) { animation-delay: 140ms; }
+.cards-stagger > *:nth-child(4) { animation-delay: 210ms; }
+.cards-stagger > *:nth-child(5) { animation-delay: 280ms; }
+.cards-stagger > *:nth-child(6) { animation-delay: 350ms; }
+

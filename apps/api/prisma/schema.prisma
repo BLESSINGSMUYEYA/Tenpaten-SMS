@@ -1,0 +1,604 @@
+// ============================================================
+// TENPATEN SMS — Prisma Schema
+// Multi-tenant school management system for Malawi
+// ALL tables include school_id (tenant isolation)
+// SOFT DELETE ONLY — is_deleted flag, never hard delete
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---- Enums ----
+
+enum SchoolType {
+  secondary
+  primary
+  mixed
+}
+
+enum UserRole {
+  super_admin
+  head_teacher
+  deputy_head
+  teacher
+  bursar
+  student
+  parent
+}
+
+enum DayOfWeek {
+  Mon
+  Tue
+  Wed
+  Thu
+  Fri
+}
+
+enum StudentStatus {
+  active
+  suspended_fees
+  suspended_discipline
+  graduated
+  withdrawn
+}
+
+enum AttendanceType {
+  morning
+  period
+}
+
+enum AttendanceStatus {
+  present
+  absent
+  late
+}
+
+enum GradeStatus {
+  draft
+  submitted
+  approved
+  locked
+}
+
+enum InvoiceStatus {
+  unpaid
+  partial
+  paid
+}
+
+enum PaymentMethod {
+  cash
+  mobile_money
+  bank
+  cheque
+}
+
+enum AnnouncementAudience {
+  all
+  staff
+  students
+  parents
+  class
+}
+
+enum AnnouncementPriority {
+  normal
+  urgent
+}
+
+enum NotificationType {
+  sms
+  email
+  in_app
+}
+
+enum NotificationStatus {
+  pending
+  sent
+  failed
+}
+
+// ---- Models ----
+
+model School {
+  id                String    @id @default(uuid())
+  name              String
+  type              SchoolType
+  district          String
+  country           String    @default("Malawi")
+  logoUrl           String?
+  motto             String?
+  address           String?
+  phone             String?
+  email             String?
+  schoolCode        String    @unique
+  subscriptionPlan  String    @default("basic")
+  subscriptionStart DateTime?
+  subscriptionEnd   DateTime?
+  isActive          Boolean   @default(true)
+  setupComplete     Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  isDeleted         Boolean   @default(false)
+
+  users            User[]
+  academicYears    AcademicYear[]
+  terms            Term[]
+  classes          Class[]
+  subjects         Subject[]
+  timetableSlots   TimetableSlot[]
+  studentProfiles  StudentProfile[]
+  attendance       Attendance[]
+  grades           Grade[]
+  feeStructures    FeeStructure[]
+  invoices         Invoice[]
+  payments         Payment[]
+  announcements    Announcement[]
+  messages         Message[]
+  notifications    Notification[]
+
+  @@map("schools")
+}
+
+model User {
+  id                 String    @id @default(uuid())
+  schoolId           String?
+  firstName          String
+  lastName           String
+  email              String
+  phone              String?
+  passwordHash       String
+  role               UserRole
+  isActive           Boolean   @default(true)
+  mustChangePassword Boolean   @default(false)
+  lastLogin          DateTime?
+  photoUrl           String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  isDeleted          Boolean   @default(false)
+
+  school                School?          @relation(fields: [schoolId], references: [id])
+  studentProfile        StudentProfile?
+  parentRelations       ParentStudent[]  @relation("ParentRelation")
+  studentRelations      ParentStudent[]  @relation("StudentRelation")
+  taughtSlots           TimetableSlot[]
+  classSubjectAssignments ClassSubject[]
+  attendanceMarked      Attendance[]     @relation("AttendanceMarker")
+  attendanceOverridden  AttendanceOverride[]
+  gradesEntered         Grade[]          @relation("GradeEnteredBy")
+  gradesApproved        Grade[]          @relation("GradeApprovedBy")
+  paymentsReceived      Payment[]        @relation("PaymentReceivedBy")
+  paymentsVoided        Payment[]        @relation("PaymentVoidedBy")
+  sentMessages          Message[]        @relation("MessageSender")
+  receivedMessages      Message[]        @relation("MessageRecipient")
+  announcements         Announcement[]
+  notifications         Notification[]
+  passwordResetTokens   PasswordResetToken[]
+
+  @@unique([email, schoolId])
+  @@map("users")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("password_reset_tokens")
+}
+
+model AcademicYear {
+  id        String   @id @default(uuid())
+  schoolId  String
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  isCurrent Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+
+  school  School   @relation(fields: [schoolId], references: [id])
+  terms   Term[]
+  classes Class[]
+  grades  Grade[]
+
+  @@map("academic_years")
+}
+
+model Term {
+  id             String   @id @default(uuid())
+  schoolId       String
+  academicYearId String
+  name           String
+  startDate      DateTime
+  endDate        DateTime
+  isCurrent      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  isDeleted      Boolean  @default(false)
+
+  school         School         @relation(fields: [schoolId], references: [id])
+  academicYear   AcademicYear   @relation(fields: [academicYearId], references: [id])
+  timetableSlots TimetableSlot[]
+  attendance     Attendance[]
+  grades         Grade[]
+  feeStructures  FeeStructure[]
+  invoices       Invoice[]
+
+  @@map("terms")
+}
+
+model Class {
+  id             String   @id @default(uuid())
+  schoolId       String
+  name           String
+  stream         String?
+  displayName    String
+  academicYearId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  isDeleted      Boolean  @default(false)
+
+  school          School          @relation(fields: [schoolId], references: [id])
+  academicYear    AcademicYear    @relation(fields: [academicYearId], references: [id])
+  classSubjects   ClassSubject[]
+  timetableSlots  TimetableSlot[]
+  studentProfiles StudentProfile[]
+  attendance      Attendance[]
+  grades          Grade[]
+  feeStructures   FeeStructure[]
+  announcements   Announcement[]
+
+  @@map("classes")
+}
+
+model Subject {
+  id        String   @id @default(uuid())
+  schoolId  String
+  name      String
+  code      String
+  isCore    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+
+  school         School          @relation(fields: [schoolId], references: [id])
+  classSubjects  ClassSubject[]
+  timetableSlots TimetableSlot[]
+  attendance     Attendance[]
+  grades         Grade[]
+
+  @@map("subjects")
+}
+
+model ClassSubject {
+  id        String   @id @default(uuid())
+  classId   String
+  subjectId String
+  teacherId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+
+  class   Class   @relation(fields: [classId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+  teacher User?   @relation(fields: [teacherId], references: [id])
+
+  @@unique([classId, subjectId])
+  @@map("class_subjects")
+}
+
+model TimetableSlot {
+  id           String    @id @default(uuid())
+  schoolId     String
+  classId      String
+  subjectId    String
+  teacherId    String
+  day          DayOfWeek
+  periodNumber Int
+  room         String?
+  termId       String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  isDeleted    Boolean   @default(false)
+
+  school  School  @relation(fields: [schoolId], references: [id])
+  class   Class   @relation(fields: [classId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+  teacher User    @relation(fields: [teacherId], references: [id])
+  term    Term    @relation(fields: [termId], references: [id])
+
+  @@unique([classId, day, periodNumber, termId])
+  @@map("timetable_slots")
+}
+
+model StudentProfile {
+  id              String        @id @default(uuid())
+  userId          String        @unique
+  schoolId        String
+  admissionNumber String
+  classId         String
+  dateOfBirth     DateTime?
+  gender          String?
+  boardingStatus  String        @default("day")
+  enrollmentDate  DateTime      @default(now())
+  status          StudentStatus @default(active)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  isDeleted       Boolean       @default(false)
+
+  user       User       @relation(fields: [userId], references: [id])
+  school     School     @relation(fields: [schoolId], references: [id])
+  class      Class      @relation(fields: [classId], references: [id])
+  attendance Attendance[]
+  grades     Grade[]
+  invoices   Invoice[]
+  payments   Payment[]
+
+  @@unique([admissionNumber, schoolId])
+  @@map("student_profiles")
+}
+
+model ParentStudent {
+  id            String   @id @default(uuid())
+  parentUserId  String
+  studentUserId String
+  relationship  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isDeleted     Boolean  @default(false)
+
+  parent  User @relation("ParentRelation", fields: [parentUserId], references: [id])
+  student User @relation("StudentRelation", fields: [studentUserId], references: [id])
+
+  @@unique([parentUserId, studentUserId])
+  @@map("parent_students")
+}
+
+model Attendance {
+  id           String           @id @default(uuid())
+  schoolId     String
+  studentId    String
+  classId      String
+  subjectId    String?
+  type         AttendanceType
+  date         DateTime         @db.Date
+  periodNumber Int?
+  status       AttendanceStatus
+  reason       String?
+  markedBy     String
+  termId       String
+  isLocked     Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  isDeleted    Boolean          @default(false)
+
+  school    School         @relation(fields: [schoolId], references: [id])
+  student   StudentProfile @relation(fields: [studentId], references: [id])
+  class     Class          @relation(fields: [classId], references: [id])
+  subject   Subject?       @relation(fields: [subjectId], references: [id])
+  marker    User           @relation("AttendanceMarker", fields: [markedBy], references: [id])
+  term      Term           @relation(fields: [termId], references: [id])
+  overrides AttendanceOverride[]
+
+  @@unique([studentId, date, type, periodNumber])
+  @@map("attendance")
+}
+
+model AttendanceOverride {
+  id           String   @id @default(uuid())
+  attendanceId String
+  overriddenBy String
+  oldStatus    AttendanceStatus
+  newStatus    AttendanceStatus
+  reason       String
+  createdAt    DateTime @default(now())
+
+  attendance Attendance @relation(fields: [attendanceId], references: [id])
+  overrider  User       @relation(fields: [overriddenBy], references: [id])
+
+  @@map("attendance_overrides")
+}
+
+model Grade {
+  id               String      @id @default(uuid())
+  schoolId         String
+  studentId        String
+  subjectId        String
+  classId          String
+  termId           String
+  academicYearId   String
+  caMark           Float?
+  caMax            Float       @default(30)
+  examMark         Float?
+  examMax          Float       @default(70)
+  totalMark        Float?
+  gradeLetter      String?
+  position         Int?
+  submissionStatus GradeStatus @default(draft)
+  enteredBy        String
+  approvedBy       String?
+  lockedAt         DateTime?
+  rejectionComment String?
+  isPublished      Boolean     @default(false)
+  publishedAt      DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  isDeleted        Boolean     @default(false)
+
+  school       School         @relation(fields: [schoolId], references: [id])
+  student      StudentProfile @relation(fields: [studentId], references: [id])
+  subject      Subject        @relation(fields: [subjectId], references: [id])
+  class        Class          @relation(fields: [classId], references: [id])
+  term         Term           @relation(fields: [termId], references: [id])
+  academicYear AcademicYear   @relation(fields: [academicYearId], references: [id])
+  enterer      User           @relation("GradeEnteredBy", fields: [enteredBy], references: [id])
+  approver     User?          @relation("GradeApprovedBy", fields: [approvedBy], references: [id])
+
+  @@unique([studentId, subjectId, termId])
+  @@map("grades")
+}
+
+model FeeStructure {
+  id        String   @id @default(uuid())
+  schoolId  String
+  classId   String
+  termId    String
+  itemName  String
+  amount    Float
+  isLocked  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+
+  school School @relation(fields: [schoolId], references: [id])
+  class  Class  @relation(fields: [classId], references: [id])
+  term   Term   @relation(fields: [termId], references: [id])
+
+  @@map("fee_structures")
+}
+
+model Invoice {
+  id             String        @id @default(uuid())
+  schoolId       String
+  studentId      String
+  termId         String
+  totalAmount    Float
+  discountAmount Float         @default(0)
+  discountReason String?
+  finalAmount    Float
+  paidAmount     Float         @default(0)
+  balance        Float
+  status         InvoiceStatus @default(unpaid)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  isDeleted      Boolean       @default(false)
+
+  school   School         @relation(fields: [schoolId], references: [id])
+  student  StudentProfile @relation(fields: [studentId], references: [id])
+  term     Term           @relation(fields: [termId], references: [id])
+  items    InvoiceItem[]
+  payments Payment[]
+
+  @@unique([studentId, termId])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id        String   @id @default(uuid())
+  invoiceId String
+  itemName  String
+  amount    Float
+  createdAt DateTime @default(now())
+  isDeleted Boolean  @default(false)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@map("invoice_items")
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  schoolId        String
+  studentId       String
+  invoiceId       String
+  amount          Float
+  paymentDate     DateTime
+  method          PaymentMethod
+  referenceNumber String?
+  receivedBy      String
+  receiptNumber   String        @unique
+  isVoided        Boolean       @default(false)
+  voidReason      String?
+  voidedBy        String?
+  voidedAt        DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  isDeleted       Boolean       @default(false)
+
+  school   School         @relation(fields: [schoolId], references: [id])
+  student  StudentProfile @relation(fields: [studentId], references: [id])
+  invoice  Invoice        @relation(fields: [invoiceId], references: [id])
+  receiver User           @relation("PaymentReceivedBy", fields: [receivedBy], references: [id])
+  voider   User?          @relation("PaymentVoidedBy", fields: [voidedBy], references: [id])
+
+  @@map("payments")
+}
+
+model Announcement {
+  id          String               @id @default(uuid())
+  schoolId    String
+  title       String
+  body        String
+  audience    AnnouncementAudience
+  classId     String?
+  priority    AnnouncementPriority @default(normal)
+  postedBy    String
+  isPublished Boolean              @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  isDeleted   Boolean              @default(false)
+
+  school School  @relation(fields: [schoolId], references: [id])
+  class  Class?  @relation(fields: [classId], references: [id])
+  poster User    @relation(fields: [postedBy], references: [id])
+
+  @@map("announcements")
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  schoolId    String
+  senderId    String
+  recipientId String?
+  classId     String?
+  isBroadcast Boolean  @default(false)
+  subject     String
+  body        String
+  readAt      DateTime?
+  parentId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isDeleted   Boolean  @default(false)
+
+  school    School    @relation(fields: [schoolId], references: [id])
+  sender    User      @relation("MessageSender", fields: [senderId], references: [id])
+  recipient User?     @relation("MessageRecipient", fields: [recipientId], references: [id])
+  parent    Message?  @relation("MessageThread", fields: [parentId], references: [id])
+  replies   Message[] @relation("MessageThread")
+
+  @@map("messages")
+}
+
+model Notification {
+  id         String             @id @default(uuid())
+  schoolId   String
+  userId     String
+  type       NotificationType
+  subject    String?
+  message    String
+  status     NotificationStatus @default(pending)
+  sentAt     DateTime?
+  retryCount Int                @default(0)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  isDeleted  Boolean            @default(false)
+
+  school School @relation(fields: [schoolId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}

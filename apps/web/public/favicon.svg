@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Round container with the theme primary color -->
+  <circle cx="24" cy="24" r="22" fill="#002452" />
+  
+  <!-- "t" letter from the wordmark -->
+  <text
+    x="15"
+    y="34"
+    fill="#ffffff"
+    style="font-family: 'Plus Jakarta Sans', 'Inter', 'DM Sans', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.04em;"
+  >t</text>
+  
+  <!-- Gold dot aligned exactly like the brand dot -->
+  <circle cx="29" cy="31" r="5" fill="#c28b1e" />
+</svg>

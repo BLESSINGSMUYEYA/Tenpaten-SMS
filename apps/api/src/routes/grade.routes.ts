@@ -1,0 +1,304 @@
+import { Router } from 'express';
+import { prisma } from '../config/database';
+import { authenticate } from '../middleware/auth.middleware';
+import { requireRoles } from '../middleware/rbac.middleware';
+import { validateBody } from '../middleware/validate.middleware';
+import { asyncHandler, sendSuccess, ValidationError, NotFoundError } from '../utils/errors';
+import { calculateGrade, calculatePositions } from '../utils/helpers';
+import { saveGradesSchema } from '@tenpaten/shared';
+import { GradeStatus } from '@prisma/client';
+
+const router = Router();
+router.use(authenticate);
+
+// ---- GET Grades ----
+router.get(
+  '/',
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { studentId, classId, subjectId, termId } = req.query;
+
+    const whereClause: any = {
+      schoolId,
+      isDeleted: false,
+    };
+
+    if (studentId && typeof studentId === 'string') {
+      whereClause.studentId = studentId;
+    }
+    if (classId && typeof classId === 'string') {
+      whereClause.classId = classId;
+    }
+    if (subjectId && typeof subjectId === 'string') {
+      whereClause.subjectId = subjectId;
+    }
+    if (termId && typeof termId === 'string') {
+      whereClause.termId = termId;
+    }
+
+    // If student or parent role, only show published grades
+    if (['student', 'parent'].includes(req.user!.role)) {
+      whereClause.isPublished = true;
+    }
+
+    const grades = await prisma.grade.findMany({
+      where: whereClause,
+      include: {
+        student: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        subject: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
+        class: {
+          select: {
+            id: true,
+            displayName: true,
+          },
+        },
+        term: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        student: {
+          admissionNumber: 'asc',
+        },
+      },
+    });
+
+    sendSuccess(res, grades, 'Grades retrieved successfully');
+  })
+);
+
+// ---- Enter/Save Grades (Draft) ----
+router.post(
+  '/enter',
+  requireRoles('head_teacher', 'teacher'),
+  validateBody(saveGradesSchema),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const enteredBy = req.user!.userId;
+    const { classId, subjectId, termId, academicYearId, grades } = req.body;
+
+    const savedGrades = [];
+    for (const record of grades) {
+      const caMark = record.caMark ?? null;
+      const examMark = record.examMark ?? null;
+      let totalMark = null;
+      let gradeLetter = null;
+
+      if (caMark !== null || examMark !== null) {
+        totalMark = (caMark ?? 0) + (examMark ?? 0);
+        gradeLetter = calculateGrade(totalMark);
+      }
+
+      const existing = await prisma.grade.findFirst({
+        where: {
+          studentId: record.studentId,
+          subjectId,
+          termId,
+          isDeleted: false,
+        },
+      });
+
+      if (existing) {
+        if (existing.submissionStatus === GradeStatus.locked) {
+          continue; // Skip updating locked grades
+        }
+        const updated = await prisma.grade.update({
+          where: { id: existing.id },
+          data: {
+            caMark,
+            examMark,
+            totalMark,
+            gradeLetter,
+            enteredBy,
+          },
+        });
+        savedGrades.push(updated);
+      } else {
+        const created = await prisma.grade.create({
+          data: {
+            schoolId,
+            studentId: record.studentId,
+            classId,
+            subjectId,
+            termId,
+            academicYearId,
+            caMark,
+            examMark,
+            totalMark,
+            gradeLetter,
+            submissionStatus: GradeStatus.draft,
+            enteredBy,
+          },
+        });
+        savedGrades.push(created);
+      }
+    }
+
+    sendSuccess(res, savedGrades, 'Grades saved successfully as draft');
+  })
+);
+
+// ---- Submit Grades for Approval ----
+router.patch(
+  '/submit',
+  requireRoles('head_teacher', 'teacher'),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { classId, subjectId, termId } = req.body;
+
+    if (!classId || !subjectId || !termId) {
+      throw new ValidationError({ body: ['classId, subjectId, and termId are required in request body'] });
+    }
+
+    const updated = await prisma.grade.updateMany({
+      where: {
+        schoolId,
+        classId,
+        subjectId,
+        termId,
+        submissionStatus: GradeStatus.draft,
+        isDeleted: false,
+      },
+      data: {
+        submissionStatus: GradeStatus.submitted,
+      },
+    });
+
+    sendSuccess(res, updated, 'Grades submitted for approval');
+  })
+);
+
+// ---- Approve or Reject Grades ----
+router.patch(
+  '/approve',
+  requireRoles('head_teacher', 'deputy_head'),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const approvedBy = req.user!.userId;
+    const { classId, subjectId, termId, status, rejectionComment } = req.body;
+
+    if (!classId || !subjectId || !termId || !status) {
+      throw new ValidationError({ body: ['classId, subjectId, termId, and status are required'] });
+    }
+
+    if (status !== 'approved' && status !== 'draft') {
+      throw new ValidationError({ status: ['status must be approved or draft (for rejection)'] });
+    }
+
+    if (status === 'draft' && !rejectionComment) {
+      throw new ValidationError({ rejectionComment: ['rejectionComment is required when status is draft'] });
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      if (status === 'approved') {
+        // Approve grades
+        await tx.grade.updateMany({
+          where: {
+            schoolId,
+            classId,
+            subjectId,
+            termId,
+            submissionStatus: GradeStatus.submitted,
+            isDeleted: false,
+          },
+          data: {
+            submissionStatus: GradeStatus.approved,
+            approvedBy,
+          },
+        });
+
+        // Compute rankings
+        const allGrades = await tx.grade.findMany({
+          where: { schoolId, classId, subjectId, termId, isDeleted: false },
+        });
+
+        const validGrades = allGrades.filter(g => g.totalMark !== null);
+        const totals = validGrades.map(g => ({
+          studentId: g.studentId,
+          total: g.totalMark!,
+        }));
+
+        const ranked = calculatePositions(totals);
+
+        for (const item of ranked) {
+          await tx.grade.updateMany({
+            where: { schoolId, studentId: item.studentId, subjectId, termId, isDeleted: false },
+            data: { position: item.position },
+          });
+        }
+      } else {
+        // Reject grades
+        await tx.grade.updateMany({
+          where: {
+            schoolId,
+            classId,
+            subjectId,
+            termId,
+            submissionStatus: GradeStatus.submitted,
+            isDeleted: false,
+          },
+          data: {
+            submissionStatus: GradeStatus.draft,
+            rejectionComment,
+            approvedBy: null,
+          },
+        });
+      }
+
+      return { status };
+    });
+
+    sendSuccess(res, result, status === 'approved' ? 'Grades approved and ranked' : 'Grades rejected back to draft');
+  })
+);
+
+// ---- Publish/Unpublish Grades ----
+router.patch(
+  '/publish',
+  requireRoles('head_teacher', 'deputy_head'),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { classId, termId, isPublished } = req.body;
+
+    if (!classId || !termId || typeof isPublished !== 'boolean') {
+      throw new ValidationError({ body: ['classId, termId, and isPublished (boolean) are required'] });
+    }
+
+    const updated = await prisma.grade.updateMany({
+      where: {
+        schoolId,
+        classId,
+        termId,
+        submissionStatus: GradeStatus.approved,
+        isDeleted: false,
+      },
+      data: {
+        isPublished,
+        publishedAt: isPublished ? new Date() : null,
+      },
+    });
+
+    sendSuccess(res, updated, `Grades ${isPublished ? 'published' : 'unpublished'} successfully`);
+  })
+);
+
+export default router;

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tenpaten SMS - Deputy Head Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-bright": "#f8f9ff",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "on-primary-container": "#90a8ff",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#dce9ff",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#d3e4fe",
+                        "primary-container": "#1e3a8a",
+                        "primary-fixed": "#dce1ff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#ff8b7f",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#00164e",
+                        "background": "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                        "tertiary-container": "#870009",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb4ab",
+                        "outline": "#757682",
+                        "on-tertiary": "#ffffff",
+                        "outline-variant": "#c5c5d3",
+                        "on-surface-variant": "#444651",
+                        "on-tertiary-fixed": "#410002",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#5d0004",
+                        "secondary-fixed-dim": "#79db8d",
+                        "on-secondary-fixed": "#00210a",
+                        "inverse-primary": "#b6c4ff",
+                        "surface-container": "#e5eeff",
+                        "surface-container-low": "#eff4ff",
+                        "surface": "#f8f9ff",
+                        "secondary-fixed": "#95f8a7",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-fixed": "#ffdad6",
+                        "primary": "#00236f",
+                        "inverse-surface": "#213145",
+                        "surface-dim": "#cbdbf5",
+                        "on-secondary-container": "#007233",
+                        "secondary-container": "#92f5a4",
+                        "on-tertiary-fixed-variant": "#93000b",
+                        "on-background": "#0b1c30",
+                        "on-primary-fixed-variant": "#264191",
+                        "secondary": "#006d30",
+                        "on-secondary-fixed-variant": "#005323",
+                        "surface-tint": "#4059aa"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "xl": "40px",
+                        "md": "16px",
+                        "base": "4px",
+                        "sm": "8px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "gutter": "16px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .zebra-table tr:nth-child(even) {
+            background-color: #f1f5f9;
+        }
+        .sidebar-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-inverse-surface dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline flex flex-col py-lg gap-sm z-50">
+<div class="px-lg mb-xl">
+<h1 class="text-headline-md font-headline-md font-bold text-white dark:text-primary tracking-tight">Tenpaten SMS</h1>
+<p class="text-label-md font-label-md text-surface-variant opacity-70">Head Teacher Portal</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Dashboard (Active) -->
+<a class="bg-primary text-on-primary rounded-xl mx-2 flex items-center px-4 py-3 scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<!-- Timetables -->
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 flex items-center px-4 py-3 hover:bg-surface-variant/10 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3">calendar_today</span>
+<span class="font-label-md text-label-md">Timetables</span>
+</a>
+<!-- Academic Records -->
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 flex items-center px-4 py-3 hover:bg-surface-variant/10 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3">school</span>
+<span class="font-label-md text-label-md">Academic Records</span>
+</a>
+<!-- Attendance -->
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 flex items-center px-4 py-3 hover:bg-surface-variant/10 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3">how_to_reg</span>
+<span class="font-label-md text-label-md">Attendance</span>
+</a>
+<!-- Financials -->
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 flex items-center px-4 py-3 hover:bg-surface-variant/10 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3">payments</span>
+<span class="font-label-md text-label-md">Financials</span>
+</a>
+<!-- Student Directory -->
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 flex items-center px-4 py-3 hover:bg-surface-variant/10 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3">group</span>
+<span class="font-label-md text-label-md">Student Directory</span>
+</a>
+<!-- Staff Management -->
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 flex items-center px-4 py-3 hover:bg-surface-variant/10 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3">badge</span>
+<span class="font-label-md text-label-md">Staff Management</span>
+</a>
+<!-- Settings -->
+<a class="text-on-surface-variant dark:text-surface-variant mx-2 flex items-center px-4 py-3 hover:bg-surface-variant/10 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="px-lg mt-auto">
+<button class="w-full bg-surface-container-highest text-primary font-bold py-3 rounded-xl hover:opacity-90 transition-opacity">
+                Generate Report
+            </button>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-[280px] min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-lg py-sm h-16 sticky top-0 z-40 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline">
+<div class="flex items-center gap-md">
+<div class="flex flex-col">
+<span class="text-label-sm font-label-sm text-on-surface-variant flex items-center gap-1">
+                        Home <span class="material-symbols-outlined text-[12px]">chevron_right</span> Deputy Head Overview
+                    </span>
+<h2 class="text-headline-sm font-headline-sm font-bold text-primary dark:text-inverse-primary">Deputy Head Overview</h2>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<span class="text-label-md font-label-md text-on-surface-variant hidden md:block">Role: Head Teacher</span>
+<div class="flex items-center gap-sm">
+<button class="p-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+</button>
+</div>
+<img alt="Administrator Avatar" class="w-10 h-10 rounded-full border border-outline-variant object-cover" data-alt="A professional headshot of a mature academic administrator with a warm but authoritative expression, set against a blurred background of a modern school library. The lighting is bright and natural, reinforcing an atmosphere of transparency and leadership. The style is high-end corporate photography with a soft depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlMPBgY3Yf7o7P-lu7UrSIDwDFv9nAOMM1aRUjjseKPAu9p2HMVo_cz3ggV3yO8C-G9naFxuPSIAXMAJJSaOKCZ6CavZ6yy_pT1IeJ08thXoN8vEiqXYAN1GevwEuOImfN6kAdUaR-xdswAS7PQ1fxIf_YEEXkXZzvwrb5UGMgtFNa5O8lnl9iVcca41ukpoQo1KKicbe_zlC8DL8MX48QpFV7xMMD6hCHHnRyoR3_LfewuucSjM5PjScUZpu8R6xufMoN3kdYNWY"/>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<div class="p-lg space-y-lg">
+<!-- Hero Metrics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Metric 1 -->
+<div class="bg-surface-container-low border border-outline-variant p-md rounded-xl flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined">event_available</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Timetable Status</p>
+<p class="text-headline-md font-headline-md text-primary">100% Complete</p>
+</div>
+</div>
+<!-- Metric 2 -->
+<div class="bg-surface-container-low border border-outline-variant p-md rounded-xl flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">upload_file</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Grade Submissions</p>
+<p class="text-headline-md font-headline-md text-primary">85% Received</p>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-surface-container-low border border-outline-variant p-md rounded-xl flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Pending Approvals</p>
+<p class="text-headline-md font-headline-md text-error">12</p>
+</div>
+</div>
+</div>
+<!-- Main Sections Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Left Column: Timetable and Grade Submissions -->
+<div class="lg:col-span-8 space-y-lg">
+<!-- Today's Timetable Summary -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="px-md py-sm bg-surface-container border-b border-outline-variant flex justify-between items-center">
+<h3 class="text-headline-sm font-headline-sm text-primary">Today's Timetable Summary</h3>
+<button class="text-label-md font-label-md text-primary hover:underline">View Full Calendar</button>
+</div>
+<div class="p-md grid grid-cols-1 md:grid-cols-2 gap-sm">
+<!-- Class Card 1 -->
+<div class="p-sm border border-outline-variant rounded hover:bg-surface-container-low transition-colors flex gap-sm">
+<div class="bg-primary-fixed text-on-primary-fixed w-16 h-16 rounded flex flex-col items-center justify-center">
+<span class="text-label-sm font-bold">08:00</span>
+<span class="text-xs">AM</span>
+</div>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Grade 10 - Mathematics</p>
+<p class="text-label-sm text-on-surface-variant">Room 102 • Mr. Osei</p>
+<span class="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#92f5a4]/30 text-[#006d30]">In Progress</span>
+</div>
+</div>
+<!-- Class Card 2 -->
+<div class="p-sm border border-outline-variant rounded hover:bg-surface-container-low transition-colors flex gap-sm">
+<div class="bg-surface-container-highest text-primary w-16 h-16 rounded flex flex-col items-center justify-center">
+<span class="text-label-sm font-bold">09:30</span>
+<span class="text-xs">AM</span>
+</div>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Grade 12 - Physics Lab</p>
+<p class="text-label-sm text-on-surface-variant">Lab B • Mrs. Appiah</p>
+<span class="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#dce1ff] text-[#00236f]">Upcoming</span>
+</div>
+</div>
+<!-- Class Card 3 -->
+<div class="p-sm border border-outline-variant rounded hover:bg-surface-container-low transition-colors flex gap-sm">
+<div class="bg-surface-container-highest text-primary w-16 h-16 rounded flex flex-col items-center justify-center">
+<span class="text-label-sm font-bold">11:00</span>
+<span class="text-xs">AM</span>
+</div>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Staff Meeting</p>
+<p class="text-label-sm text-on-surface-variant">Conf. Hall • All Faculty</p>
+<span class="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#dce1ff] text-[#00236f]">Upcoming</span>
+</div>
+</div>
+<!-- Class Card 4 -->
+<div class="p-sm border border-outline-variant rounded hover:bg-surface-container-low transition-colors flex gap-sm opacity-60">
+<div class="bg-surface-variant text-on-surface-variant w-16 h-16 rounded flex flex-col items-center justify-center">
+<span class="text-label-sm font-bold">07:15</span>
+<span class="text-xs">AM</span>
+</div>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Morning Assembly</p>
+<p class="text-label-sm text-on-surface-variant">Main Courtyard</p>
+<span class="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">Completed</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Grade Submission Status -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="px-md py-sm bg-surface-container border-b border-outline-variant">
+<h3 class="text-headline-sm font-headline-sm text-primary">Grade Submission Status</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse zebra-table">
+<thead class="bg-surface-container-low sticky top-0 border-b border-outline-variant">
+<tr>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant">Department</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant">Progress</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant">Status</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant">Action</th>
+</tr>
+</thead>
+<tbody class="text-body-sm">
+<tr>
+<td class="px-md py-md font-bold">Mathematics</td>
+<td class="px-md py-md">10/12 submitted</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 rounded-full bg-[#ffdad6] text-[#ba1a1a] font-medium">Overdue</span>
+</td>
+<td class="px-md py-md"><button class="text-primary hover:underline">Remind</button></td>
+</tr>
+<tr>
+<td class="px-md py-md font-bold">English Language</td>
+<td class="px-md py-md">15/15 submitted</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 rounded-full bg-[#92f5a4]/30 text-[#006d30] font-medium">Completed</span>
+</td>
+<td class="px-md py-md text-on-surface-variant">Review</td>
+</tr>
+<tr>
+<td class="px-md py-md font-bold">Natural Sciences</td>
+<td class="px-md py-md">8/14 submitted</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">In Progress</span>
+</td>
+<td class="px-md py-md"><button class="text-primary hover:underline">Remind</button></td>
+</tr>
+<tr>
+<td class="px-md py-md font-bold">Social Studies</td>
+<td class="px-md py-md">12/12 submitted</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 rounded-full bg-[#92f5a4]/30 text-[#006d30] font-medium">Completed</span>
+</td>
+<td class="px-md py-md text-on-surface-variant">Review</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Right Column: Recent Announcements -->
+<aside class="lg:col-span-4 space-y-lg">
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm h-full flex flex-col">
+<div class="px-md py-sm bg-surface-container border-b border-outline-variant flex justify-between items-center">
+<h3 class="text-headline-sm font-headline-sm text-primary">Recent Announcements</h3>
+<button class="p-1 hover:bg-surface-variant/20 rounded-full">
+<span class="material-symbols-outlined text-primary">add</span>
+</button>
+</div>
+<div class="p-md flex-1 overflow-y-auto space-y-md">
+<!-- Announcement 1 -->
+<div class="p-md border-b border-outline-variant last:border-0 hover:bg-surface-bright transition-colors">
+<div class="flex items-center justify-between mb-sm">
+<span class="text-label-sm font-bold bg-primary-fixed text-on-primary-fixed px-2 py-0.5 rounded">INTERNAL</span>
+<span class="text-label-sm text-on-surface-variant">2h ago</span>
+</div>
+<h4 class="font-bold text-on-surface mb-xs">End of Term Examination Schedule</h4>
+<p class="text-body-sm text-on-surface-variant">Final drafts for the exam timetable must be submitted to the academic office by Friday.</p>
+<div class="mt-sm flex items-center gap-sm">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Close-up profile of a female school administrator with glasses, looking professional and friendly. Bright studio lighting on a neutral white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7zLvK3eFPX6BCM6E1uG8zaZTiGZFYmxRNOzGqpCFzYo70_GdtVjuC7fEvgqifyaM0dheJYW_juwdLmhJrD2_mHI6SOiNIN4TnWUs-BPBJYHn0V65Mfod1ubelkdQQjJb8Cnyv6L1qjTRPqffP6jD9YL9zhOy3JsgKBdODtPiuM4qjW4jGBYtPsIAGrB_E7gpR5Ta6EZvayA9cPjn0XbcCO3Kk7zgvPPB41qmgrekGoEQQO7b2VYsg8OFCBblPXSuWCufc909btBY"/>
+<span class="text-label-sm text-on-surface-variant">Principal Dr. Mensah</span>
+</div>
+</div>
+<!-- Announcement 2 -->
+<div class="p-md border-b border-outline-variant last:border-0 hover:bg-surface-bright transition-colors">
+<div class="flex items-center justify-between mb-sm">
+<span class="text-label-sm font-bold bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded">FACULTY</span>
+<span class="text-label-sm text-on-surface-variant">Yesterday</span>
+</div>
+<h4 class="font-bold text-on-surface mb-xs">New Digital Literacy Workshop</h4>
+<p class="text-body-sm text-on-surface-variant">All teachers are invited to a seminar on integrating AI in curriculum planning next Tuesday.</p>
+<div class="mt-sm flex items-center gap-sm">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="A portrait of a male educator in a smart casual outfit, smiling confidently. High-key lighting, professional clean background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBjsO8ERSbNuDBQ3n0O-1DsVJaKSGdAmvnfq7UR_LkUtlPXprEDRvQzb-8FTrDD_z9RifAFqHNIknzVE8UVStg_K3fdnbG8JzkKZkpBR3T1F0uSkSobHnOEyGkSP4a7XBuzjIIwJSKqDfCNoPaJYGhXv_ipDRTENylwztO_7vpzuaHwGN2sqg-gYm6JCDDq516JMMnLnHTwOf8ZD3Y6tFhSSd1Fu7bAjC3Iiy2J9k6p1L8PYZ99C_1CAlgB3TbnzpFgBZA4ADgneI"/>
+<span class="text-label-sm text-on-surface-variant">Mr. Boateng, IT Dept</span>
+</div>
+</div>
+<!-- Announcement 3 -->
+<div class="p-md border-b border-outline-variant last:border-0 hover:bg-surface-bright transition-colors">
+<div class="flex items-center justify-between mb-sm">
+<span class="text-label-sm font-bold bg-error-container text-on-error-container px-2 py-0.5 rounded">URGENT</span>
+<span class="text-label-sm text-on-surface-variant">2 days ago</span>
+</div>
+<h4 class="font-bold text-on-surface mb-xs">Maintenance Notice: Room 204</h4>
+<p class="text-body-sm text-on-surface-variant">Room 204 will be closed for HVAC repairs until further notice. Classes moved to Library B.</p>
+</div>
+</div>
+<div class="p-sm bg-surface-container-low text-center">
+<button class="text-label-md font-label-md text-primary hover:underline">View All Updates</button>
+</div>
+</section>
+</aside>
+</div>
+</div>
+<!-- Footer / Credits -->
+<footer class="mt-auto p-lg text-center border-t border-outline-variant">
+<p class="text-label-sm text-on-surface-variant opacity-60">
+                © 2024 Tenpaten School Management System. All Rights Reserved. 
+                <span class="mx-md">|</span> 
+                Academic Session: 2023/2024
+            </p>
+</footer>
+</main>
+<!-- FAB (Suppressed for this screen based on rules, but included if contextual action needed) -->
+<!-- Determined FAB not necessary for Overview Dashboard -->
+<script>
+        // Simple micro-interaction for active state scaling
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', function() {
+                document.querySelectorAll('nav a').forEach(l => {
+                    l.classList.remove('bg-primary', 'text-on-primary', 'scale-95');
+                    l.classList.add('text-on-surface-variant', 'dark:text-surface-variant');
+                });
+                this.classList.add('bg-primary', 'text-on-primary', 'scale-95');
+                this.classList.remove('text-on-surface-variant', 'dark:text-surface-variant');
+            });
+        });
+
+        // Toggle mobile sidebar (simplified for desktop prototype)
+        function toggleSidebar() {
+            const sidebar = document.querySelector('aside');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+    </script>
+</body></html>

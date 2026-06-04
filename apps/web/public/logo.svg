@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 54" fill="none">
+  <!-- Main "tenpaten" text -->
+  <text
+    x="0"
+    y="35"
+    fill="#002452"
+    style="font-family: 'Plus Jakarta Sans', 'Inter', 'DM Sans', sans-serif; font-size: 36px; font-weight: 800; letter-spacing: -0.04em;"
+  >tenpaten</text>
+  
+  <!-- Golden/Amber dot "." -->
+  <circle cx="156" cy="31" r="6.5" fill="#c28b1e" />
+  
+  <!-- "sms" text below -->
+  <text
+    x="0"
+    y="49"
+    fill="#c28b1e"
+    style="font-family: 'Plus Jakarta Sans', 'Inter', 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em;"
+  >sms</text>
+</svg>
