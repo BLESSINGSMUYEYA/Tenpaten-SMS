@@ -1,7 +1,6 @@
 databases:
   - name: tenpaten-db
     databaseName: tenpaten_sms
-    user: postgres
     plan: free
 
 services:
