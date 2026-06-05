@@ -32,9 +32,25 @@ async function main() {
 
   console.log('Database cleaned.');
 
-  // Common password hash for all seed users
+  // ==========================================
+  // ROLE-SPECIFIC DEFAULT PASSWORDS
+  // These are INITIAL credentials — users should change them on first login.
+  // Super Admin:   Admin@Tenpaten2026
+  // Head Teacher:  HeadSS@2026
+  // Deputy Head:   DeputySS@2026
+  // Bursar:        BursarSS@2026
+  // Teacher:       TeacherSS@2026
+  // Parent:        ParentSS@2026
+  // Student:       StudentSS@2026
+  // ==========================================
   const salt = bcrypt.genSaltSync(10);
-  const commonPasswordHash = bcrypt.hashSync('Password123', salt);
+  const adminPasswordHash    = bcrypt.hashSync('Admin@Tenpaten2026', salt);
+  const headPasswordHash     = bcrypt.hashSync('HeadSS@2026', salt);
+  const deputyPasswordHash   = bcrypt.hashSync('DeputySS@2026', salt);
+  const bursarPasswordHash   = bcrypt.hashSync('BursarSS@2026', salt);
+  const teacherPasswordHash  = bcrypt.hashSync('TeacherSS@2026', salt);
+  const parentPasswordHash   = bcrypt.hashSync('ParentSS@2026', salt);
+  const studentPasswordHash  = bcrypt.hashSync('StudentSS@2026', salt);
 
   // ==========================================
   // 1. CREATE SUPER ADMIN
@@ -45,10 +61,10 @@ async function main() {
       firstName: 'Admin',
       lastName: 'Tenpaten',
       email: 'admin@tenpaten.com',
-      passwordHash: commonPasswordHash,
+      passwordHash: adminPasswordHash,
       role: UserRole.super_admin,
       isActive: true,
-      mustChangePassword: false,
+      mustChangePassword: true, // Must change on first login
     },
   });
   console.log(`Super Admin created: ${superAdmin.email}`);
@@ -89,10 +105,10 @@ async function main() {
       lastName: 'Phiri',
       email: 'head@sunshine.com',
       phone: '+265 888 123 456',
-      passwordHash: commonPasswordHash,
+      passwordHash: headPasswordHash,
       role: UserRole.head_teacher,
       isActive: true,
-      mustChangePassword: false,
+      mustChangePassword: true, // Must change on first login
     },
   });
 
@@ -103,10 +119,10 @@ async function main() {
       lastName: 'Banda',
       email: 'deputy@sunshine.com',
       phone: '+265 999 123 456',
-      passwordHash: commonPasswordHash,
+      passwordHash: deputyPasswordHash,
       role: UserRole.deputy_head,
       isActive: true,
-      mustChangePassword: false,
+      mustChangePassword: true, // Must change on first login
     },
   });
 
@@ -117,10 +133,10 @@ async function main() {
       lastName: 'Mwale',
       email: 'bursar@sunshine.com',
       phone: '+265 888 987 654',
-      passwordHash: commonPasswordHash,
+      passwordHash: bursarPasswordHash,
       role: UserRole.bursar,
       isActive: true,
-      mustChangePassword: false,
+      mustChangePassword: true, // Must change on first login
     },
   });
 
@@ -131,10 +147,10 @@ async function main() {
       lastName: 'Kavalo',
       email: 'math.teacher@sunshine.com',
       phone: '+265 888 234 567',
-      passwordHash: commonPasswordHash,
+      passwordHash: teacherPasswordHash,
       role: UserRole.teacher,
       isActive: true,
-      mustChangePassword: false,
+      mustChangePassword: true, // Must change on first login
     },
   });
 
@@ -145,10 +161,10 @@ async function main() {
       lastName: 'Chiumia',
       email: 'science.teacher@sunshine.com',
       phone: '+265 999 234 567',
-      passwordHash: commonPasswordHash,
+      passwordHash: teacherPasswordHash,
       role: UserRole.teacher,
       isActive: true,
-      mustChangePassword: false,
+      mustChangePassword: true, // Must change on first login
     },
   });
 
@@ -159,10 +175,10 @@ async function main() {
       lastName: 'Gondwe',
       email: 'humanities.teacher@sunshine.com',
       phone: '+265 888 345 678',
-      passwordHash: commonPasswordHash,
+      passwordHash: teacherPasswordHash,
       role: UserRole.teacher,
       isActive: true,
-      mustChangePassword: false,
+      mustChangePassword: true, // Must change on first login
     },
   });
 
@@ -382,10 +398,10 @@ async function main() {
         lastName: std.parentName.split(' ')[1] || 'Guardian',
         email: std.parentEmail,
         phone: std.parentPhone,
-        passwordHash: commonPasswordHash,
+        passwordHash: parentPasswordHash,
         role: UserRole.parent,
         isActive: true,
-        mustChangePassword: false,
+        mustChangePassword: true, // Must change on first login
       },
     });
 
@@ -396,10 +412,10 @@ async function main() {
         firstName: std.firstName,
         lastName: std.lastName,
         email: `${std.firstName.toLowerCase()}.${std.lastName.toLowerCase()}@sunshine.com`,
-        passwordHash: commonPasswordHash,
+        passwordHash: studentPasswordHash,
         role: UserRole.student,
         isActive: true,
-        mustChangePassword: false,
+        mustChangePassword: true, // Must change on first login
       },
     });
 

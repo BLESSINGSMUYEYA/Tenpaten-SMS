@@ -20,7 +20,6 @@ export const LoginPage: React.FC = () => {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -48,40 +47,6 @@ export const LoginPage: React.FC = () => {
       setIsLoading(false);
       const apiError = err.response?.data?.message || 'Invalid school code, email, or password. Please verify details.';
       setErrorMsg(apiError);
-    }
-  };
-
-  // Helper to quickly fill dummy credentials for testing
-  const handleQuickDemo = (role: 'super_admin' | 'head_teacher' | 'deputy_head' | 'bursar' | 'teacher' | 'student' | 'parent') => {
-    setErrorMsg(null);
-    if (role === 'super_admin') {
-      setValue('schoolCode', 'ADMIN-2026-0000');
-      setValue('email', 'admin@tenpaten.com');
-      setValue('password', 'Password123');
-    } else if (role === 'head_teacher') {
-      setValue('schoolCode', 'SSS-2026-4821');
-      setValue('email', 'head@sunshine.com');
-      setValue('password', 'Password123');
-    } else if (role === 'deputy_head') {
-      setValue('schoolCode', 'SSS-2026-4821');
-      setValue('email', 'deputy@sunshine.com');
-      setValue('password', 'Password123');
-    } else if (role === 'bursar') {
-      setValue('schoolCode', 'SSS-2026-4821');
-      setValue('email', 'bursar@sunshine.com');
-      setValue('password', 'Password123');
-    } else if (role === 'teacher') {
-      setValue('schoolCode', 'SSS-2026-4821');
-      setValue('email', 'math.teacher@sunshine.com');
-      setValue('password', 'Password123');
-    } else if (role === 'student') {
-      setValue('schoolCode', 'SSS-2026-4821');
-      setValue('email', 'lusekelo.mwenitete@sunshine.com');
-      setValue('password', 'Password123');
-    } else if (role === 'parent') {
-      setValue('schoolCode', 'SSS-2026-4821');
-      setValue('email', 'parent.lusekelo@mail.com');
-      setValue('password', 'Password123');
     }
   };
 
@@ -215,56 +180,7 @@ export const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        {/* Developer Demo Accounts Panel */}
-        <div className="pt-sm border-t border-outline-variant">
-          <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold block mb-2 text-center">
-            Developer Demo Accounts
-          </span>
-          <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-            <button
-              onClick={() => handleQuickDemo('super_admin')}
-              className="py-1.5 px-2 rounded bg-surface hover:bg-surface-container border border-outline-variant text-on-surface-variant font-medium text-left transition-colors"
-            >
-              Super Admin
-            </button>
-            <button
-              onClick={() => handleQuickDemo('head_teacher')}
-              className="py-1.5 px-2 rounded bg-surface hover:bg-surface-container border border-outline-variant text-on-surface-variant font-medium text-left transition-colors"
-            >
-              Head Teacher
-            </button>
-            <button
-              onClick={() => handleQuickDemo('deputy_head')}
-              className="py-1.5 px-2 rounded bg-surface hover:bg-surface-container border border-outline-variant text-on-surface-variant font-medium text-left transition-colors"
-            >
-              Deputy Head
-            </button>
-            <button
-              onClick={() => handleQuickDemo('bursar')}
-              className="py-1.5 px-2 rounded bg-surface hover:bg-surface-container border border-outline-variant text-on-surface-variant font-medium text-left transition-colors"
-            >
-              Bursar
-            </button>
-            <button
-              onClick={() => handleQuickDemo('teacher')}
-              className="py-1.5 px-2 rounded bg-surface hover:bg-surface-container border border-outline-variant text-on-surface-variant font-medium text-left transition-colors"
-            >
-              Teacher
-            </button>
-            <button
-              onClick={() => handleQuickDemo('student')}
-              className="py-1.5 px-2 rounded bg-surface hover:bg-surface-container border border-outline-variant text-on-surface-variant font-medium text-left transition-colors"
-            >
-              Student
-            </button>
-            <button
-              onClick={() => handleQuickDemo('parent')}
-              className="py-1.5 px-2 rounded bg-surface hover:bg-surface-container border border-outline-variant text-on-surface-variant font-medium text-left transition-colors col-span-2 text-center"
-            >
-              Parent
-            </button>
-          </div>
-        </div>
+
 
         {/* Secondary Action / Footer */}
         <div className="mt-xs pt-md border-t border-outline-variant text-center">
