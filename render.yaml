@@ -3,7 +3,7 @@ services:
     name: tenpaten-api
     runtime: node
     region: oregon
-    buildCommand: pnpm install --include=dev && pnpm run build
+    buildCommand: pnpm install --prod=false && pnpm run build
     startCommand: node apps/api/dist/apps/api/src/index.js
     envVars:
       - key: NODE_ENV
