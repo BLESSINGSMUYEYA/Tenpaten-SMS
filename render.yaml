@@ -1,8 +1,3 @@
-databases:
-  - name: tenpaten-db
-    databaseName: tenpaten_sms
-    plan: free
-
 services:
   - type: web
     name: tenpaten-api
@@ -14,9 +9,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        fromDatabase:
-          name: tenpaten-db
-          property: connectionString
+        sync: false
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
