@@ -1,3 +1,9 @@
+databases:
+  - name: tenpaten-db
+    databaseName: tenpaten_sms
+    user: postgres
+    plan: free
+
 services:
   - type: web
     name: tenpaten-api
@@ -9,10 +15,12 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false
-      - key: JWT_SECRET
-        sync: false
+        fromDatabase:
+          name: tenpaten-db
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
       - key: JWT_REFRESH_SECRET
-        sync: false
-      - key: CORS_ORIGIN
+        generateValue: true
+      - key: FRONTEND_URL
         sync: false
