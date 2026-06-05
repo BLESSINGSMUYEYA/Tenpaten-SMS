@@ -8,7 +8,7 @@ import { asyncHandler, sendSuccess, ValidationError, NotFoundError } from '../ut
 import { generateTempPassword, generateAdmissionNumber } from '../utils/helpers';
 import { emailService } from '../services/email.service';
 import { createUserSchema, createStudentSchema } from '@tenpaten/shared';
-import { UserRole, Prisma, StudentStatus } from '@prisma/client';
+import { UserRole, Prisma, StudentStatus, User } from '@prisma/client';
 
 const router = Router();
 
@@ -137,28 +137,37 @@ router.get(
             email: true,
             phone: true,
             photoUrl: true,
-          },
-        },
-        class: true,
-        parentRelations: {
-          where: { isDeleted: false },
-          include: {
-            parent: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                phone: true,
+            studentRelations: {
+              where: { isDeleted: false },
+              include: {
+                parent: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    phone: true,
+                  },
+                },
               },
             },
           },
         },
+        class: true,
       },
       orderBy: { admissionNumber: 'asc' },
     });
 
-    sendSuccess(res, students, 'Students list retrieved successfully');
+    const mappedStudents = students.map(s => {
+      const { studentRelations, ...userWithoutRelations } = s.user;
+      return {
+        ...s,
+        user: userWithoutRelations,
+        parentRelations: studentRelations,
+      };
+    });
+
+    sendSuccess(res, mappedStudents, 'Students list retrieved successfully');
   })
 );
 
@@ -199,7 +208,7 @@ router.post(
     }
 
     // Check/Create Guardian/Parent User
-    let parentUser = null;
+    let parentUser: User | null = null;
     if (guardian.email) {
       parentUser = await prisma.user.findFirst({
         where: { email: guardian.email, schoolId, isDeleted: false },

@@ -21,7 +21,7 @@ router.get(
     const audienceList: AnnouncementAudience[] = [AnnouncementAudience.all];
 
     // Determine audiences matching role
-    if ([UserRole.head_teacher, UserRole.deputy_head, UserRole.teacher, UserRole.bursar].includes(role)) {
+    if (([UserRole.head_teacher, UserRole.deputy_head, UserRole.teacher, UserRole.bursar] as UserRole[]).includes(role)) {
       audienceList.push(AnnouncementAudience.staff);
     }
     if (role === UserRole.student) {
@@ -70,7 +70,7 @@ router.get(
     }
 
     // Only staff can view drafts
-    if (![UserRole.head_teacher, UserRole.deputy_head, UserRole.teacher].includes(role)) {
+    if (!([UserRole.head_teacher, UserRole.deputy_head, UserRole.teacher] as UserRole[]).includes(role)) {
       whereClause.isPublished = true;
     }
 
