@@ -143,6 +143,8 @@ model School {
   messages         Message[]
   notifications    Notification[]
 
+  @@index([isDeleted])
+  @@index([isActive, isDeleted])
   @@map("schools")
 }
 
@@ -182,6 +184,10 @@ model User {
   passwordResetTokens   PasswordResetToken[]
 
   @@unique([email, schoolId])
+  @@index([schoolId, isDeleted])
+  @@index([role, isDeleted])
+  @@index([schoolId, role, isDeleted])
+  @@index([isDeleted, createdAt])
   @@map("users")
 }
 
@@ -297,6 +303,8 @@ model ClassSubject {
   teacher User?   @relation(fields: [teacherId], references: [id])
 
   @@unique([classId, subjectId])
+  @@index([teacherId, isDeleted])
+  @@index([classId, isDeleted])
   @@map("class_subjects")
 }
 
@@ -321,6 +329,9 @@ model TimetableSlot {
   term    Term    @relation(fields: [termId], references: [id])
 
   @@unique([classId, day, periodNumber, termId])
+  @@index([schoolId, isDeleted])
+  @@index([teacherId, isDeleted])
+  @@index([classId, termId, isDeleted])
   @@map("timetable_slots")
 }
 
@@ -348,6 +359,8 @@ model StudentProfile {
   payments   Payment[]
 
   @@unique([admissionNumber, schoolId])
+  @@index([schoolId, isDeleted])
+  @@index([classId, isDeleted])
   @@map("student_profiles")
 }
 
@@ -394,6 +407,9 @@ model Attendance {
   overrides AttendanceOverride[]
 
   @@unique([studentId, date, type, periodNumber])
+  @@index([schoolId, date, isDeleted])
+  @@index([classId, date, isDeleted])
+  @@index([studentId, termId, isDeleted])
   @@map("attendance")
 }
 
@@ -448,6 +464,9 @@ model Grade {
   approver     User?          @relation("GradeApprovedBy", fields: [approvedBy], references: [id])
 
   @@unique([studentId, subjectId, termId])
+  @@index([schoolId, termId, isDeleted])
+  @@index([classId, subjectId, termId, isDeleted])
+  @@index([enteredBy, isDeleted])
   @@map("grades")
 }
 
@@ -493,6 +512,8 @@ model Invoice {
   payments Payment[]
 
   @@unique([studentId, termId])
+  @@index([schoolId, status, isDeleted])
+  @@index([studentId, isDeleted])
   @@map("invoices")
 }
 

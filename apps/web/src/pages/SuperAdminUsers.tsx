@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Header } from '../components/SuperAdminDashboard/Header';
 import { Sidebar } from '../components/SuperAdminDashboard/Sidebar';
 import { useQuery, useMutation } from '../hooks/useApi';
@@ -11,8 +11,11 @@ interface SystemUser {
   role: string;
   isActive: boolean;
   lastLogin: string | null;
+  mustChangePassword: boolean;
   school?: {
+    id: string;
     name: string;
+    schoolCode: string;
   };
 }
 
@@ -32,9 +35,24 @@ const mapRole = (role: string) => {
 export const SuperAdminUsers: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch users and schools
-  const { data: apiUsers, loading: usersLoading, refetch: refetchUsers } = useQuery<SystemUser[]>('/admin/users');
+  // Debounce the search input — push filtering to the server
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(value);
+    }, 400);
+  };
+
+  // Fetch users — server does the search filtering
+  const apiUrl = debouncedSearch.trim()
+    ? `/admin/users?search=${encodeURIComponent(debouncedSearch.trim())}`
+    : '/admin/users';
+
+  const { data: apiUsers, loading: usersLoading, error: usersError, refetch: refetchUsers } = useQuery<SystemUser[]>(apiUrl, true, [debouncedSearch]);
   const { data: schoolsData } = useQuery<any[]>('/admin/schools');
   const schools = schoolsData || [];
 
@@ -56,15 +74,8 @@ export const SuperAdminUsers: React.FC = () => {
 
   const users = apiUsers || [];
 
-  const filteredUsers = users.filter(u => {
-    const fullName = `${u.firstName} ${u.lastName}`.toLowerCase();
-    const email = u.email.toLowerCase();
-    const schoolName = (u.school?.name || 'Platform-wide').toLowerCase();
-    const roleFriendly = mapRole(u.role).toLowerCase();
-    const q = search.toLowerCase();
-
-    return fullName.includes(q) || email.includes(q) || schoolName.includes(q) || roleFriendly.includes(q);
-  });
+  // No client-side filtering needed — server handles it via ?search=
+  const filteredUsers = users;
 
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,7 +168,7 @@ export const SuperAdminUsers: React.FC = () => {
                   className="pl-9 pr-4 py-1.5 border border-outline-variant rounded-full bg-surface-container-lowest focus:outline-none focus:border-primary font-body-sm text-xs w-64"
                   placeholder="Search by name, school, email..."
                   value={search}
-                  onChange={e => setSearch(e.target.value)}
+                  onChange={e => handleSearchChange(e.target.value)}
                 />
               </div>
             </div>
@@ -177,7 +188,20 @@ export const SuperAdminUsers: React.FC = () => {
                 <tbody className="text-xs text-on-surface">
                   {usersLoading ? (
                     <tr>
-                      <td colSpan={6} className="p-md text-center text-on-surface-variant text-sm">Loading users...</td>
+                      <td colSpan={6} className="p-md text-center text-on-surface-variant text-sm py-10">
+                        <span className="material-symbols-outlined text-3xl block mb-2 text-outline">hourglass_top</span>
+                        Loading users…
+                      </td>
+                    </tr>
+                  ) : usersError ? (
+                    <tr>
+                      <td colSpan={6} className="p-md text-center py-10">
+                        <span className="material-symbols-outlined text-3xl block mb-2 text-error">error</span>
+                        <p className="text-sm text-on-error-container font-semibold">{usersError}</p>
+                        <button onClick={refetchUsers} className="mt-3 px-4 py-1.5 text-xs font-bold bg-primary text-on-primary rounded-lg hover:opacity-90">
+                          Retry
+                        </button>
+                      </td>
                     </tr>
                   ) : filteredUsers.map((u, i) => (
                     <tr key={u.id || i} className="border-b border-outline-variant hover:bg-surface-container-low/50 transition-colors">

@@ -5,7 +5,8 @@ import { authenticate } from '../middleware/auth.middleware';
 import { requireSuperAdmin } from '../middleware/rbac.middleware';
 import { validateBody } from '../middleware/validate.middleware';
 import { asyncHandler, sendSuccess, ValidationError, NotFoundError } from '../utils/errors';
-import { createSchoolCode, generateTempPassword } from '../utils/helpers';
+import { createSchoolCode, createUniqueSchoolCode, generateTempPassword } from '../utils/helpers';
+
 import { emailService } from '../services/email.service';
 import { createSchoolSchema, updateSchoolProfileSchema } from '@tenpaten/shared';
 import { UserRole, Prisma } from '@prisma/client';
@@ -15,6 +16,28 @@ const router = Router();
 // Apply auth and super admin guards to all routes in this router
 router.use(authenticate);
 router.use(requireSuperAdmin);
+
+/**
+ * @route   GET /api/admin/schools/check-code
+ * @desc    Check if a school code is already taken (for real-time uniqueness check)
+ * @access  Super Admin
+ */
+router.get(
+  '/schools/check-code',
+  asyncHandler(async (req, res) => {
+    const { code } = req.query;
+
+    if (!code || typeof code !== 'string' || code.trim().length === 0) {
+      throw new ValidationError({ code: ['School code is required'] });
+    }
+
+    const existing = await prisma.school.findUnique({
+      where: { schoolCode: code.trim().toUpperCase() },
+    });
+
+    sendSuccess(res, { available: !existing }, existing ? 'School code is already in use' : 'School code is available');
+  })
+);
 
 /**
  * @route   GET /api/admin/schools
@@ -28,10 +51,22 @@ router.get(
       where: {
         isDeleted: false,
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        schoolCode: true,
+        subscriptionPlan: true,
+        type: true,
+        district: true,
+        country: true,
+        isActive: true,
+        setupComplete: true,
+        createdAt: true,
         _count: {
           select: {
-            users: true,
+            users: {
+              where: { isDeleted: false },
+            },
           },
         },
       },
@@ -53,7 +88,7 @@ router.post(
   '/schools',
   validateBody(createSchoolSchema),
   asyncHandler(async (req, res) => {
-    const { name, type, district, country, headTeacher } = req.body;
+    const { name, type, district, country, headTeacher, customInitials } = req.body;
 
     // Check if head teacher email already exists
     const existingUser = await prisma.user.findFirst({
@@ -67,8 +102,12 @@ router.post(
       throw new ValidationError({ 'headTeacher.email': ['A user with this email address already exists in the system'] });
     }
 
-    // Generate unique school code
-    const schoolCode = createSchoolCode(name);
+    // Generate a unique, collision-resilient school code
+    // customInitials is a Super Admin override (2-5 uppercase letters); optional
+    const normalizedInitials = customInitials
+      ? String(customInitials).toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5)
+      : undefined;
+    const schoolCode = await createUniqueSchoolCode(name, normalizedInitials || undefined);
 
     // Generate temporary password for the Head Teacher
     const tempPassword = generateTempPassword();
@@ -182,6 +221,56 @@ router.patch(
 );
 
 /**
+ * @route   GET /api/admin/stats
+ * @desc    Get platform-wide counts and stats
+ * @access  Super Admin
+ */
+router.get(
+  '/stats',
+  asyncHandler(async (req, res) => {
+    const totalSchools = await prisma.school.count({ where: { isDeleted: false } });
+    const activeSchools = await prisma.school.count({ where: { isDeleted: false, isActive: true } });
+
+    // Count users by role
+    const userCounts = await prisma.user.groupBy({
+      by: ['role'],
+      where: { isDeleted: false },
+      _count: { id: true },
+    });
+
+    const counts: Record<string, number> = {
+      super_admin: 0,
+      head_teacher: 0,
+      deputy_head: 0,
+      teacher: 0,
+      bursar: 0,
+      student: 0,
+      parent: 0,
+    };
+
+    userCounts.forEach((group) => {
+      if (group.role in counts) {
+        counts[group.role] = group._count.id;
+      }
+    });
+
+    const totalStaff = counts.head_teacher + counts.deputy_head + counts.teacher + counts.bursar;
+    const totalStudents = counts.student;
+    const totalParents = counts.parent;
+    const totalUsers = await prisma.user.count({ where: { isDeleted: false } });
+
+    sendSuccess(res, {
+      totalSchools,
+      activeSchools,
+      totalStudents,
+      totalStaff,
+      totalParents,
+      totalUsers,
+    }, 'Stats retrieved successfully');
+  })
+);
+
+/**
  * @route   GET /api/admin/users
  * @desc    Get all platform users
  * @access  Super Admin
@@ -189,20 +278,55 @@ router.patch(
 router.get(
   '/users',
   asyncHandler(async (req, res) => {
+    const { role, search, limit: limitParam } = req.query;
+    const limit = Math.min(parseInt(limitParam as string) || 200, 500);
+
+    const whereClause: any = {
+      isDeleted: false,
+      // Super admin only manages admin-level staff — not student/parent accounts
+      role: { notIn: ['student', 'parent'] as any },
+    };
+
+    // Optional role filter
+    if (role && typeof role === 'string') {
+      whereClause.role = role;
+    }
+
+    // Optional name/email search (pushed to DB instead of in-memory)
+    if (search && typeof search === 'string' && search.trim().length > 0) {
+      const q = search.trim();
+      whereClause.OR = [
+        { firstName: { contains: q, mode: 'insensitive' } },
+        { lastName: { contains: q, mode: 'insensitive' } },
+        { email: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
     const users = await prisma.user.findMany({
-      where: {
-        isDeleted: false,
-      },
-      include: {
+      where: whereClause,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+        mustChangePassword: true,
         school: {
           select: {
+            id: true,
             name: true,
+            schoolCode: true,
           },
         },
       },
       orderBy: {
         createdAt: 'desc',
       },
+      take: limit,
     });
 
     sendSuccess(res, users, 'Users retrieved successfully');

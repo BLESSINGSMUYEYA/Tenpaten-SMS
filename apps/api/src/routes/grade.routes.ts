@@ -23,8 +23,27 @@ router.get(
       isDeleted: false,
     };
 
-    if (studentId && typeof studentId === 'string') {
-      whereClause.studentId = studentId;
+    if (req.user!.role === 'student') {
+      const profile = await prisma.studentProfile.findFirst({
+        where: { userId: req.user!.userId, isDeleted: false },
+      });
+      whereClause.studentId = profile?.id ?? 'none';
+      whereClause.isPublished = true;
+    } else if (req.user!.role === 'parent') {
+      const relations = await prisma.parentStudent.findMany({
+        where: { parentUserId: req.user!.userId, isDeleted: false },
+      });
+      const studentProfiles = await prisma.studentProfile.findMany({
+        where: { userId: { in: relations.map(r => r.studentUserId) } },
+      });
+      whereClause.studentId = {
+        in: studentProfiles.map(p => p.id),
+      };
+      whereClause.isPublished = true;
+    } else {
+      if (studentId && typeof studentId === 'string') {
+        whereClause.studentId = studentId;
+      }
     }
     if (classId && typeof classId === 'string') {
       whereClause.classId = classId;
@@ -34,11 +53,6 @@ router.get(
     }
     if (termId && typeof termId === 'string') {
       whereClause.termId = termId;
-    }
-
-    // If student or parent role, only show published grades
-    if (['student', 'parent'].includes(req.user!.role)) {
-      whereClause.isPublished = true;
     }
 
     const grades = await prisma.grade.findMany({

@@ -153,10 +153,7 @@ router.get(
       const relations = await prisma.parentStudent.findMany({
         where: { parentUserId: req.user!.userId, isDeleted: false },
       });
-      whereClause.studentId = {
-        in: relations.map(r => r.studentUserId), // Note: map user ID to student profile ID
-      };
-      // Let's resolve parent student profile IDs
+      // Resolve parent → student user IDs → student profile IDs
       const studentProfiles = await prisma.studentProfile.findMany({
         where: { userId: { in: relations.map(r => r.studentUserId) } },
       });

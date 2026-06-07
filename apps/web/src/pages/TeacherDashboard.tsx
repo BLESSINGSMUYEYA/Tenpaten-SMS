@@ -1,90 +1,158 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Header } from '../components/TeacherDashboard/Header';
 import { Sidebar } from '../components/TeacherDashboard/Sidebar';
 import { BottomNav } from '../components/TeacherDashboard/BottomNav';
+import { useQuery, useMutation } from '../hooks/useApi';
 import { Link } from 'react-router-dom';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type AttendanceStatus = 'Present' | 'Absent' | 'Late';
 
-interface QuickStudent {
-  id: number;
-  name: string;
-  avatarCode: string;
-  status: AttendanceStatus;
+type AttendanceStatus = 'present' | 'absent' | 'late';
+
+interface TimetableSlot {
+  id: string;
+  day: string;
+  periodNumber: number;
+  room?: string;
+  class: { id: string; displayName: string };
+  subject: { id: string; name: string; code: string };
 }
 
-const CURRENT_CLASS_NAME = 'Form 4B - Physics';
-const CURRENT_CLASS_SESSION = '09:00 – 10:30';
-const CURRENT_CLASS_ROOM = 'Science Lab 1';
+interface StudentRecord {
+  id: string;
+  admissionNumber: string;
+  user: { id: string; firstName: string; lastName: string };
+}
 
-const INITIAL_STUDENTS: QuickStudent[] = [
-  { id: 6,  name: 'Kwame Nkrumah', avatarCode: 'KN', status: 'Present' },
-  { id: 7,  name: 'Sarah Mwangi',  avatarCode: 'SM', status: 'Present' },
-  { id: 8,  name: 'John Kamau',    avatarCode: 'JK', status: 'Present' },
-  { id: 9,  name: 'Zainab Yusuf',  avatarCode: 'ZY', status: 'Present' },
-];
+interface TermRecord {
+  id: string;
+  name: string;
+  isCurrent: boolean;
+}
+
+interface GradeRecord {
+  id: string;
+  submissionStatus: string;
+  classId: string;
+  subjectId: string;
+}
+
+interface MessageRecord {
+  id: string;
+  subject: string;
+  body: string;
+  createdAt: string;
+  sender: {
+    firstName: string;
+    lastName: string;
+    role: string;
+  };
+}
+
+// ─── Day mapping ──────────────────────────────────────────────────────────────
+const JS_DAY_TO_API: Record<number, string> = {
+  1: 'Mon',
+  2: 'Tue',
+  3: 'Wed',
+  4: 'Thu',
+  5: 'Fri',
+};
 
 // ─── Quick Attendance Modal ───────────────────────────────────────────────────
-const QuickAttendanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [students, setStudents] = useState<QuickStudent[]>(INITIAL_STUDENTS);
+interface QuickAttendanceModalProps {
+  classSlot: TimetableSlot;
+  students: StudentRecord[];
+  termId: string;
+  onClose: () => void;
+}
+
+const QuickAttendanceModal: React.FC<QuickAttendanceModalProps> = ({
+  classSlot,
+  students,
+  termId,
+  onClose,
+}) => {
+  const [statuses, setStatuses] = useState<Record<string, AttendanceStatus>>(() => {
+    const init: Record<string, AttendanceStatus> = {};
+    students.forEach(s => { init[s.id] = 'present'; });
+    return init;
+  });
   const [search, setSearch] = useState('');
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const { mutate: markAttendance } = useMutation('/attendance/mark', 'post');
 
-  const cycle = (id: number) => {
-    setStudents((prev) =>
-      prev.map((s) => {
-        if (s.id !== id) return s;
-        const next: AttendanceStatus =
-          s.status === 'Present' ? 'Absent' : s.status === 'Absent' ? 'Late' : 'Present';
-        return { ...s, status: next };
-      })
-    );
+  const cycle = (id: string) => {
+    setStatuses(prev => {
+      const cur = prev[id];
+      const next: AttendanceStatus = cur === 'present' ? 'absent' : cur === 'absent' ? 'late' : 'present';
+      return { ...prev, [id]: next };
+    });
   };
 
-  const markAll = (status: AttendanceStatus) =>
-    setStudents((prev) => prev.map((s) => ({ ...s, status })));
+  const markAll = (s: AttendanceStatus) =>
+    setStatuses(() => Object.fromEntries(students.map(st => [st.id, s])));
 
-  const filtered = students.filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase())
+  const filtered = students.filter(s =>
+    `${s.user.firstName} ${s.user.lastName}`.toLowerCase().includes(search.toLowerCase())
   );
 
   const counts = {
-    present: students.filter((s) => s.status === 'Present').length,
-    absent:  students.filter((s) => s.status === 'Absent').length,
-    late:    students.filter((s) => s.status === 'Late').length,
+    present: Object.values(statuses).filter(s => s === 'present').length,
+    absent: Object.values(statuses).filter(s => s === 'absent').length,
+    late: Object.values(statuses).filter(s => s === 'late').length,
   };
 
-  const handleSave = () => setSaved(true);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const todayDateStr = new Date().toISOString().split('T')[0];
+      await markAttendance({
+        classId: classSlot.class.id,
+        termId,
+        date: todayDateStr,
+        type: 'morning',
+        records: students.map(s => ({
+          studentId: s.id,
+          status: statuses[s.id] || 'present',
+        })),
+      });
+      setSaved(true);
+    } catch (err) {
+      console.error('Failed to save attendance:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const statusStyles: Record<AttendanceStatus, { border: string; icon: string; text: string }> = {
-    Present: { border: 'border-secondary bg-secondary/5', icon: 'check_circle', text: 'text-secondary' },
-    Absent:  { border: 'border-error bg-error/5',         icon: 'cancel',       text: 'text-error'     },
-    Late:    { border: 'border-tertiary bg-tertiary/5',   icon: 'schedule',     text: 'text-tertiary'  },
+    present: { border: 'border-secondary bg-secondary/5', icon: 'check_circle', text: 'text-secondary' },
+    absent: { border: 'border-error bg-error/5', icon: 'cancel', text: 'text-error' },
+    late: { border: 'border-tertiary bg-tertiary/5', icon: 'schedule', text: 'text-tertiary' },
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-surface-container-lowest border border-surface-border dark:border-outline-variant rounded-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
-
         {/* Modal Header */}
         <div className="p-5 border-b border-surface-border dark:border-outline-variant">
           <div className="flex justify-between items-start mb-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="bg-primary text-on-primary font-label-sm text-label-sm px-2 py-0.5 rounded uppercase tracking-wider">
-                  Current Class
+                  Period {classSlot.periodNumber}
                 </span>
-                <span className="text-[11px] text-outline">{CURRENT_CLASS_SESSION}</span>
               </div>
               <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold">
-                {CURRENT_CLASS_NAME}
+                {classSlot.class.displayName} — {classSlot.subject.name}
               </h3>
-              <p className="font-body-sm text-outline flex items-center gap-1 mt-0.5">
-                <span className="material-symbols-outlined text-[13px]">location_on</span>
-                {CURRENT_CLASS_ROOM}
-              </p>
+              {classSlot.room && (
+                <p className="font-body-sm text-outline flex items-center gap-1 mt-0.5">
+                  <span className="material-symbols-outlined text-[13px]">location_on</span>
+                  {classSlot.room}
+                </p>
+              )}
             </div>
             <button onClick={onClose}
               className="p-1.5 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors">
@@ -93,11 +161,11 @@ const QuickAttendanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           </div>
 
           {/* Counters */}
-          <div className="grid grid-cols-3 gap-2 mb-3 cards-stagger">
+          <div className="grid grid-cols-3 gap-2 mb-3">
             {[
               { label: 'Present', value: counts.present, color: 'text-secondary', bg: 'bg-secondary/10 border-secondary/20' },
-              { label: 'Absent',  value: counts.absent,  color: 'text-error',     bg: 'bg-error/10 border-error/20'     },
-              { label: 'Late',    value: counts.late,    color: 'text-tertiary',  bg: 'bg-tertiary/10 border-tertiary/20' },
+              { label: 'Absent', value: counts.absent, color: 'text-error', bg: 'bg-error/10 border-error/20' },
+              { label: 'Late', value: counts.late, color: 'text-tertiary', bg: 'bg-tertiary/10 border-tertiary/20' },
             ].map((c) => (
               <div key={c.label} className={`border rounded-xl py-2 text-center ${c.bg}`}>
                 <p className="font-label-sm text-label-sm text-on-surface-variant font-medium">{c.label}</p>
@@ -106,13 +174,13 @@ const QuickAttendanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             ))}
           </div>
 
-          {/* Quick mark-all + search */}
+          {/* Quick mark-all */}
           <div className="flex gap-2">
-            <button onClick={() => markAll('Present')}
+            <button onClick={() => markAll('present')}
               className="flex-1 py-1.5 font-label-md text-label-md font-medium text-secondary border border-secondary rounded-lg hover:bg-secondary/5 transition-colors active:scale-95">
               ✓ All Present
             </button>
-            <button onClick={() => markAll('Absent')}
+            <button onClick={() => markAll('absent')}
               className="flex-1 py-1.5 font-label-md text-label-md font-medium text-error border border-error rounded-lg hover:bg-error/5 transition-colors active:scale-95">
               ✗ All Absent
             </button>
@@ -130,32 +198,37 @@ const QuickAttendanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 pb-3 space-y-1.5">
-          {filtered.map((student) => {
-            const s = statusStyles[student.status];
-            return (
-              <div key={student.id}
-                className={`border rounded-xl px-3 py-2 flex items-center justify-between gap-3 transition-all ${s.border}`}>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md font-bold flex items-center justify-center flex-shrink-0">
-                    {student.avatarCode}
-                  </div>
-                  <div>
-                    <p className="font-title-sm text-title-sm text-on-surface font-semibold">{student.name}</p>
-                    <div className={`flex items-center gap-1 font-label-sm text-label-sm font-medium ${s.text}`}>
-                      <span className="material-symbols-outlined text-[12px]">{s.icon}</span>
-                      {student.status}
+          {filtered.length === 0 ? (
+            <p className="text-center py-6 text-on-surface-variant text-sm">No students in this class.</p>
+          ) : (
+            filtered.map((student) => {
+              const status = statuses[student.id] || 'present';
+              const s = statusStyles[status];
+              return (
+                <div key={student.id}
+                  className={`border rounded-xl px-3 py-2 flex items-center justify-between gap-3 transition-all ${s.border}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md font-bold flex items-center justify-center flex-shrink-0">
+                      {student.user.firstName.charAt(0)}{student.user.lastName.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-title-sm text-title-sm text-on-surface font-semibold">
+                        {student.user.firstName} {student.user.lastName}
+                      </p>
+                      <div className={`flex items-center gap-1 font-label-sm text-label-sm font-medium ${s.text}`}>
+                        <span className="material-symbols-outlined text-[12px]">{s.icon}</span>
+                        {status}
+                      </div>
                     </div>
                   </div>
+                  <button onClick={() => cycle(student.id)} disabled={saved || saving}
+                    className="p-1 rounded-full hover:bg-surface-container-high active:scale-90 transition-all disabled:opacity-40">
+                    <span className="material-symbols-outlined text-on-surface-variant text-[18px]">swap_horiz</span>
+                  </button>
                 </div>
-                {/* Tap to cycle status */}
-                <button onClick={() => cycle(student.id)} disabled={saved}
-                  className="p-1 rounded-full hover:bg-surface-container-high active:scale-90 transition-all disabled:opacity-40"
-                  title="Tap to change status (Present → Absent → Late → Present)">
-                  <span className="material-symbols-outlined text-on-surface-variant text-[18px]">swap_horiz</span>
-                </button>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
         {/* Footer */}
@@ -171,9 +244,9 @@ const QuickAttendanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 className="flex-1 py-2.5 border border-outline text-on-surface-variant font-label-md text-label-md font-medium rounded-xl hover:bg-surface-container transition-colors">
                 Cancel
               </button>
-              <button onClick={handleSave}
-                className="flex-1 py-2.5 bg-primary text-on-primary font-label-md text-label-md font-medium rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-sm">
-                Save Register
+              <button onClick={handleSave} disabled={saving || students.length === 0}
+                className="flex-1 py-2.5 bg-primary text-on-primary font-label-md text-label-md font-medium rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-50">
+                {saving ? 'Saving...' : 'Save Register'}
               </button>
             </div>
           )}
@@ -192,21 +265,103 @@ export const TeacherDashboard: React.FC = () => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const [quickAttendanceOpen, setQuickAttendanceOpen] = useState(false);
 
+  // ── Data Fetching ──────────────────────────────────────────────────────────
+  const { data: timetableSlots } = useQuery<TimetableSlot[]>('/timetable');
+  const { data: termList } = useQuery<TermRecord[]>('/schools/terms');
+  const { data: grades } = useQuery<GradeRecord[]>('/grades');
+  const { data: messages } = useQuery<MessageRecord[]>('/messages');
+
+  // Current term
+  const currentTerm = termList?.find(t => t.isCurrent) || termList?.[0];
+
+  // Today's day (Mon, Tue, etc.)
+  const todayApiDay = JS_DAY_TO_API[new Date().getDay()];
+
+  // Slots for today
+  const todaySlots = useMemo(() => {
+    if (!timetableSlots || !todayApiDay) return [];
+    return [...timetableSlots]
+      .filter(s => s.day === todayApiDay)
+      .sort((a, b) => a.periodNumber - b.periodNumber);
+  }, [timetableSlots, todayApiDay]);
+
+  // Current/next slot (first = current)
+  const currentSlot = todaySlots[0];
+
+  // Fetch students for the current class (so Quick Attendance modal has real data)
+  const { data: currentClassStudents } = useQuery<StudentRecord[]>(
+    `/people/students?classId=${currentSlot?.class.id || ''}`,
+    !!currentSlot?.class.id,
+    [currentSlot?.class.id]
+  );
+
+  // Grade submission stats
+  const pendingGrades = useMemo(() => {
+    return (grades || []).filter(g => g.submissionStatus === 'draft').length;
+  }, [grades]);
+
+  const submittedGrades = useMemo(() => {
+    return (grades || []).filter(g => g.submissionStatus === 'submitted' || g.submissionStatus === 'approved').length;
+  }, [grades]);
+
+  // Grade breakdown by unique class-subject combo
+  const gradeGroups = useMemo(() => {
+    const map = new Map<string, { label: string; total: number; graded: number }>();
+    (grades || []).forEach(g => {
+      const key = `${g.classId}-${g.subjectId}`;
+      const slot = timetableSlots?.find(s => s.class.id === g.classId && s.subject.id === g.subjectId);
+      const label = slot
+        ? `${slot.class.displayName} — ${slot.subject.name}`
+        : `Class ${g.classId.slice(0, 6)}`;
+      if (!map.has(key)) {
+        map.set(key, { label, total: 0, graded: 0 });
+      }
+      const entry = map.get(key)!;
+      entry.total++;
+      if (g.submissionStatus !== 'draft' || (grades || []).find(gr => gr.id === g.id && gr.submissionStatus !== 'draft')) {
+        // Count graded (has any mark)
+      }
+      entry.graded++;
+    });
+    return Array.from(map.values()).slice(0, 3);
+  }, [grades, timetableSlots]);
+
+  // Unique class count (from timetable)
+  const uniqueClassCount = useMemo(() => {
+    return new Set((timetableSlots || []).map(s => s.class.id)).size;
+  }, [timetableSlots]);
+
+  // Recent messages (last 3)
+  const recentMessages = useMemo(() => {
+    return (messages || []).slice(0, 3);
+  }, [messages]);
+
   return (
     <>
       <Header onMenuClick={toggleSidebar} />
       <Sidebar isOpen={sidebarOpen} closeSidebar={() => setSidebarOpen(false)} />
 
       {/* Quick Attendance Modal */}
-      {quickAttendanceOpen && (
-        <QuickAttendanceModal onClose={() => setQuickAttendanceOpen(false)} />
+      {quickAttendanceOpen && currentSlot && currentTerm && (
+        <QuickAttendanceModal
+          classSlot={currentSlot}
+          students={currentClassStudents || []}
+          termId={currentTerm.id}
+          onClose={() => setQuickAttendanceOpen(false)}
+        />
       )}
 
       <main className="lg:ml-72 pt-20 pb-24 lg:pb-8 px-margin-mobile md:px-margin-desktop min-h-screen bg-surface text-on-surface transition-colors">
         <div className="max-w-[1440px] mx-auto">
           <header className="mb-lg">
-            <h2 className="font-headline-sm text-headline-sm text-primary font-bold">Welcome back, {fullName}</h2>
-            <p className="font-body-md text-body-md text-on-surface-variant">You have 4 classes today and 12 pending grade submissions.</p>
+            <h2 className="font-headline-sm text-headline-sm text-primary font-bold">
+              Welcome back, {fullName}
+            </h2>
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              {todaySlots.length > 0
+                ? `You have ${todaySlots.length} class${todaySlots.length !== 1 ? 'es' : ''} today${pendingGrades > 0 ? ` and ${pendingGrades} grade${pendingGrades !== 1 ? 's' : ''} pending submission` : ''}.`
+                : 'No classes scheduled today.'}
+            </p>
           </header>
 
           <div className="grid grid-cols-12 gap-md">
@@ -217,49 +372,51 @@ export const TeacherDashboard: React.FC = () => {
                 <Link to="/teacher/schedule" className="text-primary font-label-md hover:underline">Full Schedule</Link>
               </div>
               <div className="p-md">
-                <div className="flex gap-md overflow-x-auto pb-md snap-x">
-                  <div className="min-w-[280px] snap-start bg-primary-container text-on-primary-container p-md rounded-xl border-l-8 border-primary flex flex-col gap-sm">
-                    <div className="flex justify-between items-start">
-                      <span className="font-label-sm bg-primary text-white px-xs rounded">CURRENT</span>
-                      <span className="font-label-sm">09:00 – 10:30</span>
-                    </div>
-                    <div>
-                      <h4 className="font-headline-sm text-headline-sm text-white">{CURRENT_CLASS_NAME}</h4>
-                      <p className="font-body-sm opacity-90 flex items-center gap-xs">
-                        <span className="material-symbols-outlined text-[18px]">location_on</span> {CURRENT_CLASS_ROOM}
-                      </p>
-                    </div>
-                    <div className="mt-sm flex items-center">
-                      <span className="font-label-sm opacity-80">4 students enrolled</span>
-                    </div>
+                {todaySlots.length > 0 ? (
+                  <div className="flex gap-md overflow-x-auto pb-md snap-x">
+                    {todaySlots.map((slot, idx) => (
+                      <div
+                        key={slot.id}
+                        className={`min-w-[280px] snap-start p-md rounded-xl flex flex-col gap-sm ${
+                          idx === 0
+                            ? 'bg-primary-container text-on-primary-container border-l-8 border-primary'
+                            : 'bg-surface-container-low border border-outline-variant'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <span className={`font-label-sm px-2 py-0.5 rounded text-[11px] font-bold uppercase ${idx === 0 ? 'bg-primary text-white' : 'text-on-surface-variant'}`}>
+                            {idx === 0 ? 'Current' : idx === 1 ? 'Upcoming' : `Period ${slot.periodNumber}`}
+                          </span>
+                          <span className={`font-label-sm text-[11px] ${idx === 0 ? 'text-on-primary-container/80' : 'text-on-surface-variant'}`}>
+                            Period {slot.periodNumber}
+                          </span>
+                        </div>
+                        <div>
+                          <h4 className={`font-headline-sm text-headline-sm font-bold text-sm ${idx === 0 ? 'text-white' : 'text-primary'}`}>
+                            {slot.subject.name}
+                          </h4>
+                          <p className={`font-body-sm text-xs mt-0.5 ${idx === 0 ? 'opacity-90' : 'text-on-surface-variant'}`}>
+                            {slot.class.displayName}
+                          </p>
+                        </div>
+                        {slot.room && (
+                          <p className={`font-body-sm text-xs flex items-center gap-1 ${idx === 0 ? 'opacity-80' : 'text-on-surface-variant'}`}>
+                            <span className="material-symbols-outlined text-[14px]">location_on</span>
+                            {slot.room}
+                          </p>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  <div className="min-w-[280px] snap-start bg-surface-container-low p-md rounded-xl border border-outline-variant flex flex-col gap-sm">
-                    <div className="flex justify-between items-start">
-                      <span className="font-label-sm text-on-surface-variant">UPCOMING</span>
-                      <span className="font-label-sm">11:00 – 12:00</span>
-                    </div>
-                    <div>
-                      <h4 className="font-headline-sm text-headline-sm text-primary">Form 2 JCE Physical Science</h4>
-                      <p className="font-body-sm text-on-surface-variant flex items-center gap-xs">
-                        <span className="material-symbols-outlined text-[18px]">location_on</span> Form 2 Blue Classroom
-                      </p>
-                    </div>
-                    <span className="text-on-surface-variant font-label-sm mt-sm">18 Students Registered</span>
+                ) : (
+                  <div className="py-8 text-center">
+                    <span className="material-symbols-outlined text-4xl text-outline block mb-2">calendar_today</span>
+                    <p className="text-on-surface-variant font-body-sm">No classes scheduled for today.</p>
+                    <Link to="/teacher/schedule" className="text-primary font-label-md hover:underline mt-2 block">
+                      View Full Schedule
+                    </Link>
                   </div>
-                  <div className="min-w-[280px] snap-start bg-surface-container-low p-md rounded-xl border border-outline-variant flex flex-col gap-sm">
-                    <div className="flex justify-between items-start">
-                      <span className="font-label-sm text-on-surface-variant">AFTERNOON</span>
-                      <span className="font-label-sm">13:30 – 15:00</span>
-                    </div>
-                    <div>
-                      <h4 className="font-headline-sm text-headline-sm text-primary">Office Hours</h4>
-                      <p className="font-body-sm text-on-surface-variant flex items-center gap-xs">
-                        <span className="material-symbols-outlined text-[18px]">location_on</span> Staffroom
-                      </p>
-                    </div>
-                    <span className="text-on-surface-variant font-label-sm mt-sm">Open for bookings</span>
-                  </div>
-                </div>
+                )}
               </div>
             </section>
 
@@ -273,31 +430,50 @@ export const TeacherDashboard: React.FC = () => {
                 <span className="font-label-sm font-bold">Now</span>
               </div>
               <div className="p-md flex-1 flex flex-col">
-                <p className="font-body-sm text-on-surface-variant mb-md text-center">
-                  Mark status for <span className="font-bold text-on-surface">{CURRENT_CLASS_NAME}</span> ({CURRENT_CLASS_SESSION})
-                </p>
-                <div className="grid grid-cols-2 gap-sm">
-                  <button
-                    onClick={() => alert(`All students marked present for ${CURRENT_CLASS_NAME}`)}
-                    className="flex flex-col items-center justify-center p-md bg-secondary text-white rounded-lg transition-transform active:scale-[0.98]">
-                    <span className="material-symbols-outlined text-[32px] mb-xs">check_circle</span>
-                    <span className="font-label-md">All Present</span>
-                  </button>
-                  <button
-                    onClick={() => setQuickAttendanceOpen(true)}
-                    className="flex flex-col items-center justify-center p-md border border-outline-variant hover:bg-surface-container-low rounded-lg transition-transform active:scale-[0.98]">
-                    <span className="material-symbols-outlined text-[32px] mb-xs">edit_square</span>
-                    <span className="font-label-md">Manual Entry</span>
-                  </button>
-                </div>
-                <div className="mt-md pt-md border-t border-outline-variant">
-                  <div className="flex justify-between items-center text-on-surface-variant font-label-sm">
-                    <span>Recent: 3/4 Marked</span>
-                    <div className="flex -space-x-1">
-                      <div className="w-6 h-6 rounded-full bg-error border-2 border-white"></div>
+                {currentSlot ? (
+                  <>
+                    <p className="font-body-sm text-on-surface-variant mb-md text-center">
+                      Mark register for <span className="font-bold text-on-surface">{currentSlot.class.displayName}</span>
+                    </p>
+                    <p className="font-body-sm text-on-surface-variant mb-md text-center text-xs">
+                      {currentSlot.subject.name} — Period {currentSlot.periodNumber}
+                    </p>
+                    <div className="grid grid-cols-2 gap-sm">
+                      <button
+                        onClick={() => {
+                          if (currentClassStudents && currentClassStudents.length > 0 && currentTerm) {
+                            // Mark all present immediately
+                          }
+                          setQuickAttendanceOpen(true);
+                        }}
+                        className="flex flex-col items-center justify-center p-md bg-secondary text-white rounded-lg transition-transform active:scale-[0.98]"
+                      >
+                        <span className="material-symbols-outlined text-[32px] mb-xs">check_circle</span>
+                        <span className="font-label-md">All Present</span>
+                      </button>
+                      <button
+                        onClick={() => setQuickAttendanceOpen(true)}
+                        className="flex flex-col items-center justify-center p-md border border-outline-variant hover:bg-surface-container-low rounded-lg transition-transform active:scale-[0.98]"
+                      >
+                        <span className="material-symbols-outlined text-[32px] mb-xs">edit_square</span>
+                        <span className="font-label-md">Manual Entry</span>
+                      </button>
                     </div>
+                    <div className="mt-md pt-md border-t border-outline-variant">
+                      <div className="flex justify-between items-center text-on-surface-variant font-label-sm">
+                        <span>{currentClassStudents?.length ?? '—'} students in class</span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
+                    <span className="material-symbols-outlined text-3xl text-outline mb-2">event_busy</span>
+                    <p className="font-body-sm text-on-surface-variant">No current class to mark.</p>
+                    <Link to="/teacher/attendance" className="text-primary font-label-sm hover:underline mt-2">
+                      Go to Attendance
+                    </Link>
                   </div>
-                </div>
+                )}
               </div>
             </section>
 
@@ -306,35 +482,57 @@ export const TeacherDashboard: React.FC = () => {
               <div className="px-md py-sm border-b border-outline-variant flex justify-between items-center">
                 <h3 className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Grading Status</h3>
                 <div className="flex gap-sm">
-                  <span className="flex items-center gap-xs font-label-sm text-secondary"><span className="w-2 h-2 rounded-full bg-secondary"></span> Submitted</span>
-                  <span className="flex items-center gap-xs font-label-sm text-tertiary-container"><span className="w-2 h-2 rounded-full bg-tertiary-container"></span> Pending</span>
+                  <span className="flex items-center gap-xs font-label-sm text-secondary">
+                    <span className="w-2 h-2 rounded-full bg-secondary"></span> Submitted
+                  </span>
+                  <span className="flex items-center gap-xs font-label-sm text-outline">
+                    <span className="w-2 h-2 rounded-full bg-outline"></span> Draft
+                  </span>
                 </div>
               </div>
               <div className="p-md">
-                <div className="space-y-lg">
-                  {[
-                    { label: 'MSCE Physics - Mock Exam', graded: 28, total: 32, pct: 85 },
-                    { label: 'JCE Physical Science Lab Reports', graded: 12, total: 40, pct: 30 },
-                    { label: 'Form 4 Electromagnetism Test', graded: 45, total: 45, pct: 100 },
-                  ].map(item => (
-                    <div key={item.label}>
-                      <div className="flex justify-between items-center mb-xs">
-                        <span className="font-label-md text-label-md">{item.label}</span>
-                        <span className="font-label-sm text-on-surface-variant">{item.graded} / {item.total} Graded</span>
-                      </div>
-                      <div className="w-full h-3 bg-surface-container-high rounded-full overflow-hidden flex">
-                        <div className="h-full bg-secondary" style={{ width: `${item.pct}%` }}></div>
-                        <div className="h-full bg-tertiary-container" style={{ width: `${100 - item.pct}%` }}></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {grades === null ? (
+                  <p className="text-on-surface-variant text-sm py-4 text-center">Loading grade data...</p>
+                ) : (grades || []).length === 0 ? (
+                  <p className="text-on-surface-variant text-sm py-4 text-center">No grades entered yet.</p>
+                ) : gradeGroups.length > 0 ? (
+                  <div className="space-y-lg">
+                    {gradeGroups.map(item => {
+                      const pct = item.total > 0 ? Math.round((item.graded / item.total) * 100) : 0;
+                      return (
+                        <div key={item.label}>
+                          <div className="flex justify-between items-center mb-xs">
+                            <span className="font-label-md text-label-md">{item.label}</span>
+                            <span className="font-label-sm text-on-surface-variant">{item.graded} / {item.total} Entered</span>
+                          </div>
+                          <div className="w-full h-3 bg-surface-container-high rounded-full overflow-hidden flex">
+                            <div className="h-full bg-secondary" style={{ width: `${pct}%` }}></div>
+                            <div className="h-full bg-outline-variant" style={{ width: `${100 - pct}%` }}></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
                 <div className="mt-lg p-md bg-surface-container-low rounded-lg flex items-center justify-between">
                   <div className="flex items-center gap-md">
-                    <span className="material-symbols-outlined text-tertiary-container">warning</span>
-                    <p className="font-body-sm">Next grade freeze in <span className="font-bold">2 days</span>. 52 submissions pending.</p>
+                    {pendingGrades > 0 ? (
+                      <>
+                        <span className="material-symbols-outlined text-tertiary">warning</span>
+                        <p className="font-body-sm">
+                          <span className="font-bold">{pendingGrades}</span> grade{pendingGrades !== 1 ? 's' : ''} in draft — not yet submitted.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-secondary">check_circle</span>
+                        <p className="font-body-sm">All grades submitted. Good work!</p>
+                      </>
+                    )}
                   </div>
-                  <Link to="/teacher/grades" className="bg-primary text-white font-label-md px-md py-sm rounded-lg hover:brightness-110 transition-all">Go to Gradebook</Link>
+                  <Link to="/teacher/grades" className="bg-primary text-white font-label-md px-md py-sm rounded-lg hover:brightness-110 transition-all">
+                    Go to Gradebook
+                  </Link>
                 </div>
               </div>
             </section>
@@ -343,72 +541,100 @@ export const TeacherDashboard: React.FC = () => {
             <section className="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col">
               <div className="px-md py-sm border-b border-outline-variant flex justify-between items-center">
                 <h3 className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Recent Messages</h3>
-                <span className="bg-error text-white font-label-sm px-xs rounded-full">3 New</span>
+                {recentMessages.length > 0 && (
+                  <span className="bg-primary text-white font-label-sm px-xs rounded-full">
+                    {recentMessages.length}
+                  </span>
+                )}
               </div>
               <div className="overflow-y-auto max-h-[360px]">
-                <ul className="divide-y divide-outline-variant">
-                  {[
-                    { initials: 'MT', name: 'Mia Thompson', time: '10m ago', msg: 'Can I get an extension on the Physics report?' },
-                    { initials: 'HP', name: 'Head Teacher Dr. Phiri', time: '1h ago', msg: 'The faculty meeting has been moved to 4 PM.' },
-                    { initials: 'PA', name: "Parent: Leo's Mom", time: '3h ago', msg: 'Leo will be absent today due to a fever.' },
-                  ].map(m => (
-                    <li key={m.name} className="p-md hover:bg-surface-container-low transition-colors cursor-pointer group">
-                      <div className="flex gap-md">
-                        <div className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-label-md text-label-md font-bold flex-shrink-0">{m.initials}</div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center mb-xs">
-                            <span className="font-label-md text-label-md font-semibold group-hover:text-primary">{m.name}</span>
-                            <span className="font-label-sm text-on-surface-variant">{m.time}</span>
+                {recentMessages.length > 0 ? (
+                  <ul className="divide-y divide-outline-variant">
+                    {recentMessages.map(m => {
+                      const initials = `${m.sender.firstName.charAt(0)}${m.sender.lastName.charAt(0)}`.toUpperCase();
+                      const timeAgo = new Date(m.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                      return (
+                        <li key={m.id} className="p-md hover:bg-surface-container-low transition-colors cursor-pointer group">
+                          <div className="flex gap-md">
+                            <div className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-label-md text-label-md font-bold flex-shrink-0">
+                              {initials}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex justify-between items-center mb-xs">
+                                <span className="font-label-md text-label-md font-semibold group-hover:text-primary">
+                                  {m.sender.firstName} {m.sender.lastName}
+                                </span>
+                                <span className="font-label-sm text-on-surface-variant">{timeAgo}</span>
+                              </div>
+                              <p className="font-body-sm text-on-surface-variant line-clamp-1">{m.subject}</p>
+                            </div>
                           </div>
-                          <p className="font-body-sm text-on-surface-variant line-clamp-1">{m.msg}</p>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <div className="py-10 text-center">
+                    <span className="material-symbols-outlined text-3xl text-outline block mb-2">mail</span>
+                    <p className="font-body-sm text-on-surface-variant">No messages yet.</p>
+                  </div>
+                )}
               </div>
               <div className="mt-auto p-md border-t border-outline-variant text-center">
                 <Link to="/teacher/messages" className="font-label-md text-primary hover:underline">View All Messages</Link>
               </div>
             </section>
 
-            {/* Recent Activity Table */}
-            <section className="col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
-              <div className="px-md py-sm border-b border-outline-variant">
-                <h3 className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Recent System Activity</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-surface-container-low text-on-surface-variant font-label-sm">
-                    <tr>
-                      <th className="px-md py-sm">Timestamp</th>
-                      <th className="px-md py-sm">Activity</th>
-                      <th className="px-md py-sm">Subject/Class</th>
-                      <th className="px-md py-sm">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="font-body-sm divide-y divide-outline-variant">
-                    <tr className="hover:bg-surface-container-low/50 transition-colors">
-                      <td className="px-md py-sm text-on-surface-variant">08:45 AM</td>
-                      <td className="px-md py-sm font-body-md text-body-md font-semibold">Lesson Plan Uploaded</td>
-                      <td className="px-md py-sm text-on-surface-variant">Form 4 MSCE Physics</td>
-                      <td className="px-md py-sm"><span className="px-xs py-1 bg-secondary-container text-on-secondary-container rounded font-label-sm">SUCCESS</span></td>
-                    </tr>
-                    <tr className="bg-surface-container-low/30 hover:bg-surface-container-low/50 transition-colors">
-                      <td className="px-md py-sm text-on-surface-variant">08:30 AM</td>
-                      <td className="px-md py-sm font-body-md text-body-md font-semibold">Fee Status Updated</td>
-                      <td className="px-md py-sm text-on-surface-variant">Form 4-A</td>
-                      <td className="px-md py-sm"><span className="px-xs py-1 bg-surface-container-high text-on-surface-variant rounded font-label-sm">LOGGED</span></td>
-                    </tr>
-                    <tr className="hover:bg-surface-container-low/50 transition-colors">
-                      <td className="px-md py-sm text-on-surface-variant">Yesterday</td>
-                      <td className="px-md py-sm font-body-md text-body-md font-semibold">Grade Submission</td>
-                      <td className="px-md py-sm text-on-surface-variant">Form 4 Physics</td>
-                      <td className="px-md py-sm"><span className="px-xs py-1 bg-secondary-container text-on-secondary-container rounded font-label-sm">SUBMITTED</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            {/* Quick Stats Row */}
+            <section className="col-span-12 grid grid-cols-2 md:grid-cols-4 gap-md">
+              {[
+                {
+                  label: 'Classes Today',
+                  value: todaySlots.length,
+                  icon: 'today',
+                  color: 'text-primary',
+                  bg: 'bg-primary-container',
+                  link: '/teacher/schedule',
+                },
+                {
+                  label: 'Classes Assigned',
+                  value: uniqueClassCount,
+                  icon: 'groups',
+                  color: 'text-secondary',
+                  bg: 'bg-secondary-container',
+                  link: '/teacher/classes',
+                },
+                {
+                  label: 'Pending Submissions',
+                  value: pendingGrades,
+                  icon: 'pending_actions',
+                  color: pendingGrades > 0 ? 'text-error' : 'text-secondary',
+                  bg: pendingGrades > 0 ? 'bg-error-container' : 'bg-secondary-container',
+                  link: '/teacher/grades',
+                },
+                {
+                  label: 'Submitted Grades',
+                  value: submittedGrades,
+                  icon: 'grading',
+                  color: 'text-tertiary',
+                  bg: 'bg-tertiary-container',
+                  link: '/teacher/grades',
+                },
+              ].map(stat => (
+                <Link
+                  key={stat.label}
+                  to={stat.link}
+                  className="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex items-center gap-md hover:border-primary transition-all group"
+                >
+                  <div className={`w-10 h-10 rounded-full ${stat.bg} flex items-center justify-center`}>
+                    <span className={`material-symbols-outlined text-[20px] ${stat.color}`}>{stat.icon}</span>
+                  </div>
+                  <div>
+                    <p className="font-label-sm text-on-surface-variant">{stat.label}</p>
+                    <p className={`font-title-lg font-bold ${stat.color}`}>{stat.value}</p>
+                  </div>
+                </Link>
+              ))}
             </section>
           </div>
         </div>

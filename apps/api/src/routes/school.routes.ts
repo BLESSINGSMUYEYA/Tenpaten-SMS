@@ -187,18 +187,41 @@ router.get(
   '/class-subjects',
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
+    const { teacherId, classId } = req.query;
+
+    const whereClause: any = {
+      class: { schoolId, isDeleted: false },
+      isDeleted: false,
+    };
+
+    // If requester is a teacher, auto-scope to their own assignments
+    if (req.user!.role === 'teacher') {
+      whereClause.teacherId = req.user!.userId;
+    } else if (teacherId && typeof teacherId === 'string') {
+      // Admin/head teacher can filter by specific teacher
+      whereClause.teacherId = teacherId;
+    }
+
+    if (classId && typeof classId === 'string') {
+      whereClause.classId = classId;
+    }
+
     const classSubjects = await prisma.classSubject.findMany({
-      where: {
-        class: { schoolId, isDeleted: false },
-        isDeleted: false,
-      },
+      where: whereClause,
       include: {
-        class: true,
+        class: {
+          include: {
+            _count: {
+              select: { studentProfiles: { where: { isDeleted: false } } },
+            },
+          },
+        },
         subject: true,
         teacher: {
           select: { id: true, firstName: true, lastName: true, email: true },
         },
       },
+      orderBy: { class: { name: 'asc' } },
     });
     sendSuccess(res, classSubjects, 'Class subject assignments retrieved successfully');
   })

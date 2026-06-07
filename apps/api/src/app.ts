@@ -27,9 +27,32 @@ const app = express();
 app.use(helmet());
 
 // Cors setup
+const allowedOrigins = [
+  env.FRONTEND_URL,
+  env.APP_URL,
+  'http://localhost:5173',
+  'http://localhost:4000',
+].filter(Boolean) as string[];
+
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or postman)
+      if (!origin) return callback(null, true);
+      
+      // Clean up origin trailing slash to avoid mismatch
+      const normalizedOrigin = origin.replace(/\/$/, '');
+      const hasMatch = allowedOrigins.some(allowed => {
+        const normalizedAllowed = allowed.replace(/\/$/, '');
+        return normalizedAllowed === normalizedOrigin;
+      });
+
+      if (hasMatch) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Not allowed by CORS: ${origin}`));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],

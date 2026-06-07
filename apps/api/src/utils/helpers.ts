@@ -1,12 +1,34 @@
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { generateSchoolCode, generateReceiptNumber, DEFAULT_GRADING_SCALE } from '@tenpaten/shared';
+import { prisma } from '../config/database';
 
 // ---- School Code Generation ----
 
-export function createSchoolCode(schoolName: string): string {
+export function createSchoolCode(schoolName: string, customInitials?: string): string {
   const year = new Date().getFullYear();
-  return generateSchoolCode(schoolName, year);
+  return generateSchoolCode(schoolName, year, customInitials);
+}
+
+/**
+ * Generates a unique school code, retrying up to 5 times if a collision occurs.
+ * Used during school onboarding to guarantee code uniqueness.
+ */
+export async function createUniqueSchoolCode(
+  schoolName: string,
+  customInitials?: string
+): Promise<string> {
+  const year = new Date().getFullYear();
+  let attempts = 0;
+  while (attempts < 5) {
+    const code = generateSchoolCode(schoolName, year, customInitials);
+    const existing = await prisma.school.findUnique({ where: { schoolCode: code } });
+    if (!existing) return code;
+    attempts++;
+  }
+  // Fallback: append timestamp suffix to guarantee uniqueness
+  const fallback = generateSchoolCode(schoolName, year, customInitials);
+  return `${fallback.slice(0, -4)}${Date.now().toString().slice(-4)}`;
 }
 
 // ---- Password Generation ----

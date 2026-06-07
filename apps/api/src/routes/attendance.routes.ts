@@ -22,6 +22,23 @@ router.get(
       isDeleted: false,
     };
 
+    if (req.user!.role === 'student') {
+      const profile = await prisma.studentProfile.findFirst({
+        where: { userId: req.user!.userId, isDeleted: false },
+      });
+      whereClause.studentId = profile?.id ?? 'none';
+    } else if (req.user!.role === 'parent') {
+      const relations = await prisma.parentStudent.findMany({
+        where: { parentUserId: req.user!.userId, isDeleted: false },
+      });
+      const studentProfiles = await prisma.studentProfile.findMany({
+        where: { userId: { in: relations.map(r => r.studentUserId) } },
+      });
+      whereClause.studentId = {
+        in: studentProfiles.map(p => p.id),
+      };
+    }
+
     if (date && typeof date === 'string') {
       whereClause.date = new Date(date);
     }

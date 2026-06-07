@@ -111,12 +111,69 @@ export const PAYMENT_METHOD_LABELS = {
 
 // ---- School Code Generator ----
 
-export function generateSchoolCode(schoolName: string, year: number): string {
-  const words = schoolName.split(' ').filter((w) => w.length > 1);
-  const initials = words
-    .slice(0, 4)
-    .map((w) => w[0].toUpperCase())
-    .join('');
+/**
+ * Maps Malawi districts to standard 2-4 letter initials used in school code generation.
+ * Super Admin sees these auto-generated; they can optionally override the prefix.
+ */
+export const DISTRICT_INITIALS: Record<string, string> = {
+  Balaka: 'BLK',
+  Blantyre: 'BT',
+  Chikwawa: 'CKW',
+  Chiradzulu: 'CHZ',
+  Chitipa: 'CTP',
+  Dedza: 'DDZ',
+  Dowa: 'DWA',
+  Karonga: 'KRG',
+  Kasungu: 'KSG',
+  Likoma: 'LKM',
+  Lilongwe: 'LL',
+  Machinga: 'MCH',
+  Mangochi: 'MGC',
+  Mchinji: 'MCJ',
+  Mulanje: 'MLJ',
+  Mwanza: 'MWZ',
+  Mzimba: 'MZB',
+  Neno: 'NNO',
+  'Nkhata Bay': 'NKB',
+  Nkhotakota: 'NKT',
+  Nsanje: 'NSJ',
+  Ntcheu: 'NTC',
+  Ntchisi: 'NTS',
+  Phalombe: 'PHB',
+  Rumphi: 'RMP',
+  Salima: 'SLM',
+  Thyolo: 'THL',
+  Zomba: 'ZMB',
+};
+
+/**
+ * Generate a school code with format: [INITIALS]-[YEAR]-[4-digit random]
+ * 
+ * @param schoolName     The full school name
+ * @param year           The current year
+ * @param customInitials Optional 2-5 uppercase letter override — Super Admin only
+ */
+export function generateSchoolCode(
+  schoolName: string,
+  year: number,
+  customInitials?: string
+): string {
+  let initials: string;
+
+  if (customInitials && /^[A-Z]{2,5}$/.test(customInitials)) {
+    initials = customInitials;
+  } else {
+    const words = schoolName.split(' ').filter((w) => w.length > 1);
+    initials = words
+      .slice(0, 4)
+      .map((w) => w[0].toUpperCase())
+      .join('');
+    // Ensure at least 2 letters
+    if (initials.length < 2) {
+      initials = (schoolName.replace(/\s+/g, '').toUpperCase().slice(0, 3)) || 'SCH';
+    }
+  }
+
   const random = Math.floor(1000 + Math.random() * 9000);
   return `${initials}-${year}-${random}`;
 }

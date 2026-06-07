@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Header } from '../components/DeputyHeadDashboard/Header';
 import { Sidebar } from '../components/DeputyHeadDashboard/Sidebar';
 import { BottomNav } from '../components/DeputyHeadDashboard/BottomNav';
@@ -95,8 +95,25 @@ export const DeputyHeadTimetable: React.FC = () => {
     }
   }, [teachers, selectedTeacherId]);
 
-  // Query slots dynamically
-  const { data: slotsData, refetch: refetchSlots } = useQuery<TimetableSlot[]>('/timetable', true, [selectedTermId]);
+  // Build the slots query URL dynamically so the hook re-fetches whenever
+  // the term or class selection changes — this is the primary DB filter fix.
+  const slotsUrl = useMemo(() => {
+    if (!selectedTermId) return '';
+    const params = new URLSearchParams({ termId: selectedTermId });
+    if (viewMode === 'class' && selectedClassId) {
+      params.set('classId', selectedClassId);
+    } else if (viewMode === 'teacher' && selectedTeacherId) {
+      params.set('teacherId', selectedTeacherId);
+    }
+    return `/timetable?${params.toString()}`;
+  }, [selectedTermId, selectedClassId, selectedTeacherId, viewMode]);
+
+  // Query slots — enabled only once we have a term selected
+  const { data: slotsData, refetch: refetchSlots } = useQuery<TimetableSlot[]>(
+    slotsUrl,
+    !!slotsUrl,
+    [slotsUrl]
+  );
 
   // Mutation for creating a slot
   const { mutate: createSlot, loading: creatingSlot, error: createError, reset: resetCreateError } = useMutation('/timetable/slots', 'post');

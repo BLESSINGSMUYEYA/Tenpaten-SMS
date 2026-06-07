@@ -1,96 +1,103 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Header } from '../components/TeacherDashboard/Header';
 import { Sidebar } from '../components/TeacherDashboard/Sidebar';
 import { BottomNav } from '../components/TeacherDashboard/BottomNav';
+import { useQuery } from '../hooks/useApi';
 
-type ScheduleItem = {
-  id: number;
-  time: string;
-  subject: string;
-  room: string;
-  type: 'lecture' | 'practical' | 'break' | 'duty' | 'meeting';
-  duration: string;
+// API day enum → display name mapping
+const DAY_MAP: Record<string, string> = {
+  Mon: 'Monday',
+  Tue: 'Tuesday',
+  Wed: 'Wednesday',
+  Thu: 'Thursday',
+  Fri: 'Friday',
+};
+
+const DISPLAY_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+// Map display name → current JS day index (0=Sun)
+const TODAY_MAP: Record<string, number> = {
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+};
+
+interface TimetableSlot {
+  id: string;
+  day: string;       // 'Mon' | 'Tue' | ...
+  periodNumber: number;
+  room?: string;
+  class: { id: string; displayName: string };
+  subject: { id: string; name: string; code: string };
+  term: { id: string; name: string };
+}
+
+interface TermRecord {
+  id: string;
+  name: string;
+  isCurrent: boolean;
+}
+
+const getPeriodStyle = (periodNumber: number) => {
+  const styles = [
+    { colorClass: 'bg-primary-container/10 border-primary text-primary', badgeClass: 'bg-primary/10 text-primary border-primary/20', dotClass: 'bg-primary', iconName: 'school' },
+    { colorClass: 'bg-secondary-container/10 border-secondary text-secondary', badgeClass: 'bg-secondary/10 text-secondary border-secondary/20', dotClass: 'bg-secondary', iconName: 'biotech' },
+    { colorClass: 'bg-tertiary-container/10 border-tertiary text-tertiary', badgeClass: 'bg-tertiary/10 text-tertiary border-tertiary/20', dotClass: 'bg-tertiary', iconName: 'engineering' },
+    { colorClass: 'bg-on-secondary-container/10 border-purple-500 text-purple-600', badgeClass: 'bg-purple-500/10 text-purple-600 border-purple-500/20', dotClass: 'bg-purple-500', iconName: 'groups' },
+    { colorClass: 'bg-surface-container border-outline-variant text-on-surface-variant', badgeClass: 'bg-surface-container-high text-on-surface-variant border-surface-border', dotClass: 'bg-outline-variant', iconName: 'schedule' },
+  ];
+  return styles[(periodNumber - 1) % styles.length];
 };
 
 export const TeacherSchedule = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-  const [selectedDay, setSelectedDay] = useState<string>('Monday');
 
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  // Default selected day to today (or Monday if weekend)
+  const todayJsDay = new Date().getDay();
+  const todayDisplay =
+    DISPLAY_DAYS.find(d => TODAY_MAP[d] === todayJsDay) || 'Monday';
+  const [selectedDay, setSelectedDay] = useState<string>(todayDisplay);
 
-  const weeklySchedule: Record<string, ScheduleItem[]> = {
-    Monday: [
-      { id: 1, time: '08:00 AM - 09:30 AM', subject: 'Form 3A - Mathematics', room: 'Room 101', type: 'lecture', duration: '90m' },
-      { id: 2, time: '10:00 AM - 11:30 AM', subject: 'Form 4B - Physics', room: 'Lab 2', type: 'practical', duration: '90m' },
-      { id: 3, time: '11:30 AM - 12:30 PM', subject: 'Lunch Break', room: 'Staff Room', type: 'break', duration: '60m' },
-      { id: 4, time: '02:00 PM - 03:30 PM', subject: 'Form 2C - Mathematics', room: 'Room 105', type: 'lecture', duration: '90m' },
-    ],
-    Tuesday: [
-      { id: 5, time: '08:00 AM - 09:30 AM', subject: 'Form 2C - Mathematics', room: 'Room 105', type: 'lecture', duration: '90m' },
-      { id: 6, time: '10:00 AM - 11:30 AM', subject: 'Form 4B - Physics', room: 'Room 202', type: 'lecture', duration: '90m' },
-      { id: 7, time: '11:30 AM - 12:30 PM', subject: 'Office Hours / Prep Block', room: 'Math Office', type: 'duty', duration: '60m' },
-      { id: 8, time: '01:00 PM - 02:30 PM', subject: 'Form 1A - Mathematics (Cover)', room: 'Room 103', type: 'lecture', duration: '90m' },
-    ],
-    Wednesday: [
-      { id: 9, time: '08:00 AM - 09:30 AM', subject: 'Form 3A - Mathematics', room: 'Room 101', type: 'lecture', duration: '90m' },
-      { id: 10, time: '10:00 AM - 11:30 AM', subject: 'Form 4B - Physics', room: 'Lab 2', type: 'practical', duration: '90m' },
-      { id: 11, time: '11:30 AM - 12:30 PM', subject: 'Lunch Break', room: 'Staff Room', type: 'break', duration: '60m' },
-      { id: 12, time: '02:00 PM - 03:30 PM', subject: 'Form 2C - Mathematics', room: 'Room 105', type: 'lecture', duration: '90m' },
-    ],
-    Thursday: [
-      { id: 13, time: '08:00 AM - 09:30 AM', subject: 'Form 2C - Mathematics', room: 'Room 105', type: 'lecture', duration: '90m' },
-      { id: 14, time: '10:00 AM - 11:30 AM', subject: 'Form 4B - Physics', room: 'Room 202', type: 'lecture', duration: '90m' },
-      { id: 15, time: '11:30 AM - 01:00 PM', subject: 'Bi-Weekly Staff Meeting', room: 'Main Hall', type: 'meeting', duration: '90m' },
-    ],
-    Friday: [
-      { id: 16, time: '08:00 AM - 09:30 AM', subject: 'Form 3A - Mathematics', room: 'Room 101', type: 'lecture', duration: '90m' },
-      { id: 17, time: '10:00 AM - 11:30 AM', subject: 'Physics Lab Prep', room: 'Lab 2', type: 'duty', duration: '90m' },
-      { id: 18, time: '11:30 AM - 12:30 PM', subject: 'Lunch Break', room: 'Staff Room', type: 'break', duration: '60m' },
-    ],
-  };
+  // Fetch timetable (auto-scoped to this teacher by backend)
+  const { data: timetableSlots, loading, error } = useQuery<TimetableSlot[]>('/timetable');
+  const { data: termList } = useQuery<TermRecord[]>('/schools/terms');
+
+  // Current term for display context
+  const currentTerm = termList?.find(t => t.isCurrent) || termList?.[0];
+
+  // Group slots by display-day
+  const weeklySchedule = useMemo(() => {
+    const grouped: Record<string, TimetableSlot[]> = {};
+    DISPLAY_DAYS.forEach(d => (grouped[d] = []));
+
+    (timetableSlots || []).forEach(slot => {
+      const displayDay = DAY_MAP[slot.day];
+      if (displayDay && grouped[displayDay]) {
+        grouped[displayDay].push(slot);
+      }
+    });
+
+    // Sort each day by period number
+    Object.keys(grouped).forEach(d => {
+      grouped[d].sort((a, b) => a.periodNumber - b.periodNumber);
+    });
+
+    return grouped;
+  }, [timetableSlots]);
 
   const currentDaySchedule = weeklySchedule[selectedDay] || [];
 
-  const getTypeStyleAndIcon = (type: ScheduleItem['type']) => {
-    switch (type) {
-      case 'lecture':
-        return {
-          colorClass: 'bg-primary-container/10 border-primary text-primary',
-          badgeClass: 'bg-primary/10 text-primary border-primary/20',
-          dotClass: 'bg-primary',
-          iconName: 'school',
-        };
-      case 'practical':
-        return {
-          colorClass: 'bg-secondary-container/10 border-secondary text-secondary',
-          badgeClass: 'bg-secondary/10 text-secondary border-secondary/20',
-          dotClass: 'bg-secondary',
-          iconName: 'biotech',
-        };
-      case 'duty':
-        return {
-          colorClass: 'bg-tertiary-container/10 border-tertiary text-tertiary',
-          badgeClass: 'bg-tertiary/10 text-tertiary border-tertiary/20',
-          dotClass: 'bg-tertiary',
-          iconName: 'engineering',
-        };
-      case 'meeting':
-        return {
-          colorClass: 'bg-on-secondary-container/10 border-purple-500 text-purple-600 dark:text-purple-400',
-          badgeClass: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-          dotClass: 'bg-purple-500',
-          iconName: 'groups',
-        };
-      default:
-        return {
-          colorClass: 'bg-surface-container border-outline-variant text-on-surface-variant',
-          badgeClass: 'bg-surface-container-high text-on-surface-variant border-surface-border',
-          dotClass: 'bg-outline-variant',
-          iconName: 'restaurant',
-        };
-    }
-  };
+  // Total unique classes count
+  const uniqueClasses = useMemo(() => {
+    const ids = new Set((timetableSlots || []).map(s => s.class.id));
+    return ids.size;
+  }, [timetableSlots]);
+
+  // Total periods this week
+  const totalPeriods = (timetableSlots || []).length;
 
   return (
     <>
@@ -106,107 +113,134 @@ export const TeacherSchedule = () => {
               <span className="text-primary font-bold">Schedule</span>
             </nav>
             <h1 className="font-headline-xl text-headline-xl text-primary">Weekly Timetable</h1>
-            <p className="font-body-md text-on-surface-variant">View your scheduled teaching classes, lab sessions, and duty blocks.</p>
+            <p className="font-body-md text-on-surface-variant">
+              Your scheduled teaching periods
+              {currentTerm ? ` — ${currentTerm.name}` : ''}.
+            </p>
           </div>
-          <div className="flex gap-2 self-start md:self-end">
+          <div className="flex gap-3 items-center">
+            {/* Summary Chips */}
+            <div className="flex gap-2 text-xs font-bold">
+              <span className="px-3 py-1.5 bg-primary-container text-on-primary-container rounded-full">
+                {uniqueClasses} Classes
+              </span>
+              <span className="px-3 py-1.5 bg-secondary-container text-on-secondary-container rounded-full">
+                {totalPeriods} Periods/wk
+              </span>
+            </div>
             <button className="flex items-center gap-1.5 px-4 py-2.5 border-2 border-primary text-primary font-bold rounded-lg hover:bg-surface-container-low active:scale-95 transition-all text-xs">
               <span className="material-symbols-outlined text-[18px]">print</span>
               Print Schedule
             </button>
-            <button className="flex items-center gap-1.5 px-4 py-2.5 bg-secondary-container text-on-secondary-container border border-secondary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all text-xs">
-              <span className="material-symbols-outlined text-[18px]">sync_alt</span>
-              Request Swap
-            </button>
           </div>
         </div>
 
-        {/* Week Day Switcher */}
-        <div className="bg-surface-container-lowest border border-surface-border dark:border-outline-variant p-2 rounded-2xl shadow-sm mb-8 flex overflow-x-auto gap-2">
-          {days.map((day) => {
-            const count = weeklySchedule[day]?.length || 0;
-            const isSelected = selectedDay === day;
-            return (
-              <button
-                key={day}
-                onClick={() => setSelectedDay(day)}
-                className={`flex-1 min-w-[120px] py-3.5 px-4 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95 ${
-                  isSelected
-                    ? 'bg-primary text-on-primary font-bold shadow-sm'
-                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                }`}
-              >
-                <span className="font-title-md">{day}</span>
-                <span className={`text-xs mt-1.5 ${isSelected ? 'text-on-primary/80 font-medium' : 'text-outline font-normal'}`}>
-                  {count} {count === 1 ? 'Period' : 'Periods'}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Loading / Error states */}
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mr-3" />
+            <span className="text-on-surface-variant font-body-md">Loading your timetable...</span>
+          </div>
+        )}
 
-        {/* Timeline Slots */}
-        <div className="relative border-l-2 border-outline-variant ml-4 sm:ml-8 space-y-4 pb-4">
-          {currentDaySchedule.length > 0 ? (
-            currentDaySchedule.map((item) => {
-              const { colorClass, badgeClass, dotClass, iconName } = getTypeStyleAndIcon(item.type);
-              return (
-                <div key={item.id} className="relative pl-8 sm:pl-10 group">
-                  {/* Timeline Node */}
-                  <div
-                    className={`absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-2 border-surface-container-lowest transition-all group-hover:scale-125 ${dotClass}`}
-                  ></div>
+        {error && !loading && (
+          <div className="p-4 bg-error-container border border-error/20 text-on-error-container rounded-xl mb-6 flex items-center gap-3">
+            <span className="material-symbols-outlined">error</span>
+            <span className="font-body-sm">Failed to load timetable: {error}</span>
+          </div>
+        )}
 
-                  <div className="flex flex-col gap-1.5">
-                    {/* Time & Duration */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-outline font-bold">{item.time}</span>
-                      <span className="px-1.5 py-0.5 text-[10px] bg-surface-container border border-surface-border dark:border-outline-variant text-on-surface-variant rounded-full">
-                        {item.duration}
-                      </span>
-                    </div>
+        {!loading && !error && (
+          <>
+            {/* Week Day Switcher */}
+            <div className="bg-surface-container-lowest border border-surface-border dark:border-outline-variant p-2 rounded-2xl shadow-sm mb-8 flex overflow-x-auto gap-2">
+              {DISPLAY_DAYS.map((day) => {
+                const count = weeklySchedule[day]?.length || 0;
+                const isSelected = selectedDay === day;
+                const isToday = TODAY_MAP[day] === todayJsDay;
+                return (
+                  <button
+                    key={day}
+                    onClick={() => setSelectedDay(day)}
+                    className={`flex-1 min-w-[110px] py-3.5 px-4 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95 relative ${
+                      isSelected
+                        ? 'bg-primary text-on-primary font-bold shadow-sm'
+                        : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                    }`}
+                  >
+                    {isToday && (
+                      <span className={`absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-secondary' : 'bg-primary'}`} />
+                    )}
+                    <span className="font-title-md">{day.slice(0, 3)}</span>
+                    <span className="hidden sm:block text-xs font-normal opacity-70">{day}</span>
+                    <span className={`text-xs mt-1.5 ${isSelected ? 'text-on-primary/80 font-medium' : 'text-outline font-normal'}`}>
+                      {count} {count === 1 ? 'Period' : 'Periods'}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
-                    {/* Compact Card */}
-                    <div
-                      className={`flex justify-between items-center py-2.5 px-4 border rounded-xl shadow-sm transition-all hover:shadow-md ${colorClass}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-surface-container-lowest border border-surface-border dark:border-outline-variant flex items-center justify-center text-on-surface flex-shrink-0">
-                          <span className="material-symbols-outlined text-[18px]">{iconName}</span>
+            {/* Timeline Slots */}
+            {currentDaySchedule.length > 0 ? (
+              <div className="relative border-l-2 border-outline-variant ml-4 sm:ml-8 space-y-4 pb-4">
+                {currentDaySchedule.map((slot) => {
+                  const { colorClass, badgeClass, dotClass, iconName } = getPeriodStyle(slot.periodNumber);
+                  return (
+                    <div key={slot.id} className="relative pl-8 sm:pl-10 group">
+                      {/* Timeline Node */}
+                      <div
+                        className={`absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-2 border-surface-container-lowest transition-all group-hover:scale-125 ${dotClass}`}
+                      />
+
+                      <div className="flex flex-col gap-1.5">
+                        {/* Period label */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-outline font-bold">Period {slot.periodNumber}</span>
+                          {slot.room && (
+                            <span className="px-1.5 py-0.5 text-[10px] bg-surface-container border border-surface-border dark:border-outline-variant text-on-surface-variant rounded-full flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[10px]">location_on</span>
+                              {slot.room}
+                            </span>
+                          )}
                         </div>
-                        <div>
-                          <h3 className="text-sm font-bold text-on-surface">{item.subject}</h3>
-                          <div className="flex items-center gap-1 mt-0.5 text-on-surface-variant">
-                            <span className="material-symbols-outlined text-[13px]">location_on</span>
-                            <span className="text-[11px]">{item.room}</span>
+
+                        {/* Slot Card */}
+                        <div
+                          className={`flex justify-between items-center py-3 px-4 border rounded-xl shadow-sm transition-all hover:shadow-md ${colorClass}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-surface-container-lowest border border-surface-border dark:border-outline-variant flex items-center justify-center text-on-surface flex-shrink-0">
+                              <span className="material-symbols-outlined text-[18px]">{iconName}</span>
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-bold text-on-surface">{slot.subject.name}</h3>
+                              <p className="text-xs text-on-surface-variant font-medium">{slot.class.displayName}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-0.5 border text-[10px] font-bold rounded-full uppercase tracking-wider ${badgeClass}`}>
+                              {slot.subject.code}
+                            </span>
                           </div>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 border text-[10px] font-bold rounded-full uppercase tracking-wider ${badgeClass}`}>
-                          {item.type}
-                        </span>
-                        {item.type !== 'break' && (
-                          <button className="p-1.5 bg-surface-container-lowest border border-surface-border rounded-lg text-on-surface-variant hover:text-primary active:scale-90 transition-transform">
-                            <span className="material-symbols-outlined text-[18px]">more_vert</span>
-                          </button>
-                        )}
-                      </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="py-12 text-center bg-surface-container-lowest border border-surface-border dark:border-outline-variant rounded-xl ml-4">
-              <span className="material-symbols-outlined text-5xl text-outline mb-4">calendar_today</span>
-              <h3 className="font-title-lg text-on-surface">Free Day</h3>
-              <p className="font-body-md text-on-surface-variant max-w-sm mx-auto mt-1">
-                You have no scheduled teaching blocks or duty sessions on this day.
-              </p>
-            </div>
-          )}
-        </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="py-16 text-center bg-surface-container-lowest border border-surface-border dark:border-outline-variant rounded-xl ml-0 sm:ml-4">
+                <span className="material-symbols-outlined text-5xl text-outline mb-4 block">calendar_today</span>
+                <h3 className="font-title-lg text-on-surface">No Classes Scheduled</h3>
+                <p className="font-body-md text-on-surface-variant max-w-sm mx-auto mt-1">
+                  You have no teaching periods assigned for {selectedDay}.
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </main>
       <BottomNav />
     </>

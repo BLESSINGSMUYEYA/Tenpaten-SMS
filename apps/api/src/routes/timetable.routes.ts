@@ -22,11 +22,15 @@ router.get(
       isDeleted: false,
     };
 
+    // If requester is a teacher, auto-scope to their own schedule
+    if (req.user!.role === 'teacher') {
+      whereClause.teacherId = req.user!.userId;
+    } else if (teacherId && typeof teacherId === 'string') {
+      whereClause.teacherId = teacherId;
+    }
+
     if (classId && typeof classId === 'string') {
       whereClause.classId = classId;
-    }
-    if (teacherId && typeof teacherId === 'string') {
-      whereClause.teacherId = teacherId;
     }
     if (termId && typeof termId === 'string') {
       whereClause.termId = termId;
@@ -36,7 +40,7 @@ router.get(
       where: whereClause,
       include: {
         class: { select: { id: true, displayName: true } },
-        subject: { select: { id: true, name: true, code: true } },
+        subject: { select: { id: true, name: true, code: true, isCore: true } },
         teacher: { select: { id: true, firstName: true, lastName: true } },
         term: { select: { id: true, name: true } },
       },
