@@ -36,7 +36,7 @@ export const HeadTeacherCommunication: React.FC = () => {
               <span>/</span>
               <span className="text-primary font-bold">Communication</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Communication</h1>
+            <h1 className="dash-page-title">Communication</h1>
             <p className="font-body-md text-on-surface-variant">Broadcast official circulars and view parent queries, {fullName}.</p>
           </div>
           <Link

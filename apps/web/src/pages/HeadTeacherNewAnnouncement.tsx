@@ -47,7 +47,7 @@ export const HeadTeacherNewAnnouncement: React.FC = () => {
             <span>/</span>
             <span className="text-primary font-bold">New Announcement</span>
           </nav>
-          <h1 className="font-headline-xl text-headline-xl text-primary">New Announcement</h1>
+          <h1 className="dash-page-title">New Announcement</h1>
           <p className="font-body-md text-on-surface-variant">Compose a new school-wide bulletin or targeted advisory notice, {fullName}.</p>
         </div>
 

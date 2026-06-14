@@ -102,7 +102,7 @@ export const TeacherAssignments = () => {
               <span>/</span>
               <span className="text-primary font-bold">Assignments</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Coursework & Assignments</h1>
+            <h1 className="dash-page-title">Coursework & Assignments</h1>
             <p className="font-body-md text-on-surface-variant">Create, distribute, and grade assignments across your subjects.</p>
           </div>
           <button
@@ -213,23 +213,23 @@ export const TeacherAssignments = () => {
                   <div className="flex gap-2 self-stretch md:self-auto justify-end border-t md:border-t-0 border-surface-border dark:border-outline-variant pt-4 md:pt-0">
                     {item.status === 'active' && (
                       <>
-                        <button className="px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all text-xs flex items-center gap-1">
+                        <button className="px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all font-label-md flex items-center gap-1">
                           <span className="material-symbols-outlined text-[16px]">grading</span>
                           <span>Review</span>
                         </button>
-                        <button className="px-4 py-2 border border-outline text-on-surface-variant hover:bg-surface-container rounded-lg active:scale-95 transition-all text-xs">
+                        <button className="px-4 py-2 border border-outline text-on-surface-variant hover:bg-surface-container rounded-lg active:scale-95 transition-all font-label-md">
                           <span>Edit</span>
                         </button>
                       </>
                     )}
                     {item.status === 'pending' && (
-                      <button className="px-4 py-2 bg-secondary text-on-secondary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all text-xs flex items-center gap-1">
+                      <button className="px-4 py-2 bg-secondary text-on-secondary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all font-label-md flex items-center gap-1">
                         <span className="material-symbols-outlined text-[16px]">edit_note</span>
                         <span>Grade All</span>
                       </button>
                     )}
                     {item.status === 'completed' && (
-                      <button className="px-4 py-2 border border-primary text-primary font-bold rounded-lg hover:bg-surface-container-low active:scale-95 transition-all text-xs flex items-center gap-1">
+                      <button className="px-4 py-2 border border-primary text-primary font-bold rounded-lg hover:bg-surface-container-low active:scale-95 transition-all font-label-md flex items-center gap-1">
                         <span className="material-symbols-outlined text-[16px]">visibility</span>
                         <span>View Gradebook</span>
                       </button>

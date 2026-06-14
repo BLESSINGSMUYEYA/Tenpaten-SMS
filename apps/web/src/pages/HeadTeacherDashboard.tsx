@@ -50,7 +50,7 @@ export const HeadTeacherDashboard: React.FC = () => {
         {/* Dashboard Canvas */}
         <div className="py-lg flex flex-col gap-lg">
           <div>
-            <h2 className="font-headline-md text-headline-md text-primary font-bold">Dashboard Overview</h2>
+            <h1 className="dash-page-title">Dashboard Overview</h1>
             <p className="font-body-md text-on-surface-variant mt-1">Welcome back, {fullName}. Here is the summary of your institution today.</p>
           </div>
 

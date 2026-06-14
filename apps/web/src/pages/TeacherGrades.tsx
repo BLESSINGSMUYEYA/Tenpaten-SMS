@@ -201,13 +201,13 @@ export const TeacherGrades = () => {
         {/* Header */}
         <div className="py-lg flex flex-col md:flex-row md:items-end justify-between gap-md">
           <div>
-            <h1 className="font-headline-xl text-headline-xl text-primary font-bold text-2xl">Assessment Gradebook</h1>
+            <h1 className="dash-page-title">Assessment Gradebook</h1>
             <p className="font-body-md text-on-surface-variant">Record, compute, and review academic performance records.</p>
           </div>
           <div className="flex gap-sm">
             <button
               onClick={handleSubmitGrades}
-              className="flex items-center gap-1.5 px-4 py-2 bg-secondary text-white font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all text-xs shadow-sm"
+              className="flex items-center gap-1.5 px-4 py-2 bg-secondary text-white font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all font-label-md shadow-sm"
             >
               <span className="material-symbols-outlined text-[18px]">publish</span>
               Submit for Approval
@@ -218,16 +218,16 @@ export const TeacherGrades = () => {
         {/* Aggregated Stats */}
         <div className="grid grid-cols-3 gap-lg mb-margin-desktop text-center">
           <div className="bg-surface-container-lowest border border-outline-variant p-md rounded-xl shadow-sm">
-            <p className="text-on-surface-variant text-xs uppercase tracking-wider font-bold">Class Average</p>
-            <h3 className="text-xl font-bold text-primary mt-2">{classAvg}%</h3>
+            <p className="dash-card-label">Class Average</p>
+            <h3 className="dash-card-value text-primary mt-2">{classAvg}%</h3>
           </div>
           <div className="bg-surface-container-lowest border border-outline-variant p-md rounded-xl shadow-sm">
-            <p className="text-on-surface-variant text-xs uppercase tracking-wider font-bold">Class Pass Rate</p>
-            <h3 className="text-xl font-bold text-secondary mt-2">{passRate}%</h3>
+            <p className="dash-card-label">Class Pass Rate</p>
+            <h3 className="dash-card-value text-secondary mt-2">{passRate}%</h3>
           </div>
           <div className="bg-surface-container-lowest border border-outline-variant p-md rounded-xl shadow-sm">
-            <p className="text-on-surface-variant text-xs uppercase tracking-wider font-bold">Highest Score</p>
-            <h3 className="text-xl font-bold text-tertiary mt-2">{highestScore}%</h3>
+            <p className="dash-card-label">Highest Score</p>
+            <h3 className="dash-card-value text-tertiary mt-2">{highestScore}%</h3>
           </div>
         </div>
 
@@ -235,11 +235,11 @@ export const TeacherGrades = () => {
         <div className="bg-surface-container-lowest border border-outline-variant p-md rounded-xl shadow-sm mb-lg flex flex-col md:flex-row gap-md items-center justify-between">
           <div className="grid grid-cols-3 gap-3 w-full md:w-auto flex-1">
             <div className="flex flex-col">
-              <label className="text-[10px] font-bold text-outline uppercase mb-1">Class</label>
+              <label className="font-label-sm text-on-surface-variant uppercase mb-1">Class</label>
               <select
                 value={selectedClassId}
                 onChange={e => setSelectedClassId(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-outline-variant rounded bg-surface-container text-on-surface outline-none"
+                className="w-full px-3 py-2 font-body-sm border border-outline-variant rounded bg-surface-container text-on-surface outline-none"
               >
                 {(classList || []).map(c => (
                   <option key={c.id} value={c.id}>{c.displayName}</option>
@@ -247,11 +247,11 @@ export const TeacherGrades = () => {
               </select>
             </div>
             <div className="flex flex-col">
-              <label className="text-[10px] font-bold text-outline uppercase mb-1">Subject</label>
+              <label className="font-label-sm text-on-surface-variant uppercase mb-1">Subject</label>
               <select
                 value={selectedSubjectId}
                 onChange={e => setSelectedSubjectId(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-outline-variant rounded bg-surface-container text-on-surface outline-none"
+                className="w-full px-3 py-2 font-body-sm border border-outline-variant rounded bg-surface-container text-on-surface outline-none"
               >
                 {(subjectList || []).map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
@@ -259,11 +259,11 @@ export const TeacherGrades = () => {
               </select>
             </div>
             <div className="flex flex-col">
-              <label className="text-[10px] font-bold text-outline uppercase mb-1">Term</label>
+              <label className="font-label-sm text-on-surface-variant uppercase mb-1">Term</label>
               <select
                 value={selectedTermId}
                 onChange={e => setSelectedTermId(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-outline-variant rounded bg-surface-container text-on-surface outline-none"
+                className="w-full px-3 py-2 font-body-sm border border-outline-variant rounded bg-surface-container text-on-surface outline-none"
               >
                 {(termList || []).map(t => (
                   <option key={t.id} value={t.id}>{t.name}</option>
@@ -278,17 +278,17 @@ export const TeacherGrades = () => {
               placeholder="Search student..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:border-primary outline-none bg-transparent text-on-surface font-body-sm text-xs"
+              className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:border-primary outline-none bg-transparent text-on-surface font-body-sm"
             />
           </div>
         </div>
 
         {/* Grade Table */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden text-xs">
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden font-body-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-container text-on-surface-variant border-b border-outline-variant font-label-md text-[10px] uppercase">
+                <tr className="bg-surface-container text-on-surface-variant border-b border-outline-variant font-label-sm uppercase">
                   <th className="py-4 px-6 font-bold">Student Name</th>
                   <th className="py-4 px-4 font-bold text-center">CA (Max 30)</th>
                   <th className="py-4 px-4 font-bold text-center">Exam (Max 70)</th>
@@ -301,7 +301,7 @@ export const TeacherGrades = () => {
               <tbody className="divide-y divide-outline-variant/50">
                 {loadingGrades ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-on-surface-variant text-sm">Loading gradebook data...</td>
+                    <td colSpan={7} className="py-12 text-center text-on-surface-variant font-body-md">Loading gradebook data...</td>
                   </tr>
                 ) : filteredGrades.length > 0 ? (
                   filteredGrades.map(s => {

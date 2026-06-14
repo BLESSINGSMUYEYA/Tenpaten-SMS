@@ -100,11 +100,11 @@ export const BursarDashboard: React.FC = () => {
   return (
     <div className="bg-surface text-on-surface min-h-screen flex">
       {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex flex-col p-md space-y-base w-[280px] h-screen fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant z-20">
-        <div className="flex flex-col px-sm py-md gap-xs">
-          <Logo height="52px" />
+      <aside className="hidden lg:flex flex-col p-4 pt-6 w-72 h-screen fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant z-20">
+        <div className="px-4 mb-6 flex flex-col items-center text-center">
+          <Logo height="36px" className="mb-1" />
         </div>
-        <nav className="flex-1 space-y-xs pt-lg font-body-sm text-body-sm">
+        <nav className="flex-1 space-y-xs pt-lg font-label-md text-label-md">
           {[
             { icon: 'payments', label: 'Financials Ledger', active: true },
           ].map(item => (
@@ -125,12 +125,12 @@ export const BursarDashboard: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col lg:ml-[280px] w-full min-w-0">
+      <div className="flex-1 flex flex-col lg:ml-72 w-full min-w-0">
         {/* Header */}
-        <header className="w-full h-16 flex justify-between items-center px-margin-mobile md:px-margin-desktop sticky top-0 z-30 bg-surface-container-lowest border-b border-outline-variant">
-          <h2 className="font-headline-sm text-headline-sm text-primary font-bold">Financials Dashboard</h2>
+        <header className="fixed top-0 right-0 left-0 lg:left-72 z-40 h-14 flex justify-between items-center px-margin-mobile md:px-margin-desktop bg-surface dark:bg-surface-dim border-b border-surface-border dark:border-outline-variant transition-all duration-300">
+          <h1 className="dash-page-title">Financials Dashboard</h1>
           <div className="flex items-center gap-sm cursor-pointer p-1 rounded-lg">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">
               <span className="material-symbols-outlined text-sm">person</span>
             </div>
             <div className="hidden sm:block text-xs">
@@ -140,7 +140,7 @@ export const BursarDashboard: React.FC = () => {
           </div>
         </header>
 
-        <div className="p-margin-mobile md:p-margin-desktop space-y-lg flex-1 overflow-y-auto">
+        <div className="px-margin-mobile md:px-margin-desktop pt-20 pb-margin-desktop space-y-lg flex-1 overflow-y-auto bg-surface-bright">
           {/* Quick Actions */}
           <section className="flex flex-col md:flex-row justify-between items-start md:items-center bg-primary-container p-lg rounded-xl text-on-primary-container shadow-sm">
             <div>

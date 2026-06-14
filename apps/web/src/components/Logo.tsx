@@ -18,10 +18,10 @@ export const Logo: React.FC<LogoProps> = ({
   // theme = 'auto': uses dark:fill-white and fill-primary-fixed-dim/primary to adapt automatically!
   const textFill =
     theme === 'light'
-      ? 'fill-[#002452]'
+      ? 'fill-primary'
       : theme === 'dark'
       ? 'fill-white'
-      : 'fill-[#002452] dark:fill-white';
+      : 'fill-primary dark:fill-white';
 
   return (
     <div className={`flex items-center select-none ${className}`} style={{ height, width }}>
@@ -37,7 +37,7 @@ export const Logo: React.FC<LogoProps> = ({
           y="35"
           className={`${textFill} font-sans`}
           style={{
-            fontFamily: "'Plus Jakarta Sans', 'Inter', 'DM Sans', sans-serif",
+            fontFamily: "'Outfit', 'Inter', sans-serif",
             fontSize: '36px',
             fontWeight: 800,
             letterSpacing: '-0.04em',
@@ -55,7 +55,7 @@ export const Logo: React.FC<LogoProps> = ({
           y="49"
           fill="#c28b1e"
           style={{
-            fontFamily: "'Plus Jakarta Sans', 'Inter', 'DM Sans', sans-serif",
+            fontFamily: "'Outfit', 'Inter', sans-serif",
             fontSize: '13px',
             fontWeight: 700,
             letterSpacing: '0.08em',

@@ -112,7 +112,7 @@ export const TeacherSchedule = () => {
               <span>/</span>
               <span className="text-primary font-bold">Schedule</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Weekly Timetable</h1>
+            <h1 className="dash-page-title">Weekly Timetable</h1>
             <p className="font-body-md text-on-surface-variant">
               Your scheduled teaching periods
               {currentTerm ? ` — ${currentTerm.name}` : ''}.
@@ -120,7 +120,7 @@ export const TeacherSchedule = () => {
           </div>
           <div className="flex gap-3 items-center">
             {/* Summary Chips */}
-            <div className="flex gap-2 text-xs font-bold">
+            <div className="flex gap-2 font-label-md">
               <span className="px-3 py-1.5 bg-primary-container text-on-primary-container rounded-full">
                 {uniqueClasses} Classes
               </span>
@@ -128,7 +128,7 @@ export const TeacherSchedule = () => {
                 {totalPeriods} Periods/wk
               </span>
             </div>
-            <button className="flex items-center gap-1.5 px-4 py-2.5 border-2 border-primary text-primary font-bold rounded-lg hover:bg-surface-container-low active:scale-95 transition-all text-xs">
+            <button className="flex items-center gap-1.5 px-4 py-2.5 border-2 border-primary text-primary font-bold rounded-lg hover:bg-surface-container-low active:scale-95 transition-all font-label-md">
               <span className="material-symbols-outlined text-[18px]">print</span>
               Print Schedule
             </button>
@@ -172,8 +172,8 @@ export const TeacherSchedule = () => {
                       <span className={`absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-secondary' : 'bg-primary'}`} />
                     )}
                     <span className="font-title-md">{day.slice(0, 3)}</span>
-                    <span className="hidden sm:block text-xs font-normal opacity-70">{day}</span>
-                    <span className={`text-xs mt-1.5 ${isSelected ? 'text-on-primary/80 font-medium' : 'text-outline font-normal'}`}>
+                    <span className="hidden sm:block font-body-sm font-normal opacity-70">{day}</span>
+                    <span className={`font-label-sm mt-1.5 ${isSelected ? 'text-on-primary/80 font-medium' : 'text-outline font-normal'}`}>
                       {count} {count === 1 ? 'Period' : 'Periods'}
                     </span>
                   </button>
@@ -196,7 +196,7 @@ export const TeacherSchedule = () => {
                       <div className="flex flex-col gap-1.5">
                         {/* Period label */}
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-outline font-bold">Period {slot.periodNumber}</span>
+                          <span className="font-label-sm text-outline font-bold">Period {slot.periodNumber}</span>
                           {slot.room && (
                             <span className="px-1.5 py-0.5 text-[10px] bg-surface-container border border-surface-border dark:border-outline-variant text-on-surface-variant rounded-full flex items-center gap-1">
                               <span className="material-symbols-outlined text-[10px]">location_on</span>
@@ -214,8 +214,8 @@ export const TeacherSchedule = () => {
                               <span className="material-symbols-outlined text-[18px]">{iconName}</span>
                             </div>
                             <div>
-                              <h3 className="text-sm font-bold text-on-surface">{slot.subject.name}</h3>
-                              <p className="text-xs text-on-surface-variant font-medium">{slot.class.displayName}</p>
+                              <h3 className="font-title-sm font-bold text-on-surface">{slot.subject.name}</h3>
+                              <p className="font-body-sm text-on-surface-variant font-medium">{slot.class.displayName}</p>
                             </div>
                           </div>
 

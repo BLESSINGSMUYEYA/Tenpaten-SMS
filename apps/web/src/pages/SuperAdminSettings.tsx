@@ -6,8 +6,8 @@ export const SuperAdminSettings: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Configuration States
-  const [platformName, setPlatformName] = useState('EduCore Multi-Tenant SMS');
-  const [supportEmail, setSupportEmail] = useState('support@educore.net');
+  const [platformName, setPlatformName] = useState('Tenpaten Multi-Tenant SMS');
+  const [supportEmail, setSupportEmail] = useState('support@tenpaten.com');
   const [stripeActive, setStripeActive] = useState(true);
   const [paychanguActive, setPaychanguActive] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -24,14 +24,14 @@ export const SuperAdminSettings: React.FC = () => {
       <Sidebar isOpen={mobileMenuOpen} closeSidebar={() => setMobileMenuOpen(false)} />
 
       {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col lg:ml-[280px] w-full min-w-0">
+      <div className="flex-1 flex flex-col lg:ml-72 w-full min-w-0">
         <Header onMenuClick={() => setMobileMenuOpen(true)} />
 
         {/* Main Content Area */}
-        <main className="flex-1 p-gutter md:p-margin-desktop overflow-y-auto bg-surface-bright">
+        <main className="flex-1 px-margin-mobile md:px-margin-desktop pt-20 pb-margin-desktop overflow-y-auto bg-surface-bright">
           {/* Page Header */}
           <div className="mb-lg">
-            <h1 className="font-headline-lg text-headline-lg text-on-surface mb-xs font-bold">Global System Settings</h1>
+            <h1 className="dash-page-title mb-xs">Global System Settings</h1>
             <p className="font-body-md text-body-md text-on-surface-variant">Update platform integrations, payment gateway switches, and security parameters.</p>
           </div>
 

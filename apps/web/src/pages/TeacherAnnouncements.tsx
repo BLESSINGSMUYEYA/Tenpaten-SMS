@@ -145,21 +145,21 @@ export const TeacherAnnouncements = () => {
               <span>/</span>
               <span className="text-primary font-bold">Announcements</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Bulletin Board</h1>
+            <h1 className="dash-page-title">Bulletin Board</h1>
             <p className="font-body-md text-on-surface-variant">
               School-wide notices, alerts, and academic updates.
             </p>
           </div>
           <div className="flex items-center gap-3 self-start md:self-end">
             {unreadCount > 0 && (
-              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-error/10 border border-error/30 text-error text-xs font-bold rounded-full">
+              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-error/10 border border-error/30 text-error font-label-md font-bold rounded-full">
                 <span className="w-2 h-2 rounded-full bg-error animate-pulse inline-block" />
                 {unreadCount} Unread
               </span>
             )}
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 active:scale-95 transition-all text-xs shadow-sm"
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 active:scale-95 transition-all font-label-md shadow-sm"
             >
               <span className="material-symbols-outlined text-[18px]">add_box</span>
               New Announcement
@@ -176,7 +176,7 @@ export const TeacherAnnouncements = () => {
               placeholder="Search announcements..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-outline-variant focus:border-primary rounded-lg outline-none bg-surface-container text-on-surface text-sm transition-colors"
+              className="w-full pl-9 pr-4 py-2 border border-outline-variant focus:border-primary rounded-lg outline-none bg-surface-container text-on-surface font-body-md transition-colors"
             />
           </div>
           <div className="flex gap-1.5 w-full sm:w-auto overflow-x-auto py-0.5">
@@ -184,7 +184,7 @@ export const TeacherAnnouncements = () => {
               <button
                 key={f}
                 onClick={() => setSelectedFilter(f)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all active:scale-95 ${
+                className={`px-3 py-1.5 rounded-full font-label-sm font-bold whitespace-nowrap transition-all active:scale-95 ${
                   selectedFilter === f
                     ? 'bg-primary text-on-primary shadow-sm'
                     : 'bg-surface-container border border-surface-border text-on-surface-variant hover:bg-surface-container-high'
@@ -227,7 +227,7 @@ export const TeacherAnnouncements = () => {
                         {!a.read && (
                           <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                         )}
-                        <h3 className={`text-sm font-bold text-on-surface truncate ${!a.read ? 'text-on-surface' : 'text-on-surface-variant'}`}>
+                        <h3 className={`font-title-sm font-bold text-on-surface truncate ${!a.read ? 'text-on-surface' : 'text-on-surface-variant'}`}>
                           {a.title}
                         </h3>
                         {a.pinned && (
@@ -261,7 +261,7 @@ export const TeacherAnnouncements = () => {
 
                       {/* Content preview when collapsed */}
                       {!isExpanded && (
-                        <p className="text-xs text-on-surface-variant mt-1.5 line-clamp-1 leading-relaxed">
+                        <p className="font-body-sm text-on-surface-variant mt-1.5 line-clamp-1 leading-relaxed">
                           {a.content}
                         </p>
                       )}
@@ -277,7 +277,7 @@ export const TeacherAnnouncements = () => {
                   {isExpanded && (
                     <div className="px-5 pb-4">
                       <div className="border-t border-surface-border dark:border-outline-variant pt-3 mb-4">
-                        <p className="text-sm text-on-surface-variant leading-relaxed">
+                        <p className="font-body-md text-on-surface-variant leading-relaxed">
                           {a.content}
                         </p>
                       </div>
@@ -287,7 +287,7 @@ export const TeacherAnnouncements = () => {
                         {!a.read && (
                           <button
                             onClick={() => markRead(a.id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/30 text-primary text-xs font-bold rounded-lg hover:bg-primary/20 transition-colors active:scale-95"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/30 text-primary font-label-sm font-bold rounded-lg hover:bg-primary/20 transition-colors active:scale-95"
                           >
                             <span className="material-symbols-outlined text-[14px]">mark_email_read</span>
                             Mark as Read
@@ -295,7 +295,7 @@ export const TeacherAnnouncements = () => {
                         )}
                         <button
                           onClick={() => togglePin(a.id)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 border text-xs font-bold rounded-lg transition-colors active:scale-95 ${
+                          className={`flex items-center gap-1.5 px-3 py-1.5 border font-label-sm font-bold rounded-lg transition-colors active:scale-95 ${
                             a.pinned
                               ? 'bg-error/10 border-error/30 text-error hover:bg-error/20'
                               : 'bg-surface-container border-surface-border text-on-surface-variant hover:bg-surface-container-high'
@@ -305,14 +305,14 @@ export const TeacherAnnouncements = () => {
                           {a.pinned ? 'Unpin' : 'Pin'}
                         </button>
                         <button
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container border border-surface-border text-on-surface-variant text-xs font-bold rounded-lg hover:bg-surface-container-high transition-colors active:scale-95"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container border border-surface-border text-on-surface-variant font-label-sm font-bold rounded-lg hover:bg-surface-container-high transition-colors active:scale-95"
                         >
                           <span className="material-symbols-outlined text-[14px]">share</span>
                           Share
                         </button>
                         <button
                           onClick={() => deleteAnnouncement(a.id)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-error/10 border border-error/30 text-error text-xs font-bold rounded-lg hover:bg-error/20 transition-colors active:scale-95 ml-auto"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-error/10 border border-error/30 text-error font-label-sm font-bold rounded-lg hover:bg-error/20 transition-colors active:scale-95 ml-auto"
                         >
                           <span className="material-symbols-outlined text-[14px]">delete</span>
                           Delete
@@ -341,7 +341,7 @@ export const TeacherAnnouncements = () => {
               <div className="flex justify-between items-center mb-5">
                 <div>
                   <h3 className="font-headline-sm text-headline-sm text-primary">New Announcement</h3>
-                  <p className="text-xs text-on-surface-variant mt-0.5">Publish to bulletin board</p>
+                  <p className="font-body-sm text-on-surface-variant mt-0.5">Publish to bulletin board</p>
                 </div>
                 <button onClick={() => setIsModalOpen(false)} className="p-1.5 text-on-surface-variant hover:bg-surface-container rounded-full">
                   <span className="material-symbols-outlined text-xl">close</span>
@@ -353,21 +353,21 @@ export const TeacherAnnouncements = () => {
                   <label className="block text-[11px] text-outline mb-1 font-bold uppercase tracking-wider">Title</label>
                   <input type="text" required placeholder="Enter announcement title..."
                     value={newTitle} onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full px-3 py-2 border border-outline-variant focus:border-primary rounded-lg bg-surface-container text-on-surface outline-none text-sm transition-colors" />
+                    className="w-full px-3 py-2 border border-outline-variant focus:border-primary rounded-lg bg-surface-container text-on-surface outline-none font-body-md transition-colors" />
                 </div>
 
                 <div>
                   <label className="block text-[11px] text-outline mb-1 font-bold uppercase tracking-wider">Content</label>
                   <textarea required rows={4} placeholder="Write announcement description..."
                     value={newContent} onChange={(e) => setNewContent(e.target.value)}
-                    className="w-full p-3 border border-outline-variant focus:border-primary rounded-lg bg-surface-container text-on-surface outline-none text-sm transition-colors" />
+                    className="w-full p-3 border border-outline-variant focus:border-primary rounded-lg bg-surface-container text-on-surface outline-none font-body-md transition-colors" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] text-outline mb-1 font-bold uppercase tracking-wider">Category</label>
                     <select value={newCategory} onChange={(e) => setNewCategory(e.target.value as any)}
-                      className="w-full px-3 py-2 border border-outline-variant focus:border-primary rounded-lg bg-surface-container text-on-surface outline-none text-sm transition-colors">
+                      className="w-full px-3 py-2 border border-outline-variant focus:border-primary rounded-lg bg-surface-container text-on-surface outline-none font-body-md transition-colors">
                       <option value="General">General</option>
                       <option value="Urgent">Urgent</option>
                       <option value="Academic">Academic</option>
@@ -377,7 +377,7 @@ export const TeacherAnnouncements = () => {
                   <div>
                     <label className="block text-[11px] text-outline mb-1 font-bold uppercase tracking-wider">Audience</label>
                     <select value={newAudience} onChange={(e) => setNewAudience(e.target.value)}
-                      className="w-full px-3 py-2 border border-outline-variant focus:border-primary rounded-lg bg-surface-container text-on-surface outline-none text-sm transition-colors">
+                      className="w-full px-3 py-2 border border-outline-variant focus:border-primary rounded-lg bg-surface-container text-on-surface outline-none font-body-md transition-colors">
                       <option value="All Classes">All Classes</option>
                       <option value="Form 3A - Mathematics">Form 3A - Maths</option>
                       <option value="Form 4B - Physics">Form 4B - Physics</option>
@@ -392,16 +392,16 @@ export const TeacherAnnouncements = () => {
                   <input type="checkbox" id="newPinned" checked={newPinned}
                     onChange={(e) => setNewPinned(e.target.checked)}
                     className="w-4 h-4 text-primary bg-surface-container border-outline rounded focus:ring-primary" />
-                  <span className="text-xs text-on-surface-variant">Pin to top of bulletin board</span>
+                  <span className="font-body-sm text-on-surface-variant">Pin to top of bulletin board</span>
                 </label>
 
                 <div className="flex justify-end gap-3 pt-3 border-t border-surface-border dark:border-outline-variant">
                   <button type="button" onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 border border-outline text-on-surface-variant hover:bg-surface-container rounded-lg font-bold transition-all text-xs">
+                    className="px-4 py-2 border border-outline text-on-surface-variant hover:bg-surface-container rounded-lg font-bold transition-all font-label-md">
                     Cancel
                   </button>
                   <button type="submit"
-                    className="px-5 py-2 bg-primary text-on-primary hover:opacity-90 active:scale-95 rounded-lg font-bold transition-all text-xs shadow-sm">
+                    className="px-5 py-2 bg-primary text-on-primary hover:opacity-90 active:scale-95 rounded-lg font-bold transition-all font-label-md shadow-sm">
                     Publish
                   </button>
                 </div>

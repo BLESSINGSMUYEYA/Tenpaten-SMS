@@ -62,7 +62,7 @@ export const DeputyHeadFinancials: React.FC = () => {
               <span>/</span>
               <span className="text-primary font-bold">Financials</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Financial Overview</h1>
+            <h1 className="dash-page-title">Financial Overview</h1>
             <p className="font-body-md text-on-surface-variant">Oversee school fee collection, review class payments progress, and authorize student bursary assistance.</p>
           </div>
           <div className="flex gap-2 self-start md:self-end">

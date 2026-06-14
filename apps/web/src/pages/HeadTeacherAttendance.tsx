@@ -47,7 +47,7 @@ export const HeadTeacherAttendance: React.FC = () => {
               <span>/</span>
               <span className="text-primary font-bold">Attendance</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Attendance</h1>
+            <h1 className="dash-page-title">Attendance</h1>
             <p className="font-body-md text-on-surface-variant">School-wide daily attendance tracker, {fullName}.</p>
           </div>
           <div className="flex gap-3 items-center self-start md:self-end">

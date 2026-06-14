@@ -70,20 +70,18 @@ export const ParentDashboard: React.FC = () => {
   return (
     <div className="bg-background text-on-background font-body-md flex h-screen overflow-hidden text-xs">
       {/* SideNavBar - Desktop */}
-      <aside className="hidden lg:flex flex-col h-screen p-md space-y-base overflow-y-auto fixed left-0 top-0 w-[280px] bg-surface-container-low border-r border-outline-variant z-20">
-        <div className="mb-lg px-md">
-          <div className="flex flex-col mb-base gap-xs">
-            <Logo height="52px" />
-          </div>
+      <aside className="hidden lg:flex flex-col h-screen p-4 pt-6 fixed left-0 top-0 w-72 bg-surface-container-low border-r border-outline-variant z-20">
+        <div className="px-4 mb-6 flex flex-col items-center text-center">
+          <Logo height="36px" className="mb-1" />
         </div>
-        <nav className="flex-1 space-y-xs font-bold text-on-surface-variant">
+        <nav className="flex-1 space-y-xs font-bold text-on-surface-variant font-label-md text-label-md">
           <a className="flex items-center space-x-md bg-secondary-container text-on-secondary-container rounded-full px-md py-sm" href="#" onClick={e => e.preventDefault()}>
             <span className="material-symbols-outlined">dashboard</span>
             <span className="font-label-md">Dashboard</span>
           </a>
         </nav>
         <div className="pt-lg border-t border-outline-variant space-y-xs">
-          <button className="flex items-center space-x-md text-error hover:bg-surface-container-high rounded-full transition-all w-full text-left" onClick={logout}>
+          <button className="flex items-center space-x-md text-error hover:bg-surface-container-high rounded-full transition-all w-full text-left font-label-md text-label-md" onClick={logout}>
             <span className="material-symbols-outlined">logout</span>
             <span className="font-label-md">Logout</span>
           </button>
@@ -91,12 +89,12 @@ export const ParentDashboard: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 lg:ml-[280px] ml-0 flex flex-col h-screen overflow-hidden w-full min-w-0">
+      <main className="flex-1 lg:ml-72 ml-0 flex flex-col h-screen overflow-hidden w-full min-w-0 bg-surface-bright">
         {/* TopAppBar */}
-        <header className="flex justify-between items-center px-lg h-16 w-full sticky top-0 z-30 bg-surface border-b border-outline-variant">
-          <h2 className="font-headline-md text-headline-md text-primary font-bold text-base">Parent Portal</h2>
+        <header className="fixed top-0 right-0 left-0 lg:left-72 z-40 h-14 flex justify-between items-center px-margin-mobile md:px-margin-desktop bg-surface dark:bg-surface-dim border-b border-surface-border dark:border-outline-variant transition-all duration-300">
+          <h1 className="dash-page-title">Parent Portal</h1>
           <div className="flex items-center space-x-md">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">
               <span className="material-symbols-outlined text-sm">person</span>
             </div>
             <span className="font-label-md hidden lg:block">{firstName} {user?.lastName}</span>
@@ -104,12 +102,12 @@ export const ParentDashboard: React.FC = () => {
         </header>
 
         {/* Scrollable Canvas */}
-        <div className="flex-1 overflow-y-auto p-lg">
+        <div className="flex-1 overflow-y-auto px-margin-mobile md:px-margin-desktop pt-20 pb-margin-desktop">
           {/* Greeting + Fee Balance */}
           <section className="grid grid-cols-1 md:grid-cols-12 gap-lg mb-lg">
             <div className="md:col-span-8 bg-surface-container-lowest p-lg rounded-xl border border-outline-variant relative overflow-hidden flex flex-col justify-center">
               <p className="font-label-sm text-primary uppercase tracking-wider mb-xs font-bold">Welcome, {firstName}</p>
-              <h1 className="text-xl font-bold text-on-surface mb-md">Parent Dashboard</h1>
+              <h2 className="dash-section-title mb-md">Parent Dashboard</h2>
               <div className="flex space-x-sm">
                 {childrenNames.length > 0 ? childrenNames.map(name => (
                   <span key={name} className="px-4 py-2 bg-primary text-on-primary text-[10px] rounded-full font-bold uppercase tracking-wider">

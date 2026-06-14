@@ -32,7 +32,7 @@ export const DeputyHeadAcademics = () => {
               <span>/</span>
               <span className="text-primary font-bold">Academics</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Academic Performance</h1>
+            <h1 className="dash-page-title">Academic Performance</h1>
             <p className="font-body-md text-on-surface-variant">Oversee continuous assessment scores, grade averages, and track term milestones.</p>
           </div>
           <div className="flex gap-2 self-start md:self-end">

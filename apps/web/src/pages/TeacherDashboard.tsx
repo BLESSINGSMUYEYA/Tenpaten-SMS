@@ -354,9 +354,9 @@ export const TeacherDashboard: React.FC = () => {
       <main className="lg:ml-72 pt-20 pb-24 lg:pb-8 px-margin-mobile md:px-margin-desktop min-h-screen bg-surface text-on-surface transition-colors">
         <div className="max-w-[1440px] mx-auto">
           <header className="mb-lg">
-            <h2 className="font-headline-sm text-headline-sm text-primary font-bold">
+            <h1 className="dash-page-title">
               Welcome back, {fullName}
-            </h2>
+            </h1>
             <p className="font-body-md text-body-md text-on-surface-variant">
               {todaySlots.length > 0
                 ? `You have ${todaySlots.length} class${todaySlots.length !== 1 ? 'es' : ''} today${pendingGrades > 0 ? ` and ${pendingGrades} grade${pendingGrades !== 1 ? 's' : ''} pending submission` : ''}.`
@@ -392,15 +392,15 @@ export const TeacherDashboard: React.FC = () => {
                           </span>
                         </div>
                         <div>
-                          <h4 className={`font-headline-sm text-headline-sm font-bold text-sm ${idx === 0 ? 'text-white' : 'text-primary'}`}>
+                          <h4 className={`font-title-sm font-bold ${idx === 0 ? 'text-white' : 'text-primary'}`}>
                             {slot.subject.name}
                           </h4>
-                          <p className={`font-body-sm text-xs mt-0.5 ${idx === 0 ? 'opacity-90' : 'text-on-surface-variant'}`}>
+                          <p className={`font-body-sm mt-0.5 ${idx === 0 ? 'opacity-90' : 'text-on-surface-variant'}`}>
                             {slot.class.displayName}
                           </p>
                         </div>
                         {slot.room && (
-                          <p className={`font-body-sm text-xs flex items-center gap-1 ${idx === 0 ? 'opacity-80' : 'text-on-surface-variant'}`}>
+                          <p className={`font-body-sm flex items-center gap-1 ${idx === 0 ? 'opacity-80' : 'text-on-surface-variant'}`}>
                             <span className="material-symbols-outlined text-[14px]">location_on</span>
                             {slot.room}
                           </p>
@@ -435,7 +435,7 @@ export const TeacherDashboard: React.FC = () => {
                     <p className="font-body-sm text-on-surface-variant mb-md text-center">
                       Mark register for <span className="font-bold text-on-surface">{currentSlot.class.displayName}</span>
                     </p>
-                    <p className="font-body-sm text-on-surface-variant mb-md text-center text-xs">
+                    <p className="font-body-sm text-on-surface-variant mb-md text-center">
                       {currentSlot.subject.name} — Period {currentSlot.periodNumber}
                     </p>
                     <div className="grid grid-cols-2 gap-sm">
@@ -492,9 +492,9 @@ export const TeacherDashboard: React.FC = () => {
               </div>
               <div className="p-md">
                 {grades === null ? (
-                  <p className="text-on-surface-variant text-sm py-4 text-center">Loading grade data...</p>
+                  <p className="text-on-surface-variant font-body-md py-4 text-center">Loading grade data...</p>
                 ) : (grades || []).length === 0 ? (
-                  <p className="text-on-surface-variant text-sm py-4 text-center">No grades entered yet.</p>
+                  <p className="text-on-surface-variant font-body-md py-4 text-center">No grades entered yet.</p>
                 ) : gradeGroups.length > 0 ? (
                   <div className="space-y-lg">
                     {gradeGroups.map(item => {

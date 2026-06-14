@@ -29,7 +29,7 @@ export const HeadTeacherSettings: React.FC = () => {
             <span>/</span>
             <span className="text-primary font-bold">Settings</span>
           </nav>
-          <h1 className="font-headline-xl text-headline-xl text-primary">Settings</h1>
+          <h1 className="dash-page-title">Settings</h1>
           <p className="font-body-md text-on-surface-variant">Update institution profiles and admin preferences here, {fullName}.</p>
         </div>
 

@@ -16,7 +16,7 @@ export const Sidebar = ({
 
   const getLinkClass = (path: string) => {
     const isActive = location.pathname === path;
-    return `flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-sm [&>.material-symbols-outlined]:text-[20px] ${
+    return `flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors font-label-md text-label-md [&>.material-symbols-outlined]:text-[20px] ${
       isActive
         ? 'bg-primary-container text-on-primary-container font-bold'
         : 'text-on-surface-variant hover:bg-surface-container font-medium'
@@ -39,7 +39,7 @@ export const Sidebar = ({
           zenMode ? 'lg:-translate-x-full' : 'lg:translate-x-0'
         }`}
       >
-      <div className="px-4 mb-8 flex flex-col items-center text-center">
+      <div className="px-4 mb-6 flex flex-col items-center text-center">
         <Logo height="36px" className="mb-1" />
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto pr-1">
@@ -81,7 +81,7 @@ export const Sidebar = ({
         </Link>
       </nav>
       <div className="mt-auto border-t border-surface-border dark:border-outline-variant pt-4 flex flex-col gap-2">
-        <button onClick={() => { closeSidebar(); logout(); }} className="flex items-center gap-3 px-4 py-2.5 text-on-error-container bg-error-container hover:bg-error/20 rounded-lg text-sm [&>.material-symbols-outlined]:text-[20px] font-bold transition-colors w-full text-left">
+        <button onClick={() => { closeSidebar(); logout(); }} className="flex items-center gap-3 px-4 py-2.5 text-on-error-container bg-error-container hover:bg-error/20 rounded-lg font-bold transition-colors w-full text-left font-label-md text-label-md [&>.material-symbols-outlined]:text-[20px]">
           <span className="material-symbols-outlined" data-icon="logout">logout</span>
           Logout
         </button>

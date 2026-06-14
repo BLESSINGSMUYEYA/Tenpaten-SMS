@@ -1,5 +1,5 @@
 ---
-name: EduCore Modern Identity
+name: Tenpaten SMS Modern Identity
 colors:
   surface: '#f8f9ff'
   surface-dim: '#cbdbf5'
@@ -16,19 +16,19 @@ colors:
   outline: '#747780'
   outline-variant: '#c4c6d0'
   surface-tint: '#425e91'
-  primary: '#002452'
+  primary: '#6366f1'
   on-primary: '#ffffff'
-  primary-container: '#1b3a6b'
-  on-primary-container: '#89a5dd'
-  inverse-primary: '#acc7ff'
-  secondary: '#006d37'
+  primary-container: '#e0e7ff'
+  on-primary-container: '#1e1b4b'
+  inverse-primary: '#c7d2fe'
+  secondary: '#814bf2'
   on-secondary: '#ffffff'
-  secondary-container: '#6bfe9c'
-  on-secondary-container: '#00743a'
-  tertiary: '#3c1e00'
+  secondary-container: '#e0e7ff'
+  on-secondary-container: '#1e1b4b'
+  tertiary: '#2a9ab3'
   on-tertiary: '#ffffff'
-  tertiary-container: '#5b3000'
-  on-tertiary-container: '#d7985f'
+  tertiary-container: '#e0f2fe'
+  on-tertiary-container: '#0369a1'
   error: '#ba1a1a'
   on-error: '#ffffff'
   error-container: '#ffdad6'
@@ -55,50 +55,50 @@ colors:
   text-ink: '#0F172A'
 typography:
   headline-xl:
-    fontFamily: Plus Jakarta Sans
+    fontFamily: Outfit
     fontSize: 40px
     fontWeight: '700'
     lineHeight: 48px
     letterSpacing: -0.02em
   headline-xl-mobile:
-    fontFamily: Plus Jakarta Sans
+    fontFamily: Outfit
     fontSize: 30px
     fontWeight: '700'
     lineHeight: 36px
     letterSpacing: -0.02em
   headline-lg:
-    fontFamily: Plus Jakarta Sans
+    fontFamily: Outfit
     fontSize: 32px
     fontWeight: '600'
     lineHeight: 40px
   headline-md:
-    fontFamily: Plus Jakarta Sans
+    fontFamily: Outfit
     fontSize: 24px
     fontWeight: '600'
     lineHeight: 32px
   body-lg:
-    fontFamily: DM Sans
+    fontFamily: Inter
     fontSize: 18px
     fontWeight: '400'
     lineHeight: 28px
   body-md:
-    fontFamily: DM Sans
+    fontFamily: Inter
     fontSize: 16px
     fontWeight: '400'
     lineHeight: 24px
   body-sm:
-    fontFamily: DM Sans
+    fontFamily: Inter
     fontSize: 14px
     fontWeight: '400'
     lineHeight: 20px
   label-md:
-    fontFamily: DM Sans
+    fontFamily: Inter
     fontSize: 14px
     fontWeight: '500'
     lineHeight: 16px
     letterSpacing: 0.05em
   label-sm:
-    fontFamily: DM Sans
+    fontFamily: Inter
     fontSize: 12px
     fontWeight: '700'
     lineHeight: 14px
@@ -127,18 +127,18 @@ Drawing from the **Corporate / Modern** aesthetic with a lean toward **High-Cont
 
 ## Colors
 
-The color strategy is anchored by **Deep Royal Blue**, chosen to evoke the institutional trust associated with traditional education. This is punctuated by **Vibrant Green**, symbolizing growth, progress, and student success.
+The color strategy is anchored by **Indigo**, chosen to evoke the institutional trust associated with traditional education. This is punctuated by **Teal/Cyan**, symbolizing growth, progress, and student success.
 
 To ensure the high contrast required for outdoor readability, the system utilizes a "Slate" neutral palette. Pure black is avoided in favor of `#0F172A` to maintain a professional depth, while backgrounds use very light, cool-toned grays to reduce eye strain during prolonged administrative use. 
 
 Color is used functionally:
-- **Primary Blue:** For structural elements, navigation, and primary actions.
-- **Accent Green:** For success states, financial credits, and "growth" metrics.
+- **Primary Indigo:** For structural elements, navigation, and primary actions.
+- **Accent Teal/Cyan:** For success states, financial credits, and "growth" metrics.
 - **Warning/Danger:** Strictly reserved for attendance alerts, overdue fees, or system errors.
 
 ## Typography
 
-The typography system uses **Plus Jakarta Sans** for headlines to provide a contemporary, open, and friendly feel. Its geometric nature ensures headings are legible at a glance. **DM Sans** is utilized for body text and data tables; its low contrast and stable letterforms make it highly readable in dense information environments like student gradebooks or financial ledgers.
+The typography system uses **Outfit** for headlines to provide a contemporary, open, and friendly feel. Its geometric nature ensures headings are legible at a glance. **Inter** is utilized for body text and data tables; its low contrast and stable letterforms make it highly readable in dense information environments like student gradebooks or financial ledgers.
 
 For mobile-first optimization, large headlines scale down to prevent excessive line-breaking, while body text remains at a minimum of `16px` for standard roles to ensure accessibility. Letter spacing is slightly tightened on headlines for a more "designed" look and widened on small labels to maintain legibility.
 
@@ -163,7 +163,7 @@ To maintain a "print-ready" and clean aesthetic, the design system avoids heavy,
 - **Surface Levels:** The primary background is the lowest level (`#F8FAFC`). Cards and containers sit on a white (`#FFFFFF`) surface.
 - **Outlines:** Instead of shadows, use 1px solid borders (`#E2E8F0`) to define containers. This ensures clarity when the UI is printed or viewed on low-brightness screens.
 - **Interaction Depth:** Only "floating" elements like Modals or Dropdowns use a soft, neutral shadow (0px 4px 12px, 5% opacity black) to distinguish them from the base layout. 
-- **Active States:** Pressed or focused states use a 2px Primary Blue ring to provide high-visibility feedback without changing the layout size.
+- **Active States:** Pressed or focused states use a 2px Primary Indigo ring to provide high-visibility feedback without changing the layout size.
 
 ## Shapes
 
@@ -177,7 +177,7 @@ The design system uses a **Rounded (0.5rem / 8px)** base to soften the "institut
 ## Components
 
 ### Buttons
-Primary buttons are solid Deep Royal Blue with white text. Secondary buttons use the Primary Blue as an outline (Ghost style). The Vibrant Green is reserved exclusively for "Positive Actions" (e.g., Pay Fees, Approve Application). All buttons must have a minimum height of 48px on mobile.
+Primary buttons are solid Primary Indigo with white text. Secondary buttons use the Primary Indigo as an outline (Ghost style). The Vibrant Teal/Cyan is reserved exclusively for "Positive Actions" (e.g., Pay Fees, Approve Application). All buttons must have a minimum height of 48px on mobile.
 
 ### Inputs
 Text fields feature a floating label or a high-contrast top-aligned label. The border-bottom is thickened when focused to provide a clear indicator for users on mobile devices. Error states use the Danger Red with a supporting icon for accessibility.
@@ -189,4 +189,4 @@ Cards are the primary container for student profiles and module summaries. They 
 In the multi-tenant dashboard, lists are the core of the experience. List items must have generous vertical padding (12px - 16px) to allow for easy thumb-tapping. Alternating row colors (Zebra striping) using `#F8FAFC` are required for data-heavy tables to assist the eye.
 
 ### Chips & Badges
-Small, rounded pills used for status indicators (e.g., "Paid", "Absent", "Pending"). These use low-opacity versions of the semantic colors (e.g., 10% Green background with 100% Green text) to ensure they don't compete with primary call-to-actions.
+Small, rounded pills used for status indicators (e.g., "Paid", "Absent", "Pending"). These use low-opacity versions of the semantic colors (e.g., 10% Teal background with 100% Teal text) to ensure they don't compete with primary call-to-actions.

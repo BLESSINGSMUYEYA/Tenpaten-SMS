@@ -57,18 +57,18 @@ export const StudentDashboard: React.FC = () => {
   return (
     <div className="bg-background text-on-surface min-h-screen flex">
       {/* SideNavBar - Desktop */}
-      <aside className="hidden lg:flex fixed left-0 top-0 h-screen flex flex-col p-md w-[280px] z-20 overflow-y-auto bg-surface-container-low border-r border-outline-variant text-xs">
-        <div className="mb-xl flex flex-col gap-xs">
-          <Logo height="52px" />
+      <aside className="hidden lg:flex fixed left-0 top-0 h-screen flex flex-col p-4 pt-6 w-72 z-20 overflow-y-auto bg-surface-container-low border-r border-outline-variant text-xs">
+        <div className="px-4 mb-6 flex flex-col items-center text-center">
+          <Logo height="36px" className="mb-1" />
         </div>
-        <nav className="flex-1 flex flex-col gap-xs font-bold text-on-surface-variant">
+        <nav className="flex-1 flex flex-col gap-xs font-bold text-on-surface-variant font-label-md text-label-md">
           <a className="flex items-center gap-md p-md bg-primary-container text-on-primary-container rounded-lg transition-all" href="#" onClick={e => e.preventDefault()}>
             <span className="material-symbols-outlined">dashboard</span>
             <span className="font-label-md">Dashboard</span>
           </a>
         </nav>
         <div className="mt-auto pt-md border-t border-outline-variant flex flex-col gap-xs">
-          <button className="flex items-center gap-md p-md text-error hover:bg-surface-variant transition-all rounded-lg w-full text-left" onClick={logout}>
+          <button className="flex items-center gap-md p-md text-error hover:bg-surface-variant transition-all rounded-lg w-full text-left font-label-md text-label-md" onClick={logout}>
             <span className="material-symbols-outlined">logout</span>
             <span className="font-label-md">Logout</span>
           </button>
@@ -76,10 +76,10 @@ export const StudentDashboard: React.FC = () => {
       </aside>
 
       {/* Main Content Canvas */}
-      <main className="lg:ml-[280px] ml-0 pt-16 p-margin-mobile md:p-margin-desktop min-h-screen flex-1 w-full min-w-0">
-        <header className="fixed top-0 right-0 lg:left-[280px] left-0 h-16 z-30 bg-surface border-b border-outline-variant flex justify-between items-center px-margin-mobile md:px-margin-desktop">
+      <main className="lg:ml-72 ml-0 pt-20 px-margin-mobile md:px-margin-desktop pb-margin-desktop min-h-screen flex-1 w-full min-w-0 bg-surface-bright overflow-y-auto">
+        <header className="fixed top-0 right-0 lg:left-72 left-0 h-14 z-40 bg-surface dark:bg-surface-dim border-b border-surface-border dark:border-outline-variant flex justify-between items-center px-margin-mobile md:px-margin-desktop transition-all duration-300">
           <div className="flex items-center gap-md">
-            <h2 className="font-headline-sm text-headline-sm text-primary font-bold">Student Portal</h2>
+            <h1 className="dash-page-title">Student Portal</h1>
           </div>
           <div className="flex items-center gap-sm">
             <div className="text-right hidden xl:block">
@@ -98,7 +98,7 @@ export const StudentDashboard: React.FC = () => {
             <div className="md:col-span-2 relative overflow-hidden bg-primary rounded-xl p-lg flex items-center justify-between text-on-primary">
               <div className="relative z-10">
                 <span className="bg-secondary px-3 py-1 rounded-full font-label-sm text-label-sm text-on-secondary mb-sm inline-block font-medium">Student Center</span>
-                <h1 className="font-headline-sm text-headline-sm font-bold mb-xs">Welcome back, {firstName}!</h1>
+                <h2 className="font-headline-sm text-headline-sm font-bold mb-xs">Welcome back, {firstName}!</h2>
                 <p className="font-body-sm text-body-sm opacity-90 max-w-sm">Review your term updates, notices, and academic performance below.</p>
               </div>
               <div className="hidden lg:block">

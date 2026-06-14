@@ -159,7 +159,7 @@ export const DeputyHeadStudents: React.FC = () => {
               <span>/</span>
               <span className="text-primary font-bold">Students</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Student Directory</h1>
+            <h1 className="dash-page-title">Student Directory</h1>
             <p className="font-body-md text-on-surface-variant">
               Access emergency parent contact details, fee standings, and student profiles.
             </p>

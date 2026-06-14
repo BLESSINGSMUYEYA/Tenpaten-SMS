@@ -90,7 +90,7 @@ export const TeacherClasses = () => {
               <span>/</span>
               <span className="text-primary font-bold">My Classes</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">My Assigned Classes</h1>
+            <h1 className="dash-page-title">My Assigned Classes</h1>
             <p className="font-body-md text-on-surface-variant">
               Manage your assigned classes, take attendance registers, and access gradebooks.
             </p>

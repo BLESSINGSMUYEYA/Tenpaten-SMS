@@ -112,7 +112,7 @@ export const DeputyHeadDashboard: React.FC = () => {
               <span>/</span>
               <span className="text-primary font-bold">Deputy Head Overview</span>
             </nav>
-            <h1 className="font-headline-md text-headline-md text-primary font-bold">Deputy Head Overview</h1>
+            <h1 className="dash-page-title">Deputy Head Overview</h1>
             <p className="font-body-md text-on-surface-variant">Welcome back, {fullName}. Monitor overall school operations, administrative tasks, and staff duty logs.</p>
           </div>
         </div>

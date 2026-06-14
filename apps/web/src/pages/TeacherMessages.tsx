@@ -188,7 +188,7 @@ export const TeacherMessages = () => {
               <span>/</span>
               <span className="text-primary font-bold">Messages</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Message Center</h1>
+            <h1 className="dash-page-title">Message Center</h1>
             <p className="font-body-md text-on-surface-variant">Secure chats with parents, staff, and students.</p>
           </div>
         </div>
@@ -218,7 +218,7 @@ export const TeacherMessages = () => {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-3 text-xs font-bold border-b-2 whitespace-nowrap active:scale-95 transition-all ${
+                  className={`flex-1 py-3 font-label-md font-bold border-b-2 whitespace-nowrap active:scale-95 transition-all ${
                     activeTab === tab
                       ? 'border-primary text-primary font-bold'
                       : 'border-transparent text-on-surface-variant hover:text-on-surface'
@@ -243,7 +243,7 @@ export const TeacherMessages = () => {
                       }`}
                     >
                       <div className="relative flex-shrink-0">
-                        <div className="w-11 h-11 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center text-sm">
+                        <div className="w-11 h-11 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center font-label-lg">
                           {c.avatarCode}
                         </div>
                         {c.online && (
@@ -257,8 +257,8 @@ export const TeacherMessages = () => {
                           </span>
                           <span className="text-[10px] text-outline whitespace-nowrap">{c.time}</span>
                         </div>
-                        <p className="text-xs text-outline truncate">{c.subtitle}</p>
-                        <p className="text-xs text-on-surface-variant truncate mt-1 leading-relaxed">
+                        <p className="font-label-sm text-outline truncate">{c.subtitle}</p>
+                        <p className="font-body-sm text-on-surface-variant truncate mt-1 leading-relaxed">
                           {c.lastMessage}
                         </p>
                       </div>
@@ -286,7 +286,7 @@ export const TeacherMessages = () => {
                 {/* Chat Partner Header */}
                 <div className="p-4 border-b border-surface-border dark:border-outline-variant flex items-center justify-between bg-surface-container-low/20">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center text-xs">
+                    <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center font-label-md">
                       {activeChat.avatarCode}
                     </div>
                     <div>
@@ -313,7 +313,7 @@ export const TeacherMessages = () => {
                     const isMe = m.sender === 'me';
                     return (
                       <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 shadow-sm text-xs leading-relaxed ${
+                        <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 shadow-sm font-body-sm leading-relaxed ${
                           isMe
                             ? 'bg-primary text-on-primary rounded-tr-none'
                             : 'bg-surface-container-high text-on-surface rounded-tl-none border border-surface-border dark:border-outline-variant'

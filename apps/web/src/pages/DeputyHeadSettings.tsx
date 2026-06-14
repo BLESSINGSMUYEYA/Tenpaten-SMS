@@ -49,7 +49,7 @@ export const DeputyHeadSettings: React.FC = () => {
               <span>/</span>
               <span className="text-primary font-bold">Settings</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">System Configurations</h1>
+            <h1 className="dash-page-title">System Configurations</h1>
             <p className="font-body-md text-on-surface-variant">Update school grading scales, configure academic terms, customize notification policies, and edit profiles.</p>
           </div>
         </div>

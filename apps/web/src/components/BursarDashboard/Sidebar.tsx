@@ -16,33 +16,33 @@ export const Sidebar = ({ isOpen, closeSidebar }: { isOpen: boolean; closeSideba
       <aside
         className={`flex flex-col fixed left-0 top-0 h-full z-50 p-4 bg-surface-container-lowest dark:bg-inverse-surface border-r border-surface-border dark:border-outline-variant shadow-sm w-72 pt-6 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       >
-      <div className="px-4 mb-8 flex flex-col items-center text-center">
+      <div className="px-4 mb-6 flex flex-col items-center text-center">
         <Logo height="36px" className="mb-1" />
       </div>
       <nav className="flex-1 space-y-2">
-        <Link to="/bursar/dashboard" className="flex items-center gap-4 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold">
+        <Link to="/bursar/dashboard" className="flex items-center gap-4 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold font-label-md text-label-md">
           <span className="material-symbols-outlined" data-icon="dashboard">dashboard</span>
           Dashboard
         </Link>
-        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium transition-colors">
+        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
           <span className="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
           Invoices
         </Link>
-        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium transition-colors">
+        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
           <span className="material-symbols-outlined" data-icon="payments">payments</span>
           Payments
         </Link>
-        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium transition-colors">
+        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
           <span className="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
           Payroll
         </Link>
-        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium transition-colors">
+        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
           <span className="material-symbols-outlined" data-icon="assessment">assessment</span>
           Financial Reports
         </Link>
       </nav>
       <div className="mt-auto border-t border-surface-border dark:border-outline-variant pt-4 flex flex-col gap-2">
-        <button onClick={() => { closeSidebar(); logout(); }} className="flex items-center gap-4 px-4 py-3 text-on-error-container bg-error-container hover:bg-error/20 rounded-lg font-bold transition-colors w-full text-left">
+        <button onClick={() => { closeSidebar(); logout(); }} className="flex items-center gap-4 px-4 py-3 text-on-error-container bg-error-container hover:bg-error/20 rounded-lg font-bold font-label-md text-label-md transition-colors w-full text-left">
           <span className="material-symbols-outlined" data-icon="logout">logout</span>
           Logout
         </button>

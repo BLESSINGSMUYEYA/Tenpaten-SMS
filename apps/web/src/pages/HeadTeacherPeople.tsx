@@ -197,7 +197,7 @@ export const HeadTeacherPeople: React.FC = () => {
         {/* Page Header */}
         <div className="py-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-primary tracking-tight">People Management</h1>
+            <h1 className="dash-page-title">People Management</h1>
             <p className="text-sm text-on-surface-variant mt-1">Manage staff and student records, {fullName}.</p>
           </div>
           <div className="flex gap-3">

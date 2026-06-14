@@ -78,7 +78,7 @@ export const DeputyHeadAttendance: React.FC = () => {
               <span>/</span>
               <span className="text-primary font-bold">Attendance</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Attendance Tracker</h1>
+            <h1 className="dash-page-title">Attendance Tracker</h1>
             <p className="font-body-md text-on-surface-variant">Monitor daily school-wide attendance, register late-comers, and review teacher logs.</p>
           </div>
           <button

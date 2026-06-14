@@ -140,7 +140,7 @@ export const DeputyHeadDiscipline = () => {
               <span>/</span>
               <span className="text-primary font-bold">Discipline</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Student Conduct & Discipline</h1>
+            <h1 className="dash-page-title">Student Conduct & Discipline</h1>
             <p className="font-body-md text-on-surface-variant">Log and manage student behavioral records, incident reports, and corrective actions.</p>
           </div>
           <button

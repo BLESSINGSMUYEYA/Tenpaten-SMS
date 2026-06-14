@@ -46,7 +46,7 @@ export const HeadTeacherAcademic: React.FC = () => {
               <span>/</span>
               <span className="text-primary font-bold">Academic</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Academic Overview</h1>
+            <h1 className="dash-page-title">Academic Overview</h1>
             <p className="font-body-md text-on-surface-variant">Subject performance, grade reports & exam schedule, {fullName}.</p>
           </div>
           <button className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm text-sm self-start md:self-end">

@@ -48,14 +48,14 @@ export const TeacherParentCommunications = () => {
               <span>/</span>
               <span className="text-primary font-bold">Parent Communication</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Parent Communications</h1>
+            <h1 className="dash-page-title">Parent Communications</h1>
             <p className="font-body-md text-on-surface-variant">Send updates and messages to parents.</p>
           </div>
           <div className="flex gap-2 self-start md:self-end">
             <button
               onClick={sendMessage}
               disabled={!message.trim()}
-              className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all text-xs shadow-sm disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all font-label-md shadow-sm disabled:opacity-50"
             >
               <span className="material-symbols-outlined text-[18px]">send</span>
               Send Message
@@ -107,7 +107,7 @@ export const TeacherParentCommunications = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-container text-on-surface-variant border-b border-surface-border dark:border-outline-variant font-label-md text-xs uppercase">
+                <tr className="bg-surface-container text-on-surface-variant border-b border-surface-border dark:border-outline-variant font-label-sm uppercase">
                   <th className="py-4 px-6 font-bold">Student</th>
                   <th className="py-4 px-4 font-bold">Parent</th>
                   <th className="py-4 px-4 font-bold">Contact</th>
@@ -118,7 +118,7 @@ export const TeacherParentCommunications = () => {
                   filteredParents.map((p) => (
                     <tr key={p.id} className="hover:bg-surface-container-low transition-colors">
                       <td className="py-4 px-6 flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center text-xs">{p.avatarCode}</div>
+                        <div className="w-9 h-9 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center font-label-sm">{p.avatarCode}</div>
                         <span className="font-title-sm text-on-surface">{p.name}</span>
                       </td>
                       <td className="py-4 px-4 text-on-surface font-body-md">{p.parentName}</td>

@@ -119,7 +119,7 @@ export const HeadTeacherFinance: React.FC = () => {
               <span>/</span>
               <span className="text-primary font-bold">Finance</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary font-bold">Financial Overview</h1>
+            <h1 className="dash-page-title">Financial Overview</h1>
             <p className="font-body-md text-on-surface-variant">Monitor revenue collection, fee balances, and payment history, {fullName}.</p>
           </div>
         </div>

@@ -35,37 +35,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
         />
       )}
       {/* Sidebar Navigation - Desktop */}
-      <aside className="bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 h-full w-[280px] flex flex-col hidden lg:flex z-20 transition-all duration-300">
-        <div className="p-lg border-b border-outline-variant flex flex-col gap-xs">
-          <Logo height="36px" />
+      <aside className="bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 h-full w-72 p-4 pt-6 flex flex-col hidden lg:flex z-20 transition-all duration-300">
+        <div className="px-4 mb-6 flex flex-col items-center text-center">
+          <Logo height="36px" className="mb-1" />
         </div>
         <div className="flex-1 overflow-y-auto py-md flex flex-col gap-xs">
           {navItems.map(item => (
             <Link
               key={item.label}
               to={item.to}
-              className={`flex items-center gap-md px-md py-sm transition-colors ${
+              className={`flex items-center gap-md px-md py-sm rounded-lg transition-colors [&>.material-symbols-outlined]:text-[20px] ${
                 isActive(item.to)
-                  ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-low'
+                  ? 'bg-primary-container text-on-primary-container font-bold'
                   : 'text-on-surface-variant hover:bg-surface-container-low'
               }`}
             >
               <span className="material-symbols-outlined">{item.icon}</span>
-              <span className="font-body-md text-body-md">{item.label}</span>
+              <span className="font-label-md text-label-md">{item.label}</span>
             </Link>
           ))}
         </div>
         <div className="mt-auto border-t border-outline-variant py-md flex flex-col gap-xs">
           <a
-            className="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-low transition-colors"
+            className="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors"
             href="#"
             onClick={(e) => e.preventDefault()}
           >
             <span className="material-symbols-outlined">help</span>
-            <span className="font-body-md text-body-md">Support</span>
+            <span className="font-label-md text-label-md">Support</span>
           </a>
           <button
-            className="flex items-center gap-md px-md py-sm text-error hover:bg-error-container/20 transition-colors w-full text-left font-body-md text-body-md"
+            className="flex items-center gap-md px-md py-sm rounded-lg text-error hover:bg-error-container/20 transition-colors w-full text-left font-label-md text-label-md"
             onClick={logout}
           >
             <span className="material-symbols-outlined">logout</span>
@@ -76,13 +76,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
 
       {/* Sidebar Navigation - Mobile Drawer */}
       <aside
-        className={`bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 h-full w-[280px] flex flex-col z-45 lg:hidden transition-transform duration-300 transform ${
+        className={`bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 h-full w-72 p-4 pt-6 flex flex-col z-45 lg:hidden transition-transform duration-300 transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="p-lg border-b border-outline-variant flex items-center justify-between">
-          <div className="flex flex-col gap-xs">
-            <Logo height="36px" />
+        <div className="px-4 mb-6 flex items-center justify-between w-full">
+          <div className="flex flex-col items-center text-center">
+            <Logo height="36px" className="mb-1" />
           </div>
           <button
             className="p-sm text-on-surface hover:bg-surface-container-low rounded-full"
@@ -97,20 +97,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
               key={item.label}
               to={item.to}
               onClick={closeSidebar}
-              className={`flex items-center gap-md px-md py-sm transition-colors ${
+              className={`flex items-center gap-md px-md py-sm rounded-lg transition-colors [&>.material-symbols-outlined]:text-[20px] ${
                 isActive(item.to)
-                  ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-low'
+                  ? 'bg-primary-container text-on-primary-container font-bold'
                   : 'text-on-surface-variant hover:bg-surface-container-low'
               }`}
             >
               <span className="material-symbols-outlined">{item.icon}</span>
-              <span className="font-body-md text-body-md">{item.label}</span>
+              <span className="font-label-md text-label-md">{item.label}</span>
             </Link>
           ))}
         </div>
         <div className="mt-auto border-t border-outline-variant py-md flex flex-col gap-xs">
           <a
-            className="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-low transition-colors"
+            className="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors"
             href="#"
             onClick={(e) => {
               e.preventDefault();
@@ -118,10 +118,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
             }}
           >
             <span className="material-symbols-outlined">help</span>
-            <span className="font-body-md text-body-md">Support</span>
+            <span className="font-label-md text-label-md">Support</span>
           </a>
           <button
-            className="flex items-center gap-md px-md py-sm text-error hover:bg-error-container/20 transition-colors w-full text-left font-body-md text-body-md"
+            className="flex items-center gap-md px-md py-sm rounded-lg text-error hover:bg-error-container/20 transition-colors w-full text-left font-label-md text-label-md"
             onClick={() => {
               closeSidebar();
               logout();

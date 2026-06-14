@@ -188,17 +188,17 @@ export const TeacherAttendance = () => {
         {/* Page Header */}
         <div className="py-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="font-headline-xl text-headline-xl text-primary font-bold text-2xl">Class Attendance</h1>
+            <h1 className="dash-page-title">Class Attendance</h1>
             <p className="font-body-md text-on-surface-variant">Mark today's register or review historical records.</p>
           </div>
           {view === 'today' && !submitted && (
             <div className="flex gap-2">
               <button onClick={() => markAll('present')}
-                className="flex items-center gap-1.5 px-4 py-2 bg-surface-container border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-container-high transition-all text-xs">
+                className="flex items-center gap-1.5 px-4 py-2 bg-surface-container border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-container-high transition-all font-label-md">
                 All Present
               </button>
               <button onClick={submitAttendance} disabled={marking || loadingStudents}
-                className="flex items-center gap-1.5 px-5 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all text-xs shadow-sm disabled:opacity-50">
+                className="flex items-center gap-1.5 px-5 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all font-label-md shadow-sm disabled:opacity-50">
                 {marking ? 'Saving...' : 'Submit Register'}
               </button>
             </div>
@@ -209,7 +209,7 @@ export const TeacherAttendance = () => {
         <div className="flex gap-2 mb-6 border-b border-outline-variant">
           {(['today', 'history'] as const).map(v => (
             <button key={v} onClick={() => { setView(v); if (v === 'history' && historyClassId) refetchHistory(); }}
-              className={`px-5 py-2 text-xs font-bold border-b-2 transition-all capitalize ${
+              className={`px-5 py-2 font-label-md font-bold border-b-2 transition-all capitalize ${
                 view === v ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
               }`}>
               {v === 'today' ? '📋 Take Attendance' : '📊 History & Reports'}
@@ -251,7 +251,7 @@ export const TeacherAttendance = () => {
                 </div>
               </div>
               {submitted && (
-                <div className="flex items-center gap-2 bg-secondary text-white px-4 py-2 rounded-xl font-bold text-xs">
+                <div className="flex items-center gap-2 bg-secondary text-white px-4 py-2 rounded-xl font-label-md font-bold">
                   <span className="material-symbols-outlined text-[18px]">check_circle</span>
                   Register Submitted!
                 </div>
@@ -266,8 +266,8 @@ export const TeacherAttendance = () => {
                 { label: 'Late', value: lateToday, color: 'text-tertiary', bg: 'bg-amber-50 dark:bg-amber-950/20 border-amber-500/20' },
               ].map(s => (
                 <div key={s.label} className={`border rounded-2xl p-4 text-center shadow-sm ${s.bg}`}>
-                  <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">{s.label}</p>
-                  <p className={`text-xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+                  <p className="dash-card-label">{s.label}</p>
+                  <p className={`dash-card-value mt-1 ${s.color}`}>{s.value}</p>
                 </div>
               ))}
             </div>
@@ -277,7 +277,7 @@ export const TeacherAttendance = () => {
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-xl">search</span>
               <input type="text" placeholder="Search student…" value={todaySearch}
                 onChange={e => setTodaySearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:border-primary outline-none bg-surface-container text-on-surface font-body-sm transition-colors text-xs" />
+                className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:border-primary outline-none bg-surface-container text-on-surface font-body-sm transition-colors" />
             </div>
 
             {/* Student register cards */}
@@ -296,7 +296,7 @@ export const TeacherAttendance = () => {
                     <div key={student.id}
                       className="flex justify-between items-center py-2.5 px-4 border border-outline-variant rounded-xl shadow-sm bg-surface-container-lowest">
                       <div>
-                        <h3 className="text-xs font-bold text-on-surface">{student.user.firstName} {student.user.lastName}</h3>
+                        <h3 className="font-label-lg font-bold text-on-surface">{student.user.firstName} {student.user.lastName}</h3>
                         <span className={`inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 border text-[9px] font-bold rounded-full uppercase tracking-wider ${badgeMap[status]}`}>
                           {status}
                         </span>
@@ -323,7 +323,7 @@ export const TeacherAttendance = () => {
                 <div className="flex flex-col">
                   <label className="text-[10px] font-bold uppercase text-on-surface-variant mb-1">Class</label>
                   <select value={historyClassId} onChange={e => setHistoryClassId(e.target.value)}
-                    className="px-3 py-2 text-xs border border-outline-variant bg-surface-container text-on-surface outline-none rounded">
+                    className="px-3 py-2 font-body-sm border border-outline-variant bg-surface-container text-on-surface outline-none rounded">
                     {(classList || []).map(c => (
                       <option key={c.id} value={c.id}>{c.displayName}</option>
                     ))}
@@ -334,18 +334,18 @@ export const TeacherAttendance = () => {
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-xl">search</span>
                 <input type="text" placeholder="Search student…" value={historySearch}
                   onChange={e => setHistorySearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:border-primary outline-none bg-transparent text-on-surface font-body-sm text-xs" />
+                  className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:border-primary outline-none bg-transparent text-on-surface font-body-sm" />
               </div>
             </div>
 
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden text-xs">
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden font-body-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-surface-container border-b border-outline-variant">
-                      <th className="py-3 px-4 font-bold text-xs uppercase text-on-surface-variant min-w-[150px]">Student</th>
+                      <th className="py-3 px-4 font-bold font-label-sm uppercase text-on-surface-variant min-w-[150px]">Student</th>
                       {dateGroups.map(dateStr => (
-                        <th key={dateStr} className="py-3 px-4 text-center font-bold text-xs uppercase text-on-surface-variant whitespace-nowrap">
+                        <th key={dateStr} className="py-3 px-4 text-center font-bold font-label-sm uppercase text-on-surface-variant whitespace-nowrap">
                           {new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                         </th>
                       ))}

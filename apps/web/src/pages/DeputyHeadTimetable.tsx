@@ -209,10 +209,10 @@ export const DeputyHeadTimetable: React.FC = () => {
               <span className="material-symbols-outlined text-[16px] text-outline">chevron_right</span>
               <span className="font-label-sm text-primary font-bold">Master Timetable</span>
             </div>
-            <h2 className="font-headline-xl text-headline-xl text-primary font-bold flex items-center gap-2">
+            <h1 className="dash-page-title flex items-center gap-2">
               Timetable Management
               {zenMode && <span className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">Zen Mode</span>}
-            </h2>
+            </h1>
             <p className="font-body-md text-on-surface-variant mt-1">Configure and manage class schedule blocks, classrooms, and teacher allocations.</p>
           </div>
 

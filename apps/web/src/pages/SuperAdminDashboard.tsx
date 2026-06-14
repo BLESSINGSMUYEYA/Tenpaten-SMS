@@ -69,15 +69,15 @@ export const SuperAdminDashboard: React.FC = () => {
     <div className="bg-background text-on-background min-h-screen flex font-sans">
       <Sidebar isOpen={mobileMenuOpen} closeSidebar={() => setMobileMenuOpen(false)} />
 
-      <div className="flex-1 flex flex-col lg:ml-[280px] w-full min-w-0">
+      <div className="flex-1 flex flex-col lg:ml-72 w-full min-w-0">
         <Header onMenuClick={() => setMobileMenuOpen(true)} />
 
-        <main className="flex-1 p-gutter md:p-margin-desktop overflow-y-auto bg-surface-bright">
+        <main className="flex-1 px-margin-mobile md:px-margin-desktop pt-20 pb-margin-desktop overflow-y-auto bg-surface-bright">
           {/* Page Header */}
           <div className="mb-lg flex flex-col sm:flex-row sm:justify-between sm:items-end gap-md">
             <div>
-              <h1 className="font-headline-md text-headline-md text-on-surface mb-xs font-bold">Platform Overview</h1>
-              <p className="font-body-md text-body-md text-on-surface-variant">Live metrics and system health for EduCore.</p>
+              <h1 className="dash-page-title mb-xs">Platform Overview</h1>
+              <p className="font-body-md text-body-md text-on-surface-variant">Live metrics and system health for Tenpaten.</p>
             </div>
             <button className="flex items-center justify-center gap-sm bg-primary text-on-primary px-4 py-2.5 rounded-lg hover:bg-primary-container transition-colors shadow-sm self-start sm:self-auto active:scale-95">
               <span className="material-symbols-outlined text-sm">download</span>

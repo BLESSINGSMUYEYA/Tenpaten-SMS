@@ -113,7 +113,7 @@ export const DeputyHeadStaff = () => {
               <span>/</span>
               <span className="text-primary font-bold">Staff</span>
             </nav>
-            <h1 className="font-headline-xl text-headline-xl text-primary">Staff Management</h1>
+            <h1 className="dash-page-title">Staff Management</h1>
             <p className="font-body-md text-on-surface-variant">Monitor school staffing levels, assign class supervisors, and log teacher attendance.</p>
           </div>
           <button

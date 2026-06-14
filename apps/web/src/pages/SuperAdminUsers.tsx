@@ -118,16 +118,16 @@ export const SuperAdminUsers: React.FC = () => {
       <Sidebar isOpen={mobileMenuOpen} closeSidebar={() => setMobileMenuOpen(false)} />
 
       {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col lg:ml-[280px] w-full min-w-0">
+      <div className="flex-1 flex flex-col lg:ml-72 w-full min-w-0">
         <Header onMenuClick={() => setMobileMenuOpen(true)} />
 
         {/* Main Content Area */}
-        <main className="flex-1 p-gutter md:p-margin-desktop overflow-y-auto bg-surface-bright">
+        <main className="flex-1 px-margin-mobile md:px-margin-desktop pt-20 pb-margin-desktop overflow-y-auto bg-surface-bright">
           {/* Page Header */}
           <div className="mb-lg flex flex-col sm:flex-row sm:justify-between sm:items-end gap-md">
             <div>
-              <h1 className="font-headline-lg text-headline-lg text-on-surface mb-xs font-bold">System Users</h1>
-              <p className="font-body-md text-body-md text-on-surface-variant">Oversee, authorize, and manage administrative school users on the EduCore platform.</p>
+              <h1 className="dash-page-title mb-xs">System Users</h1>
+              <p className="font-body-md text-body-md text-on-surface-variant">Oversee, authorize, and manage administrative school users on the Tenpaten platform.</p>
             </div>
             <button 
               onClick={() => setAddUserOpen(true)}
