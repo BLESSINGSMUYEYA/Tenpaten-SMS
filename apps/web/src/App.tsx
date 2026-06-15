@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { PrivateRoute, PublicRoute } from './components/RouteGuards';
+import { OnlineContextProvider } from './contexts/OnlineContext';
+import { OfflineBar } from './components/OfflineBar';
 
 // ─── Lazy-loaded pages (code splitting) ───────────────────────────────────────
 
@@ -20,10 +22,7 @@ const HeadTeacherDashboard = lazy(() => import('./pages/HeadTeacherDashboard').t
 const HeadTeacherPeople = lazy(() => import('./pages/HeadTeacherPeople').then(m => ({ default: m.HeadTeacherPeople })));
 const HeadTeacherAcademic = lazy(() => import('./pages/HeadTeacherAcademic').then(m => ({ default: m.HeadTeacherAcademic })));
 const HeadTeacherAttendance = lazy(() => import('./pages/HeadTeacherAttendance').then(m => ({ default: m.HeadTeacherAttendance })));
-const HeadTeacherFinance = lazy(() => import('./pages/HeadTeacherFinance').then(m => ({ default: m.HeadTeacherFinance })));
-const HeadTeacherCommunication = lazy(() => import('./pages/HeadTeacherCommunication').then(m => ({ default: m.HeadTeacherCommunication })));
 const HeadTeacherSettings = lazy(() => import('./pages/HeadTeacherSettings').then(m => ({ default: m.HeadTeacherSettings })));
-const HeadTeacherNewAnnouncement = lazy(() => import('./pages/HeadTeacherNewAnnouncement').then(m => ({ default: m.HeadTeacherNewAnnouncement })));
 
 // Teacher
 const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard').then(m => ({ default: m.TeacherDashboard })));
@@ -32,9 +31,6 @@ const TeacherAssignments = lazy(() => import('./pages/TeacherAssignments').then(
 const TeacherGrades = lazy(() => import('./pages/TeacherGrades').then(m => ({ default: m.TeacherGrades })));
 const TeacherSchedule = lazy(() => import('./pages/TeacherSchedule').then(m => ({ default: m.TeacherSchedule })));
 const TeacherAttendance = lazy(() => import('./pages/TeacherAttendance').then(m => ({ default: m.TeacherAttendance })));
-const TeacherParentCommunications = lazy(() => import('./pages/TeacherParentCommunications').then(m => ({ default: m.TeacherParentCommunications })));
-const TeacherMessages = lazy(() => import('./pages/TeacherMessages').then(m => ({ default: m.TeacherMessages })));
-const TeacherAnnouncements = lazy(() => import('./pages/TeacherAnnouncements').then(m => ({ default: m.TeacherAnnouncements })));
 
 // Deputy Head
 const DeputyHeadDashboard = lazy(() => import('./pages/DeputyHeadDashboard').then(m => ({ default: m.DeputyHeadDashboard })));
@@ -43,14 +39,12 @@ const DeputyHeadAcademics = lazy(() => import('./pages/DeputyHeadAcademics').the
 const DeputyHeadDiscipline = lazy(() => import('./pages/DeputyHeadDiscipline').then(m => ({ default: m.DeputyHeadDiscipline })));
 const DeputyHeadTimetable = lazy(() => import('./pages/DeputyHeadTimetable').then(m => ({ default: m.DeputyHeadTimetable })));
 const DeputyHeadAttendance = lazy(() => import('./pages/DeputyHeadAttendance').then(m => ({ default: m.DeputyHeadAttendance })));
-const DeputyHeadFinancials = lazy(() => import('./pages/DeputyHeadFinancials').then(m => ({ default: m.DeputyHeadFinancials })));
 const DeputyHeadStudents = lazy(() => import('./pages/DeputyHeadStudents').then(m => ({ default: m.DeputyHeadStudents })));
 const DeputyHeadSettings = lazy(() => import('./pages/DeputyHeadSettings').then(m => ({ default: m.DeputyHeadSettings })));
 
 // Other roles
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard').then(m => ({ default: m.StudentDashboard })));
 const ParentDashboard = lazy(() => import('./pages/ParentDashboard').then(m => ({ default: m.ParentDashboard })));
-const BursarDashboard = lazy(() => import('./pages/BursarDashboard').then(m => ({ default: m.BursarDashboard })));
 
 // Super Admin
 const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard').then(m => ({ default: m.SuperAdminDashboard })));
@@ -91,9 +85,11 @@ const UnauthorizedPage: React.FC = () => (
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
+      <OnlineContextProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <OfflineBar />
+            <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Public Auth Routes */}
               <Route
@@ -207,22 +203,6 @@ const App: React.FC = () => {
                 }
               />
               <Route
-                path="/head-teacher/finance"
-                element={
-                  <PrivateRoute allowedRoles={['head_teacher']}>
-                    <HeadTeacherFinance />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/head-teacher/communication"
-                element={
-                  <PrivateRoute allowedRoles={['head_teacher']}>
-                    <HeadTeacherCommunication />
-                  </PrivateRoute>
-                }
-              />
-              <Route
                 path="/head-teacher/settings"
                 element={
                   <PrivateRoute allowedRoles={['head_teacher']}>
@@ -230,14 +210,7 @@ const App: React.FC = () => {
                   </PrivateRoute>
                 }
               />
-              <Route
-                path="/head-teacher/announcements/new"
-                element={
-                  <PrivateRoute allowedRoles={['head_teacher']}>
-                    <HeadTeacherNewAnnouncement />
-                  </PrivateRoute>
-                }
-              />
+
 
               {/* Teacher */}
               <Route
@@ -288,30 +261,7 @@ const App: React.FC = () => {
                   </PrivateRoute>
                 }
               />
-              <Route
-                path="/teacher/parents"
-                element={
-                  <PrivateRoute allowedRoles={['teacher']}>
-                    <TeacherParentCommunications />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/teacher/messages"
-                element={
-                  <PrivateRoute allowedRoles={['teacher']}>
-                    <TeacherMessages />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/teacher/announcements"
-                element={
-                  <PrivateRoute allowedRoles={['teacher']}>
-                    <TeacherAnnouncements />
-                  </PrivateRoute>
-                }
-              />
+
 
               {/* Deputy Head */}
               <Route
@@ -362,14 +312,7 @@ const App: React.FC = () => {
                   </PrivateRoute>
                 }
               />
-              <Route
-                path="/deputy-head/financials"
-                element={
-                  <PrivateRoute allowedRoles={['deputy_head']}>
-                    <DeputyHeadFinancials />
-                  </PrivateRoute>
-                }
-              />
+
               <Route
                 path="/deputy-head/students"
                 element={
@@ -387,15 +330,7 @@ const App: React.FC = () => {
                 }
               />
 
-              {/* Other Roles */}
-              <Route
-                path="/bursar/dashboard"
-                element={
-                  <PrivateRoute allowedRoles={['bursar']}>
-                    <BursarDashboard />
-                  </PrivateRoute>
-                }
-              />
+
               <Route
                 path="/student/dashboard"
                 element={
@@ -425,9 +360,10 @@ const App: React.FC = () => {
               />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </AuthProvider>
+            </Suspense>
+          </BrowserRouter>
+        </AuthProvider>
+      </OnlineContextProvider>
     </ErrorBoundary>
   );
 };

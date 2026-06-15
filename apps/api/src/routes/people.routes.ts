@@ -24,7 +24,7 @@ router.get(
         schoolId,
         isDeleted: false,
         role: {
-          in: [UserRole.head_teacher, UserRole.deputy_head, UserRole.teacher, UserRole.bursar],
+          in: [UserRole.head_teacher, UserRole.deputy_head, UserRole.teacher],
         },
       },
       select: {

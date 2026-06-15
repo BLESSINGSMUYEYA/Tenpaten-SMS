@@ -5,7 +5,7 @@ const bottomNavItems = [
   { icon: 'group', label: 'People', to: '/head-teacher/people' },
   { icon: 'school', label: 'Academic', to: '/head-teacher/academic' },
   { icon: 'event_available', label: 'Attendance', to: '/head-teacher/attendance' },
-  { icon: 'payments', label: 'Finance', to: '/head-teacher/finance' },
+
 ];
 
 export const BottomNav = () => {

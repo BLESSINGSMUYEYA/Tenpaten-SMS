@@ -181,6 +181,7 @@ export default {
         "lg": "24px",
         "xl": "40px",
         "gutter": "16px",
+        "gutter-desktop": "24px",
         "margin-mobile":  "16px",
         "margin-desktop": "32px",
         "safe": "env(safe-area-inset-bottom, 0px)",
@@ -191,6 +192,7 @@ export default {
         "accordion-up":     "accordion-up 0.2s ease-out",
         "fade-in":          "fade-in 0.3s ease-out",
         "slide-in-bottom":  "slide-in-bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        "slide-down":       "slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
       },
       keyframes: {
         "accordion-down": {
@@ -208,6 +210,10 @@ export default {
         "slide-in-bottom": {
           from: { transform: "translateY(1rem)", opacity: "0" },
           to:   { transform: "translateY(0)",    opacity: "1" },
+        },
+        "slide-down": {
+          from: { transform: "translateY(-100%)", opacity: "0" },
+          to:   { transform: "translateY(0)",      opacity: "1" },
         },
       },
     },

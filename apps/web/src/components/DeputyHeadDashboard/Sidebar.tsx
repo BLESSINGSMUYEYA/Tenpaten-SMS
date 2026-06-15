@@ -59,10 +59,7 @@ export const Sidebar = ({
           <span className="material-symbols-outlined" data-icon="how_to_reg">how_to_reg</span>
           Attendance
         </Link>
-        <Link to="/deputy-head/financials" className={getLinkClass('/deputy-head/financials')} onClick={closeSidebar}>
-          <span className="material-symbols-outlined" data-icon="payments">payments</span>
-          Financials
-        </Link>
+
         <Link to="/deputy-head/students" className={getLinkClass('/deputy-head/students')} onClick={closeSidebar}>
           <span className="material-symbols-outlined" data-icon="group">group</span>
           Student Directory

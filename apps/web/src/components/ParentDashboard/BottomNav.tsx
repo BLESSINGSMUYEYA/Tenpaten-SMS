@@ -9,10 +9,7 @@ export const BottomNav = () => {
         <span className="material-symbols-outlined text-xl" data-icon="child_care">child_care</span>
         <span className="font-label-sm-mobile mt-1">Children</span>
       </a>
-      <a className="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 transition-transform duration-150" href="#">
-        <span className="material-symbols-outlined text-xl" data-icon="payments">payments</span>
-        <span className="font-label-sm-mobile mt-1">Fees</span>
-      </a>
+
       <a className="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 transition-transform duration-150" href="#">
         <span className="material-symbols-outlined text-xl" data-icon="menu">menu</span>
         <span className="font-label-sm-mobile mt-1">Menu</span>

@@ -14,10 +14,7 @@ import schoolRoutes from './routes/school.routes';
 import peopleRoutes from './routes/people.routes';
 import attendanceRoutes from './routes/attendance.routes';
 import gradeRoutes from './routes/grade.routes';
-import financeRoutes from './routes/finance.routes';
 import timetableRoutes from './routes/timetable.routes';
-import announcementRoutes from './routes/announcement.routes';
-import messageRoutes from './routes/message.routes';
 
 const app = express();
 
@@ -90,10 +87,7 @@ app.use('/api/schools', schoolRoutes);
 app.use('/api/people', peopleRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/grades', gradeRoutes);
-app.use('/api/finance', financeRoutes);
 app.use('/api/timetable', timetableRoutes);
-app.use('/api/announcements', announcementRoutes);
-app.use('/api/messages', messageRoutes);
 
 // ---- Error Handling ----
 app.use(notFoundHandler);

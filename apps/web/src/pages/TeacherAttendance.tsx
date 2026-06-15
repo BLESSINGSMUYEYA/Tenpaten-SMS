@@ -3,6 +3,7 @@ import { Header } from '../components/TeacherDashboard/Header';
 import { Sidebar } from '../components/TeacherDashboard/Sidebar';
 import { BottomNav } from '../components/TeacherDashboard/BottomNav';
 import { useQuery, useMutation } from '../hooks/useApi';
+import { useOnline } from '../contexts/OnlineContext';
 
 type AttendanceStatus = 'present' | 'absent' | 'late';
 
@@ -44,6 +45,8 @@ export const TeacherAttendance = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
+  const { isOnline, refreshPendingCount } = useOnline();
+
   const [view, setView] = useState<'today' | 'history'>('today');
 
   // Today Tab state
@@ -52,17 +55,18 @@ export const TeacherAttendance = () => {
   const [todayStatuses, setTodayStatuses] = useState<Record<string, AttendanceStatus>>({});
   const [todaySearch, setTodaySearch] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [submittedOffline, setSubmittedOffline] = useState(false);
 
   // History Tab state
   const [historySearch, setHistorySearch] = useState('');
   const [historyClassId, setHistoryClassId] = useState('');
 
-  // Queries
-  const { data: classList } = useQuery<ClassRecord[]>('/schools/classes');
-  const { data: termList } = useQuery<TermRecord[]>('/schools/terms');
-  
+  // Queries — offline fallback built into useQuery
+  const { data: classList, isFromCache: classesFromCache } = useQuery<ClassRecord[]>('/schools/classes');
+  const { data: termList, isFromCache: termsFromCache } = useQuery<TermRecord[]>('/schools/terms');
+
   // Fetch students for selected class
-  const { data: studentList, loading: loadingStudents } = useQuery<StudentRecord[]>(
+  const { data: studentList, loading: loadingStudents, isFromCache: studentsFromCache } = useQuery<StudentRecord[]>(
     `/people/students?classId=${selectedClassId}`,
     !!selectedClassId,
     [selectedClassId]
@@ -82,8 +86,8 @@ export const TeacherAttendance = () => {
     [historyClassId]
   );
 
-  // Mutation
-  const { mutate: markAttendance, loading: marking } = useMutation('/attendance/mark', 'post');
+  // Mutation — queues offline when network is unavailable
+  const { mutate: markAttendance, loading: marking, savedOffline } = useMutation('/attendance/mark', 'post');
 
   // Automatically select current class and term
   useEffect(() => {
@@ -109,6 +113,7 @@ export const TeacherAttendance = () => {
       });
       setTodayStatuses(initialStatuses);
       setSubmitted(false);
+      setSubmittedOffline(false);
     }
   }, [studentList]);
 
@@ -147,14 +152,21 @@ export const TeacherAttendance = () => {
     }));
 
     try {
-      await markAttendance({
+      const result = await markAttendance({
         classId: selectedClassId,
         termId: selectedTermId,
         date: todayDateStr,
         type: 'morning',
         records,
-      });
-      setSubmitted(true);
+      }) as any;
+
+      if (result?._offline) {
+        setSubmittedOffline(true);
+        // Let OnlineContext know there's a new pending record
+        await refreshPendingCount();
+      } else {
+        setSubmitted(true);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -168,9 +180,8 @@ export const TeacherAttendance = () => {
   // History parsing
   const dateGroups = useMemo(() => {
     if (!historyRecords) return [];
-    // Extract unique dates
     const dateSet = new Set(historyRecords.map(r => r.date.split('T')[0]));
-    return Array.from(dateSet).sort().reverse().slice(0, 7); // latest 7 days
+    return Array.from(dateSet).sort().reverse().slice(0, 7);
   }, [historyRecords]);
 
   const getStudentStats = (studentId: string, dateStr: string) => {
@@ -179,27 +190,43 @@ export const TeacherAttendance = () => {
     return record ? record.status : null;
   };
 
+  // Offline data freshness indicator
+  const showCacheBadge = !isOnline && (classesFromCache || termsFromCache || studentsFromCache);
+
   return (
     <>
       <Header onMenuClick={toggleSidebar} />
       <Sidebar isOpen={sidebarOpen} closeSidebar={() => setSidebarOpen(false)} />
-      
+
       <main className="lg:ml-72 pt-20 pb-24 lg:pb-8 px-4 md:px-8 min-h-screen bg-surface text-on-surface transition-colors">
         {/* Page Header */}
         <div className="py-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="dash-page-title">Class Attendance</h1>
-            <p className="font-body-md text-on-surface-variant">Mark today's register or review historical records.</p>
+            <p className="font-body-md text-on-surface-variant">
+              Mark today's register or review historical records.
+            </p>
+            {/* Offline cache notice */}
+            {showCacheBadge && (
+              <span className="inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold rounded-full border border-amber-200">
+                <span>📦</span> Showing cached data — connect to refresh
+              </span>
+            )}
           </div>
-          {view === 'today' && !submitted && (
+          {view === 'today' && !submitted && !submittedOffline && (
             <div className="flex gap-2">
-              <button onClick={() => markAll('present')}
-                className="flex items-center gap-1.5 px-4 py-2 bg-surface-container border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-container-high transition-all font-label-md">
+              <button
+                onClick={() => markAll('present')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-surface-container border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-container-high transition-all font-label-md"
+              >
                 All Present
               </button>
-              <button onClick={submitAttendance} disabled={marking || loadingStudents}
-                className="flex items-center gap-1.5 px-5 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all font-label-md shadow-sm disabled:opacity-50">
-                {marking ? 'Saving...' : 'Submit Register'}
+              <button
+                onClick={submitAttendance}
+                disabled={marking || loadingStudents}
+                className="flex items-center gap-1.5 px-5 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all font-label-md shadow-sm disabled:opacity-50"
+              >
+                {marking ? 'Saving...' : !isOnline ? '📥 Save Offline' : 'Submit Register'}
               </button>
             </div>
           )}
@@ -208,10 +235,13 @@ export const TeacherAttendance = () => {
         {/* View Toggle */}
         <div className="flex gap-2 mb-6 border-b border-outline-variant">
           {(['today', 'history'] as const).map(v => (
-            <button key={v} onClick={() => { setView(v); if (v === 'history' && historyClassId) refetchHistory(); }}
+            <button
+              key={v}
+              onClick={() => { setView(v); if (v === 'history' && historyClassId) refetchHistory(); }}
               className={`px-5 py-2 font-label-md font-bold border-b-2 transition-all capitalize ${
                 view === v ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
-              }`}>
+              }`}
+            >
               {v === 'today' ? '📋 Take Attendance' : '📊 History & Reports'}
             </button>
           ))}
@@ -222,7 +252,9 @@ export const TeacherAttendance = () => {
           <div>
             <div className="bg-primary-container text-on-primary-container rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
-                <span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-1 inline-block">Register Settings</span>
+                <span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-1 inline-block">
+                  Register Settings
+                </span>
                 <div className="flex flex-wrap gap-4 mt-2">
                   <div className="flex flex-col">
                     <span className="text-[10px] uppercase text-on-primary-container/75 font-bold">Class</span>
@@ -250,10 +282,18 @@ export const TeacherAttendance = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Submission status badges */}
               {submitted && (
                 <div className="flex items-center gap-2 bg-secondary text-white px-4 py-2 rounded-xl font-label-md font-bold">
                   <span className="material-symbols-outlined text-[18px]">check_circle</span>
                   Register Submitted!
+                </div>
+              )}
+              {submittedOffline && (
+                <div className="flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-xl font-label-md font-bold">
+                  <span className="material-symbols-outlined text-[18px]">cloud_off</span>
+                  Saved Offline — will sync when connected
                 </div>
               )}
             </div>
@@ -275,9 +315,13 @@ export const TeacherAttendance = () => {
             {/* Search */}
             <div className="relative mb-4 w-full md:w-80">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-xl">search</span>
-              <input type="text" placeholder="Search student…" value={todaySearch}
+              <input
+                type="text"
+                placeholder="Search student…"
+                value={todaySearch}
                 onChange={e => setTodaySearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:border-primary outline-none bg-surface-container text-on-surface font-body-sm transition-colors" />
+                className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:border-primary outline-none bg-surface-container text-on-surface font-body-sm transition-colors"
+              />
             </div>
 
             {/* Student register cards */}
@@ -293,16 +337,23 @@ export const TeacherAttendance = () => {
                     late:    'bg-amber-100 text-amber-800 border-amber-200',
                   };
                   return (
-                    <div key={student.id}
-                      className="flex justify-between items-center py-2.5 px-4 border border-outline-variant rounded-xl shadow-sm bg-surface-container-lowest">
+                    <div
+                      key={student.id}
+                      className="flex justify-between items-center py-2.5 px-4 border border-outline-variant rounded-xl shadow-sm bg-surface-container-lowest"
+                    >
                       <div>
-                        <h3 className="font-label-lg font-bold text-on-surface">{student.user.firstName} {student.user.lastName}</h3>
+                        <h3 className="font-label-lg font-bold text-on-surface">
+                          {student.user.firstName} {student.user.lastName}
+                        </h3>
                         <span className={`inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 border text-[9px] font-bold rounded-full uppercase tracking-wider ${badgeMap[status]}`}>
                           {status}
                         </span>
                       </div>
-                      <button onClick={() => cycleStatus(student.id)} disabled={submitted}
-                        className="p-1.5 bg-surface-container border border-outline-variant rounded-lg text-on-surface-variant hover:text-primary active:scale-90 transition-transform disabled:opacity-40">
+                      <button
+                        onClick={() => cycleStatus(student.id)}
+                        disabled={submitted || submittedOffline}
+                        className="p-1.5 bg-surface-container border border-outline-variant rounded-lg text-on-surface-variant hover:text-primary active:scale-90 transition-transform disabled:opacity-40"
+                      >
                         <span className="material-symbols-outlined text-[16px]">swap_horiz</span>
                       </button>
                     </div>
@@ -318,12 +369,21 @@ export const TeacherAttendance = () => {
         {/* HISTORY & REPORTS */}
         {view === 'history' && (
           <div>
+            {!isOnline && (
+              <div className="mb-4 flex items-center gap-2 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm font-medium">
+                <span className="material-symbols-outlined text-[18px]">cloud_off</span>
+                Attendance history is not available offline. Connect to the internet to view history.
+              </div>
+            )}
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="flex gap-4">
                 <div className="flex flex-col">
                   <label className="text-[10px] font-bold uppercase text-on-surface-variant mb-1">Class</label>
-                  <select value={historyClassId} onChange={e => setHistoryClassId(e.target.value)}
-                    className="px-3 py-2 font-body-sm border border-outline-variant bg-surface-container text-on-surface outline-none rounded">
+                  <select
+                    value={historyClassId}
+                    onChange={e => setHistoryClassId(e.target.value)}
+                    className="px-3 py-2 font-body-sm border border-outline-variant bg-surface-container text-on-surface outline-none rounded"
+                  >
                     {(classList || []).map(c => (
                       <option key={c.id} value={c.id}>{c.displayName}</option>
                     ))}
@@ -332,9 +392,13 @@ export const TeacherAttendance = () => {
               </div>
               <div className="relative w-full md:w-80">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-xl">search</span>
-                <input type="text" placeholder="Search student…" value={historySearch}
+                <input
+                  type="text"
+                  placeholder="Search student…"
+                  value={historySearch}
                   onChange={e => setHistorySearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:border-primary outline-none bg-transparent text-on-surface font-body-sm" />
+                  className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:border-primary outline-none bg-transparent text-on-surface font-body-sm"
+                />
               </div>
             </div>
 

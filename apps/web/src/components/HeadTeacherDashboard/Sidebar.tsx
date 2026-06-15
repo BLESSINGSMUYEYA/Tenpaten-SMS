@@ -12,8 +12,7 @@ const navItems = [
   { icon: 'group', label: 'People', to: '/head-teacher/people' },
   { icon: 'school', label: 'Academic', to: '/head-teacher/academic' },
   { icon: 'event_available', label: 'Attendance', to: '/head-teacher/attendance' },
-  { icon: 'payments', label: 'Finance', to: '/head-teacher/finance' },
-  { icon: 'chat', label: 'Communication', to: '/head-teacher/communication' },
+
   { icon: 'settings', label: 'Settings', to: '/head-teacher/settings' },
 ];
 
@@ -43,15 +42,7 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
         <Logo height="36px" className="mb-1" />
       </div>
 
-      {/* New Announcement CTA */}
-      <Link
-        to="/head-teacher/announcements/new"
-        onClick={closeSidebar}
-        className="w-full py-3 px-4 bg-primary text-on-primary rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all mb-6 shadow-sm"
-      >
-        <span className="material-symbols-outlined text-[18px]">add</span>
-        New Announcement
-      </Link>
+
 
       <nav className="flex-1 space-y-1 overflow-y-auto">
         {navItems.map(item => (

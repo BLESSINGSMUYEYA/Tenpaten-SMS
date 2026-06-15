@@ -213,7 +213,7 @@ export const DeputyHeadDiscipline = () => {
         </div>
 
         {/* Incident Lists */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {filteredCases.length > 0 ? (
             filteredCases.map((c) => {
               const { cardBorder, pillClass } = getSeverityColors(c.severity);

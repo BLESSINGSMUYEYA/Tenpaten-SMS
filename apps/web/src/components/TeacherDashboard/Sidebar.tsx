@@ -52,14 +52,7 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
           <span className="material-symbols-outlined" data-icon="grading">grading</span>
           Grades
         </Link>
-        <Link to="/teacher/messages" className={getLinkClass('/teacher/messages')} onClick={closeSidebar}>
-          <span className="material-symbols-outlined" data-icon="mail">mail</span>
-          Messages
-        </Link>
-        <Link to="/teacher/announcements" className={getLinkClass('/teacher/announcements')} onClick={closeSidebar}>
-          <span className="material-symbols-outlined" data-icon="campaign">campaign</span>
-          Announcements
-        </Link>
+
         <Link to="/teacher/schedule" className={getLinkClass('/teacher/schedule')} onClick={closeSidebar}>
           <span className="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
           Schedule
@@ -68,10 +61,7 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
           <span className="material-symbols-outlined" data-icon="fact_check">fact_check</span>
           Attendance
         </Link>
-        <Link to="/teacher/parents" className={getLinkClass('/teacher/parents')} onClick={closeSidebar}>
-          <span className="material-symbols-outlined" data-icon="forum">forum</span>
-          Parent Comms
-        </Link>
+
       </nav>
       <div className="mt-auto border-t border-surface-border dark:border-outline-variant pt-3 flex flex-col gap-1">
         <Link to="#" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container rounded-lg font-semibold transition-colors font-label-md text-label-md [&>.material-symbols-outlined]:text-[20px]">

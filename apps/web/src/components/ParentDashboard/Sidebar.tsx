@@ -28,18 +28,12 @@ export const Sidebar = ({ isOpen, closeSidebar }: { isOpen: boolean; closeSideba
           <span className="material-symbols-outlined" data-icon="child_care">child_care</span>
           My Children
         </Link>
-        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
-          <span className="material-symbols-outlined" data-icon="payments">payments</span>
-          Fees & Payments
-        </Link>
+
         <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
           <span className="material-symbols-outlined" data-icon="analytics">analytics</span>
           Academic Reports
         </Link>
-        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
-          <span className="material-symbols-outlined" data-icon="forum">forum</span>
-          Messages
-        </Link>
+
       </nav>
       <div className="mt-auto border-t border-surface-border dark:border-outline-variant pt-4 flex flex-col gap-2">
         <button onClick={() => { closeSidebar(); logout(); }} className="flex items-center gap-4 px-4 py-3 text-on-error-container bg-error-container hover:bg-error/20 rounded-lg font-bold font-label-md text-label-md transition-colors w-full text-left">

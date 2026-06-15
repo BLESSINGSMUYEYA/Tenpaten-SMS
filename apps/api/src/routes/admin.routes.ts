@@ -15,7 +15,7 @@ const router = Router();
 
 // Apply auth and super admin guards to all routes in this router
 router.use(authenticate);
-router.use(requireSuperAdmin);
+router.use(requireSuperAdmin());
 
 /**
  * @route   GET /api/admin/schools/check-code
