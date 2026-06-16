@@ -3,6 +3,7 @@ import { Header } from '../components/TeacherDashboard/Header';
 import { Sidebar } from '../components/TeacherDashboard/Sidebar';
 import { BottomNav } from '../components/TeacherDashboard/BottomNav';
 import { useQuery, useMutation } from '../hooks/useApi';
+import { api } from '../services/api';
 
 interface GradeItem {
   id?: string;
@@ -30,6 +31,8 @@ interface ClassRecord {
 interface SubjectRecord {
   id: string;
   name: string;
+  caMax?: number;
+  examMax?: number;
 }
 
 interface TermRecord {
@@ -62,6 +65,10 @@ export const TeacherGrades = () => {
   // Selected Term/Year
   const activeTerm = termList?.find(t => t.id === selectedTermId) || termList?.find(t => t.isCurrent);
   const academicYearId = activeTerm?.academicYearId || '';
+
+  const activeSubject = subjectList?.find(s => s.id === selectedSubjectId);
+  const subjectCaMax = activeSubject?.caMax ?? 30;
+  const subjectExamMax = activeSubject?.examMax ?? 70;
 
   // Grades fetch query
   const { data: gradeList, loading: loadingGrades, refetch: refetchGrades } = useQuery<GradeItem[]>(
@@ -139,8 +146,8 @@ export const TeacherGrades = () => {
   const handleSaveGrade = async (studentId: string) => {
     if (!selectedClassId || !selectedSubjectId || !selectedTermId || !academicYearId) return;
 
-    const ca = Math.min(30, Math.max(0, parseFloat(editCa) || 0));
-    const exam = Math.min(70, Math.max(0, parseFloat(editExam) || 0));
+    const ca = Math.min(subjectCaMax, Math.max(0, parseFloat(editCa) || 0));
+    const exam = Math.min(subjectExamMax, Math.max(0, parseFloat(editExam) || 0));
 
     try {
       await enterGrades({
@@ -181,6 +188,120 @@ export const TeacherGrades = () => {
     }
   };
 
+  const handleExportTemplate = async () => {
+    if (!selectedClassId || !selectedSubjectId || !selectedTermId) {
+      alert('Please select Class, Subject, and Term first.');
+      return;
+    }
+    try {
+      const response = await api.get(`/grades/template?classId=${selectedClassId}&subjectId=${selectedSubjectId}&termId=${selectedTermId}`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `marksheet_template_${selectedClassId}.csv`;
+      link.click();
+      window.URL.revokeObjectURL(link.href);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to download marksheet template.');
+    }
+  };
+
+  const handleImportCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!selectedClassId || !selectedSubjectId || !selectedTermId || !academicYearId) {
+      alert('Please select Class, Subject, Term, and Academic Year first.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+
+      const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      if (lines.length < 2) {
+        alert('Empty or invalid CSV file.');
+        return;
+      }
+      
+      const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+      
+      const studentIdIdx = headers.indexOf('Student ID');
+      const caIdx = headers.indexOf('CA Mark');
+      const examIdx = headers.indexOf('Exam Mark');
+
+      if (studentIdIdx === -1 || caIdx === -1 || examIdx === -1) {
+        alert('Invalid CSV format. Please download and use the correct template.');
+        return;
+      }
+
+      const gradesToImport = [];
+      for (let i = 1; i < lines.length; i++) {
+        const row = parseCsvRow(lines[i]);
+        if (row.length < headers.length) continue;
+
+        const studentId = row[studentIdIdx];
+        const caMarkStr = row[caIdx];
+        const examMarkStr = row[examIdx];
+
+        gradesToImport.push({
+          studentId,
+          caMark: caMarkStr !== '' ? parseFloat(caMarkStr) : null,
+          examMark: examMarkStr !== '' ? parseFloat(examMarkStr) : null,
+        });
+      }
+
+      try {
+        const response = await api.post('/grades/import', {
+          classId: selectedClassId,
+          subjectId: selectedSubjectId,
+          termId: selectedTermId,
+          academicYearId,
+          grades: gradesToImport,
+        });
+
+        if (response.data && response.data.success) {
+          alert(`Successfully imported ${response.data.data?.importedCount} grades!`);
+          refetchGrades();
+        } else {
+          alert(response.data?.message || 'Failed to import grades.');
+        }
+      } catch (err: any) {
+        console.error(err);
+        const errMsg = err.response?.data?.message || err.message || 'An error occurred';
+        const errors = err.response?.data?.errors;
+        const detailedErrors = errors ? `\n- ${errors.join('\n- ')}` : '';
+        alert(`${errMsg}${detailedErrors}`);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const parseCsvRow = (text: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  };
+
   const filteredGrades = mergedGrades.filter(row =>
     `${row.student.user.firstName} ${row.student.user.lastName}`
       .toLowerCase()
@@ -204,7 +325,24 @@ export const TeacherGrades = () => {
             <h1 className="dash-page-title">Assessment Gradebook</h1>
             <p className="font-body-md text-on-surface-variant">Record, compute, and review academic performance records.</p>
           </div>
-          <div className="flex gap-sm">
+          <div className="flex flex-wrap gap-sm">
+            <button
+              onClick={handleExportTemplate}
+              className="flex items-center gap-1.5 px-4 py-2 border border-outline hover:border-primary text-on-surface-variant hover:text-primary font-bold rounded-lg active:scale-95 transition-all font-label-md"
+            >
+              <span className="material-symbols-outlined text-[18px]">download</span>
+              Download Template
+            </button>
+            <label className="flex items-center gap-1.5 px-4 py-2 border border-outline hover:border-primary text-on-surface-variant hover:text-primary font-bold rounded-lg active:scale-95 transition-all font-label-md cursor-pointer">
+              <span className="material-symbols-outlined text-[18px]">upload</span>
+              Import CSV
+              <input
+                type="file"
+                accept=".csv"
+                className="hidden"
+                onChange={handleImportCsv}
+              />
+            </label>
             <button
               onClick={handleSubmitGrades}
               className="flex items-center gap-1.5 px-4 py-2 bg-secondary text-white font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all font-label-md shadow-sm"
@@ -290,8 +428,8 @@ export const TeacherGrades = () => {
               <thead>
                 <tr className="bg-surface-container text-on-surface-variant border-b border-outline-variant font-label-sm uppercase">
                   <th className="py-4 px-6 font-bold">Student Name</th>
-                  <th className="py-4 px-4 font-bold text-center">CA (Max 30)</th>
-                  <th className="py-4 px-4 font-bold text-center">Exam (Max 70)</th>
+                  <th className="py-4 px-4 font-bold text-center">CA (Max {subjectCaMax})</th>
+                  <th className="py-4 px-4 font-bold text-center">Exam (Max {subjectExamMax})</th>
                   <th className="py-4 px-4 font-bold text-center">Total (100)</th>
                   <th className="py-4 px-4 font-bold text-center">Grade Letter</th>
                   <th className="py-4 px-6 font-bold text-center">Status</th>
@@ -317,7 +455,7 @@ export const TeacherGrades = () => {
                             <input
                               type="number"
                               min={0}
-                              max={30}
+                              max={subjectCaMax}
                               value={editCa}
                               onChange={e => setEditCa(e.target.value)}
                               className="w-16 px-1.5 py-1 text-center bg-surface-container border border-outline-variant rounded focus:border-primary outline-none"
@@ -331,7 +469,7 @@ export const TeacherGrades = () => {
                             <input
                               type="number"
                               min={0}
-                              max={70}
+                              max={subjectExamMax}
                               value={editExam}
                               onChange={e => setEditExam(e.target.value)}
                               className="w-16 px-1.5 py-1 text-center bg-surface-container border border-outline-variant rounded focus:border-primary outline-none"

@@ -1,4 +1,4 @@
-import { PrismaClient, SchoolType, UserRole, DayOfWeek, StudentStatus, AttendanceStatus, GradeStatus, InvoiceStatus, PaymentMethod, AnnouncementAudience, AnnouncementPriority } from '@prisma/client';
+import { PrismaClient, SchoolType, UserRole, DayOfWeek, StudentStatus, AttendanceStatus, GradeStatus } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -8,13 +8,6 @@ async function main() {
 
   // Clean the database (soft delete or hard delete for seeding? Since we're re-initializing, let's clear existing data safely in reverse order of dependencies)
   console.log('Cleaning old seed data...');
-  await prisma.notification.deleteMany({});
-  await prisma.message.deleteMany({});
-  await prisma.announcement.deleteMany({});
-  await prisma.payment.deleteMany({});
-  await prisma.invoiceItem.deleteMany({});
-  await prisma.invoice.deleteMany({});
-  await prisma.feeStructure.deleteMany({});
   await prisma.grade.deleteMany({});
   await prisma.attendanceOverride.deleteMany({});
   await prisma.attendance.deleteMany({});
@@ -28,6 +21,8 @@ async function main() {
   await prisma.academicYear.deleteMany({});
   await prisma.passwordResetToken.deleteMany({});
   await prisma.user.deleteMany({});
+  await prisma.gradingRule.deleteMany({});
+  await prisma.gradingScale.deleteMany({});
   await prisma.school.deleteMany({});
 
   console.log('Database cleaned.');
@@ -294,30 +289,52 @@ async function main() {
   // ==========================================
   // 6. CREATE SUBJECTS & ASSIGNMENTS
   // ==========================================
+  console.log('Creating MSCE Grading Scale...');
+  const msceScale = await prisma.gradingScale.create({
+    data: {
+      schoolId: school.id,
+      name: 'MSCE 9-Point Scale',
+      isDefault: true,
+      rules: {
+        create: [
+          { gradeSymbol: '1', minPercentage: 80, maxPercentage: 100, classification: 'Distinction' },
+          { gradeSymbol: '2', minPercentage: 75, maxPercentage: 79,  classification: 'Distinction' },
+          { gradeSymbol: '3', minPercentage: 70, maxPercentage: 74,  classification: 'Credit' },
+          { gradeSymbol: '4', minPercentage: 65, maxPercentage: 69,  classification: 'Credit' },
+          { gradeSymbol: '5', minPercentage: 60, maxPercentage: 64,  classification: 'Credit' },
+          { gradeSymbol: '6', minPercentage: 50, maxPercentage: 59,  classification: 'Credit' },
+          { gradeSymbol: '7', minPercentage: 45, maxPercentage: 49,  classification: 'Pass' },
+          { gradeSymbol: '8', minPercentage: 40, maxPercentage: 44,  classification: 'Pass' },
+          { gradeSymbol: '9', minPercentage: 0,  maxPercentage: 39,  classification: 'Fail' },
+        ]
+      }
+    }
+  });
+
   console.log('Creating Subjects and assigning to Classes...');
 
   const subEnglish = await prisma.subject.create({
-    data: { schoolId: school.id, name: 'English Language', code: 'ENG', isCore: true },
+    data: { schoolId: school.id, name: 'English Language', code: 'ENG', isCore: true, gradingScaleId: msceScale.id, caMax: 30, examMax: 70 },
   });
 
   const subMath = await prisma.subject.create({
-    data: { schoolId: school.id, name: 'Mathematics', code: 'MTH', isCore: true },
+    data: { schoolId: school.id, name: 'Mathematics', code: 'MTH', isCore: true, gradingScaleId: msceScale.id, caMax: 40, examMax: 60 },
   });
 
   const subPhysSci = await prisma.subject.create({
-    data: { schoolId: school.id, name: 'Physical Science', code: 'PSC', isCore: true },
+    data: { schoolId: school.id, name: 'Physical Science', code: 'PSC', isCore: true, gradingScaleId: msceScale.id, caMax: 30, examMax: 70 },
   });
 
   const subBiology = await prisma.subject.create({
-    data: { schoolId: school.id, name: 'Biology', code: 'BIO', isCore: true },
+    data: { schoolId: school.id, name: 'Biology', code: 'BIO', isCore: true, gradingScaleId: msceScale.id, caMax: 30, examMax: 70 },
   });
 
   const subHistory = await prisma.subject.create({
-    data: { schoolId: school.id, name: 'History', code: 'HIS', isCore: false },
+    data: { schoolId: school.id, name: 'History', code: 'HIS', isCore: false, gradingScaleId: msceScale.id, caMax: 30, examMax: 70 },
   });
 
   const subGeography = await prisma.subject.create({
-    data: { schoolId: school.id, name: 'Geography', code: 'GEO', isCore: false },
+    data: { schoolId: school.id, name: 'Geography', code: 'GEO', isCore: false, gradingScaleId: msceScale.id, caMax: 30, examMax: 70 },
   });
 
   // Assign subjects to Form 1 East
@@ -494,159 +511,6 @@ async function main() {
   }
 
   console.log('Students, Parents, and Term 1 Academic Grades loaded.');
-
-  // ==========================================
-  // 10. CREATE FEE STRUCTURES, INVOICES & PAYMENTS
-  // ==========================================
-  console.log('Seeding Fee Structures, Invoices, and Payments...');
-
-  // Setup fee structures for Term 2 Form 1
-  const feeStructureItems = [
-    { itemName: 'Tuition Fees', amount: 150000 },
-    { itemName: 'Development Fund', amount: 30000 },
-    { itemName: 'Science Lab Fee', amount: 10000 },
-  ];
-
-  const totalTermFees = feeStructureItems.reduce((acc, item) => acc + item.amount, 0);
-
-  for (const item of feeStructureItems) {
-    await prisma.feeStructure.create({
-      data: {
-        schoolId: school.id,
-        classId: classForm1E.id,
-        termId: term2.id,
-        itemName: item.itemName,
-        amount: item.amount,
-        isLocked: true,
-      },
-    });
-  }
-
-  // Generate Invoices for students
-  const activeProfiles = await prisma.studentProfile.findMany({
-    where: { schoolId: school.id, classId: classForm1E.id },
-  });
-
-  let receiptSeq = 1;
-
-  for (const [index, profile] of activeProfiles.entries()) {
-    // 1. Create Invoice
-    const invoice = await prisma.invoice.create({
-      data: {
-        schoolId: school.id,
-        studentId: profile.id,
-        termId: term2.id,
-        totalAmount: totalTermFees,
-        discountAmount: index === 3 ? 20000 : 0, // Offer a discount to the 4th student (Lusekelo)
-        discountReason: index === 3 ? 'Bursary Scheme' : null,
-        finalAmount: index === 3 ? totalTermFees - 20000 : totalTermFees,
-        paidAmount: 0,
-        balance: index === 3 ? totalTermFees - 20000 : totalTermFees,
-        status: InvoiceStatus.unpaid,
-      },
-    });
-
-    // Create invoice line items
-    for (const item of feeStructureItems) {
-      await prisma.invoiceItem.create({
-        data: {
-          invoiceId: invoice.id,
-          itemName: item.itemName,
-          amount: item.itemName === 'Tuition Fees' && index === 3 ? 130000 : item.amount,
-        },
-      });
-    }
-
-    // Record payments for some students to represent different states (Fully Paid, Partially Paid, Unpaid)
-    if (index === 0) {
-      // Alinafe: Fully Paid
-      const amountToPay = invoice.finalAmount;
-      await prisma.payment.create({
-        data: {
-          schoolId: school.id,
-          studentId: profile.id,
-          invoiceId: invoice.id,
-          amount: amountToPay,
-          paymentDate: new Date(),
-          method: PaymentMethod.bank,
-          referenceNumber: 'REF-BANK-9921',
-          receivedBy: bursar.id,
-          receiptNumber: `RCP-2026-${String(receiptSeq++).padStart(5, '0')}`,
-        },
-      });
-
-      await prisma.invoice.update({
-        where: { id: invoice.id },
-        data: {
-          paidAmount: amountToPay,
-          balance: 0,
-          status: InvoiceStatus.paid,
-        },
-      });
-    } else if (index === 1) {
-      // Wongani: Partially Paid
-      const amountToPay = 100000;
-      await prisma.payment.create({
-        data: {
-          schoolId: school.id,
-          studentId: profile.id,
-          invoiceId: invoice.id,
-          amount: amountToPay,
-          paymentDate: new Date(),
-          method: PaymentMethod.mobile_money,
-          referenceNumber: 'PPAMB-7821-BND',
-          receivedBy: bursar.id,
-          receiptNumber: `RCP-2026-${String(receiptSeq++).padStart(5, '0')}`,
-        },
-      });
-
-      await prisma.invoice.update({
-        where: { id: invoice.id },
-        data: {
-          paidAmount: amountToPay,
-          balance: invoice.finalAmount - amountToPay,
-          status: InvoiceStatus.partial,
-        },
-      });
-    }
-    // Student 2 (Tiwonge) and Student 3 (Lusekelo) will remain unpaid
-  }
-
-  console.log('Fee structures, student invoices, and invoice payments populated successfully.');
-
-  // ==========================================
-  // 11. SEED SYSTEM ANNOUNCEMENTS
-  // ==========================================
-  console.log('Seeding Announcements...');
-
-  await prisma.announcement.create({
-    data: {
-      schoolId: school.id,
-      title: 'Opening of Term 2 Academic Year',
-      body: 'Welcome back all students and teachers to Term 2. Class schedules are now active, and teachers have updated class timetables on their dashboards. Make sure to log in daily and complete register attendance.',
-      audience: AnnouncementAudience.all,
-      priority: AnnouncementPriority.normal,
-      postedBy: headTeacher.id,
-      isPublished: true,
-      publishedAt: new Date(),
-    },
-  });
-
-  await prisma.announcement.create({
-    data: {
-      schoolId: school.id,
-      title: 'URGENT: Fee Balance Settlement',
-      body: 'All parents are reminded that Term 2 fee balances must be settled in full by the end of the month. Failure to comply will lead to student suspension under our school code fee collection policy.',
-      audience: AnnouncementAudience.parents,
-      priority: AnnouncementPriority.urgent,
-      postedBy: headTeacher.id,
-      isPublished: true,
-      publishedAt: new Date(),
-    },
-  });
-
-  console.log('Announcements seeded.');
-
   console.log('🌱 Database seeding completed successfully! All constraints and data verified.');
 }
 

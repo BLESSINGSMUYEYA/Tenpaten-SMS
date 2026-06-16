@@ -5,19 +5,6 @@ import { Header } from '../components/StudentDashboard/Header';
 import { Sidebar } from '../components/StudentDashboard/Sidebar';
 import { BottomNav } from '../components/StudentDashboard/BottomNav';
 
-interface Invoice {
-  id: string;
-  totalAmount: number;
-  finalAmount: number;
-  paidAmount: number;
-  balance: number;
-  status: string;
-  payments: Array<{
-    amount: number;
-    paymentDate: string;
-  }>;
-}
-
 interface Grade {
   id: string;
   subject: {
@@ -26,14 +13,6 @@ interface Grade {
   };
   totalMark: number;
   gradeLetter: string;
-}
-
-interface Announcement {
-  id: string;
-  title: string;
-  body: string;
-  priority: string;
-  createdAt: string;
 }
 
 export const StudentDashboard: React.FC = () => {

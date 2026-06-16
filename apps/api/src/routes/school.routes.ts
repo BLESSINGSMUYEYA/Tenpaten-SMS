@@ -10,6 +10,7 @@ import {
   createClassSchema,
   createSubjectSchema,
   assignSubjectSchema,
+  createGradingScaleSchema,
 } from '@tenpaten/shared';
 
 const router = Router();
@@ -167,7 +168,7 @@ router.post(
   validateBody(createSubjectSchema),
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
-    const { name, code, isCore } = req.body;
+    const { name, code, isCore, gradingScaleId, caMax, examMax } = req.body;
 
     const newSubject = await prisma.subject.create({
       data: {
@@ -175,6 +176,9 @@ router.post(
         name,
         code,
         isCore,
+        gradingScaleId: gradingScaleId || null,
+        caMax: caMax !== undefined ? caMax : 30,
+        examMax: examMax !== undefined ? examMax : 70,
       },
     });
 
@@ -250,6 +254,100 @@ router.post(
     });
 
     sendSuccess(res, assignment, 'Subject assigned to class successfully', 201);
+  })
+);
+
+// ---- Update Subject ----
+router.patch(
+  '/subjects/:id',
+  requireHeadOrDeputy(),
+  validateBody(createSubjectSchema.partial()),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { name, code, isCore, gradingScaleId, caMax, examMax } = req.body;
+
+    const updated = await prisma.subject.update({
+      where: { id },
+      data: {
+        name,
+        code,
+        isCore,
+        gradingScaleId,
+        caMax,
+        examMax,
+      },
+    });
+
+    sendSuccess(res, updated, 'Subject updated successfully');
+  })
+);
+
+// ---- Grading Scales ----
+router.get(
+  '/grading-scales',
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const scales = await prisma.gradingScale.findMany({
+      where: { schoolId, isDeleted: false },
+      include: { rules: { orderBy: { minPercentage: 'desc' } } },
+      orderBy: { name: 'asc' },
+    });
+    sendSuccess(res, scales, 'Grading scales retrieved successfully');
+  })
+);
+
+router.post(
+  '/grading-scales',
+  requireHeadOrDeputy(),
+  validateBody(createGradingScaleSchema),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { name, isDefault, rules } = req.body;
+
+    const scale = await prisma.$transaction(async (tx) => {
+      if (isDefault) {
+        await tx.gradingScale.updateMany({
+          where: { schoolId, isDefault: true },
+          data: { isDefault: false },
+        });
+      }
+
+      const newScale = await tx.gradingScale.create({
+        data: {
+          schoolId,
+          name,
+          isDefault,
+          rules: {
+            create: rules.map((r: any) => ({
+              gradeSymbol: r.gradeSymbol,
+              minPercentage: r.minPercentage,
+              maxPercentage: r.maxPercentage,
+              classification: r.classification,
+            })),
+          },
+        },
+        include: { rules: true },
+      });
+
+      return newScale;
+    });
+
+    sendSuccess(res, scale, 'Grading scale created successfully', 201);
+  })
+);
+
+router.delete(
+  '/grading-scales/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const updated = await prisma.gradingScale.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+
+    sendSuccess(res, updated, 'Grading scale deleted successfully');
   })
 );
 

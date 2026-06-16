@@ -75,12 +75,25 @@ export { uuidv4 as generateId };
 
 // ---- Grade Calculation ----
 
-export function calculateGrade(totalMark: number): string {
+export interface SimpleGradingRule {
+  gradeSymbol: string;
+  minPercentage: number;
+  maxPercentage: number;
+}
+
+export function calculateGrade(totalMark: number, rules?: SimpleGradingRule[]): string {
+  if (rules && rules.length > 0) {
+    const entry = rules.find(
+      (r) => totalMark >= r.minPercentage && totalMark <= r.maxPercentage
+    );
+    return entry?.gradeSymbol ?? 'F';
+  }
   const entry = DEFAULT_GRADING_SCALE.find(
     (g) => totalMark >= g.min && totalMark <= g.max
   );
   return entry?.letter ?? 'F';
 }
+
 
 // ---- Position Calculation with tie-handling ----
 

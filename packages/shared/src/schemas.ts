@@ -114,7 +114,26 @@ export const createSubjectSchema = z.object({
   name: z.string().min(1, 'Subject name is required'),
   code: z.string().min(1, 'Subject code is required').max(10),
   isCore: z.boolean().default(true),
+  gradingScaleId: z.string().uuid().optional().nullable(),
+  caMax: z.number().min(0).max(100).optional().nullable(),
+  examMax: z.number().min(0).max(100).optional().nullable(),
 });
+
+export const createGradingScaleSchema = z.object({
+  name: z.string().min(1, 'Grading scale name is required'),
+  isDefault: z.boolean().default(false),
+  rules: z.array(
+    z.object({
+      gradeSymbol: z.string().min(1, 'Symbol is required'),
+      minPercentage: z.number().min(0).max(100),
+      maxPercentage: z.number().min(0).max(100),
+      classification: z.string().min(1, 'Classification is required'),
+    })
+  ).min(1, 'At least one rule is required'),
+});
+
+export type CreateGradingScaleInput = z.infer<typeof createGradingScaleSchema>;
+
 
 export const assignSubjectSchema = z.object({
   classId: z.string().uuid(),

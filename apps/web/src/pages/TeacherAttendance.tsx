@@ -87,7 +87,7 @@ export const TeacherAttendance = () => {
   );
 
   // Mutation — queues offline when network is unavailable
-  const { mutate: markAttendance, loading: marking, savedOffline } = useMutation('/attendance/mark', 'post');
+  const { mutate: markAttendance, loading: marking } = useMutation('/attendance/mark', 'post');
 
   // Automatically select current class and term
   useEffect(() => {

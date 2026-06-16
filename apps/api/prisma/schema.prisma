@@ -27,6 +27,7 @@ enum UserRole {
   head_teacher
   deputy_head
   teacher
+  bursar
   student
   parent
 }
@@ -99,6 +100,7 @@ model School {
   studentProfiles  StudentProfile[]
   attendance       Attendance[]
   grades           Grade[]
+  gradingScales    GradingScale[]
 
 
   @@index([isDeleted])
@@ -222,16 +224,20 @@ model Class {
 }
 
 model Subject {
-  id        String   @id @default(uuid())
-  schoolId  String
-  name      String
-  code      String
-  isCore    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  isDeleted Boolean  @default(false)
+  id             String   @id @default(uuid())
+  schoolId       String
+  name           String
+  code           String
+  isCore         Boolean  @default(true)
+  gradingScaleId String?
+  caMax          Float?   @default(30)
+  examMax        Float?   @default(70)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  isDeleted      Boolean  @default(false)
 
   school         School          @relation(fields: [schoolId], references: [id])
+  gradingScale   GradingScale?   @relation(fields: [gradingScaleId], references: [id])
   classSubjects  ClassSubject[]
   timetableSlots TimetableSlot[]
   attendance     Attendance[]
@@ -418,6 +424,39 @@ model Grade {
   @@index([classId, subjectId, termId, isDeleted])
   @@index([enteredBy, isDeleted])
   @@map("grades")
+}
+
+model GradingScale {
+  id        String   @id @default(uuid())
+  schoolId  String
+  name      String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+
+  school    School   @relation(fields: [schoolId], references: [id])
+  rules     GradingRule[]
+  subjects  Subject[]
+
+  @@index([schoolId, isDeleted])
+  @@map("grading_scales")
+}
+
+model GradingRule {
+  id             String   @id @default(uuid())
+  gradingScaleId String
+  gradeSymbol    String
+  minPercentage  Float
+  maxPercentage  Float
+  classification String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  scale          GradingScale @relation(fields: [gradingScaleId], references: [id], onDelete: Cascade)
+
+  @@index([gradingScaleId])
+  @@map("grading_rules")
 }
 
 
