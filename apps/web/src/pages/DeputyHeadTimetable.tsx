@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Header } from '../components/DeputyHeadDashboard/Header';
 import { Sidebar } from '../components/DeputyHeadDashboard/Sidebar';
 import { BottomNav } from '../components/DeputyHeadDashboard/BottomNav';
@@ -129,6 +129,75 @@ export const DeputyHeadTimetable: React.FC = () => {
 
   const [editSlotOpen, setEditSlotOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<TimetableSlot | null>(null);
+
+  // ── Drag-and-Drop state ──
+  const [draggedSlot, setDraggedSlot] = useState<TimetableSlot | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ day: DayKey; period: number } | null>(null);
+  const [movingSlot, setMovingSlot] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  const isDragEnabled = viewMode === 'class';
+
+  const handleDragStart = (e: React.DragEvent, slot: TimetableSlot) => {
+    if (!isDragEnabled) return;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', slot.id);
+    // Slight delay so the browser captures the ghost image before we dim
+    setTimeout(() => setDraggedSlot(slot), 0);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedSlot(null);
+    setDropTarget(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, day: DayKey, period: number) => {
+    if (!isDragEnabled || !draggedSlot) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDropTarget({ day, period });
+  };
+
+  const handleDragLeave = () => {
+    setDropTarget(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, day: DayKey, period: number) => {
+    e.preventDefault();
+    if (!draggedSlot || movingSlot) return;
+
+    // No-op if same cell
+    if (draggedSlot.day === day && draggedSlot.periodNumber === period) {
+      handleDragEnd();
+      return;
+    }
+
+    setMovingSlot(true);
+    try {
+      await api.patch(`/timetable/slots/${draggedSlot.id}/move`, { day, periodNumber: period });
+      showToast('Slot moved successfully', 'success');
+      refetchSlots();
+    } catch (err: any) {
+      const msg = err?.response?.data?.errors?.teacherId?.[0]
+        || err?.response?.data?.message
+        || 'Failed to move slot';
+      showToast(msg, 'error');
+    } finally {
+      setMovingSlot(false);
+      handleDragEnd();
+    }
+  };
+
+  const isDropTarget = (day: DayKey, period: number) =>
+    dropTarget?.day === day && dropTarget?.period === period;
+
+  const isDragSource = (day: DayKey, period: number) =>
+    draggedSlot?.day === day && draggedSlot?.periodNumber === period;
 
   const handleOpenAdd = (day: DayKey, period: number) => {
     setTargetDay(day);
@@ -335,26 +404,61 @@ export const DeputyHeadTimetable: React.FC = () => {
                     const cells = getCellSlots(day, period);
                     const hasSlots = cells.length > 0;
 
+                    const cellIsDropTarget = isDropTarget(day, period);
+                    const cellIsDragSource = isDragSource(day, period);
+                    const targetHasSlots = cellIsDropTarget && hasSlots;
+
                     return (
                       <div
                         key={day}
-                        className={`p-2 border-r border-outline-variant min-h-[120px] transition-colors relative flex flex-col gap-2 ${
+                        onDragOver={e => handleDragOver(e, day, period)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={e => handleDrop(e, day, period)}
+                        className={`p-2 border-r border-outline-variant min-h-[120px] transition-all duration-200 relative flex flex-col gap-2 ${
                           hasSlots ? 'bg-surface' : 'bg-surface-container-low/40'
+                        } ${
+                          cellIsDropTarget
+                            ? 'ring-2 ring-primary ring-inset bg-primary/5 border-primary'
+                            : ''
+                        } ${
+                          cellIsDragSource ? 'opacity-40' : ''
                         }`}
                       >
+                        {/* Swap indicator overlay */}
+                        {targetHasSlots && (
+                          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                            <div className="bg-primary text-on-primary rounded-full px-3 py-1.5 text-xs font-bold flex items-center gap-1 shadow-lg animate-pulse">
+                              <span className="material-symbols-outlined text-[16px]">swap_horiz</span>
+                              Swap
+                            </div>
+                          </div>
+                        )}
                         {cells.map(s => (
                           <div
                             key={s.id}
+                            draggable={isDragEnabled}
+                            onDragStart={e => handleDragStart(e, s)}
+                            onDragEnd={handleDragEnd}
                             onClick={() => {
+                              if (draggedSlot) return; // don't open modal while dragging
                               setSelectedSlot(s);
                               setEditSlotOpen(true);
                             }}
-                            className={`flex-1 rounded-md border p-3 flex flex-col justify-between cursor-pointer hover:shadow-md transition-all ${getSubjectColorStyle(s.subject?.isCore ?? true)}`}
+                            className={`flex-1 rounded-md border p-3 flex flex-col justify-between transition-all ${getSubjectColorStyle(s.subject?.isCore ?? true)} ${
+                              isDragEnabled ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+                            } hover:shadow-md ${
+                              draggedSlot?.id === s.id ? 'opacity-50 scale-95' : ''
+                            }`}
                           >
                             <div className="flex justify-between items-start gap-1">
                               <span className="font-bold text-sm leading-tight">
                                 {s.subject?.name}
                               </span>
+                              {isDragEnabled && (
+                                <span className="material-symbols-outlined text-[14px] text-on-surface-variant/50" title="Drag to move">
+                                  drag_indicator
+                                </span>
+                              )}
                               {viewMode === 'school' && (
                                 <span className="text-[9px] bg-primary/10 text-primary px-1 rounded font-bold shrink-0">
                                   {s.class?.displayName}
@@ -553,6 +657,20 @@ export const DeputyHeadTimetable: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast notification */}
+      {toast && (
+        <div className={`fixed bottom-28 lg:bottom-8 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-xl shadow-2xl text-sm font-bold flex items-center gap-2 animate-slide-up ${
+          toast.type === 'success'
+            ? 'bg-emerald-600 text-white'
+            : 'bg-red-600 text-white'
+        }`}>
+          <span className="material-symbols-outlined text-[18px]">
+            {toast.type === 'success' ? 'check_circle' : 'error'}
+          </span>
+          {toast.message}
         </div>
       )}
     </>

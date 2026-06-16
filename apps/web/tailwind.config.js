@@ -193,6 +193,8 @@ export default {
         "fade-in":          "fade-in 0.3s ease-out",
         "slide-in-bottom":  "slide-in-bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
         "slide-down":       "slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        "slide-up":         "slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+        "scale-in":         "scale-in 0.2s ease-out",
       },
       keyframes: {
         "accordion-down": {
@@ -214,6 +216,14 @@ export default {
         "slide-down": {
           from: { transform: "translateY(-100%)", opacity: "0" },
           to:   { transform: "translateY(0)",      opacity: "1" },
+        },
+        "slide-up": {
+          from: { transform: "translateY(1.5rem)", opacity: "0" },
+          to:   { transform: "translateY(0)",      opacity: "1" },
+        },
+        "scale-in": {
+          from: { transform: "scale(0.95)", opacity: "0" },
+          to:   { transform: "scale(1)",    opacity: "1" },
         },
       },
     },

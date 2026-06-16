@@ -115,6 +115,113 @@ router.post(
 );
 
 /**
+ * @route   PATCH /api/timetable/slots/:id/move
+ * @desc    Move a timetable slot to a new day/period (or swap with occupant)
+ * @access  Head Teacher / Deputy Head
+ */
+router.patch(
+  '/slots/:id/move',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { id } = req.params;
+    const { day, periodNumber } = req.body;
+
+    if (!day || periodNumber == null) {
+      throw new ValidationError({ body: ['day and periodNumber are required'] });
+    }
+
+    // 1. Find the slot being dragged
+    const slot = await prisma.timetableSlot.findFirst({
+      where: { id, schoolId, isDeleted: false },
+    });
+
+    if (!slot) {
+      const { NotFoundError } = require('../utils/errors');
+      throw new NotFoundError('Timetable slot');
+    }
+
+    // No-op if dropped onto the same cell
+    if (slot.day === day && slot.periodNumber === periodNumber) {
+      return sendSuccess(res, slot, 'Slot unchanged (same position)');
+    }
+
+    // 2. Check if the target cell already has a slot for the SAME class
+    const occupant = await prisma.timetableSlot.findFirst({
+      where: {
+        classId: slot.classId,
+        day: day as DayOfWeek,
+        periodNumber,
+        termId: slot.termId,
+        isDeleted: false,
+      },
+    });
+
+    // 3. Teacher conflict check — is this teacher already busy at the TARGET cell?
+    //    Exclude the occupant (it will be swapped away) and the slot itself.
+    const teacherConflict = await prisma.timetableSlot.findFirst({
+      where: {
+        teacherId: slot.teacherId,
+        day: day as DayOfWeek,
+        periodNumber,
+        termId: slot.termId,
+        isDeleted: false,
+        id: { notIn: [id, ...(occupant ? [occupant.id] : [])] },
+      },
+    });
+
+    if (teacherConflict) {
+      throw new ValidationError({
+        teacherId: [`Teacher is already scheduled in another class on ${day} Period ${periodNumber}`],
+      });
+    }
+
+    // 4. If swapping, also check the occupant's teacher isn't conflicted at the SOURCE cell
+    if (occupant && occupant.teacherId !== slot.teacherId) {
+      const reverseConflict = await prisma.timetableSlot.findFirst({
+        where: {
+          teacherId: occupant.teacherId,
+          day: slot.day,
+          periodNumber: slot.periodNumber,
+          termId: slot.termId,
+          isDeleted: false,
+          id: { notIn: [occupant.id, id] },
+        },
+      });
+
+      if (reverseConflict) {
+        throw new ValidationError({
+          teacherId: [`Cannot swap — the other teacher is already scheduled on ${slot.day} Period ${slot.periodNumber}`],
+        });
+      }
+    }
+
+    // 5. Execute move or swap inside a transaction
+    if (occupant) {
+      // Swap: occupant takes the dragged slot's old position
+      const [updated, swapped] = await prisma.$transaction([
+        prisma.timetableSlot.update({
+          where: { id },
+          data: { day: day as DayOfWeek, periodNumber },
+        }),
+        prisma.timetableSlot.update({
+          where: { id: occupant.id },
+          data: { day: slot.day, periodNumber: slot.periodNumber },
+        }),
+      ]);
+      sendSuccess(res, { moved: updated, swapped }, 'Slots swapped successfully');
+    } else {
+      // Simple move
+      const updated = await prisma.timetableSlot.update({
+        where: { id },
+        data: { day: day as DayOfWeek, periodNumber },
+      });
+      sendSuccess(res, updated, 'Slot moved successfully');
+    }
+  })
+);
+
+/**
  * @route   DELETE /api/timetable/slots/:id
  * @desc    Delete a timetable slot
  * @access  Head Teacher / Deputy Head
