@@ -13,15 +13,15 @@ export const Logo: React.FC<LogoProps> = ({
   width = 'auto',
   theme = 'auto',
 }) => {
-  // theme = 'light': navy text + gold dot/sms
-  // theme = 'dark': white/light text + gold dot/sms
-  // theme = 'auto': uses dark:fill-white and fill-primary-fixed-dim/primary to adapt automatically!
+  // theme = 'light': original brand navy (#002452) + gold dot/sms
+  // theme = 'dark': white text + gold dot/sms
+  // theme = 'auto': navy in light mode, white in dark mode
   const textFill =
     theme === 'light'
-      ? 'fill-primary'
+      ? 'fill-[#002452]'
       : theme === 'dark'
       ? 'fill-white'
-      : 'fill-primary dark:fill-white';
+      : 'fill-[#002452] dark:fill-white';
 
   return (
     <div className={`flex items-center select-none ${className}`} style={{ height, width }}>
