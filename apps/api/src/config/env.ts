@@ -19,7 +19,7 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().default('http://localhost:5173'),
 
   // Email
-  SENDGRID_API_KEY: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default('noreply@tenpaten.com'),
   EMAIL_FROM_NAME: z.string().default('Tenpaten SMS'),
 

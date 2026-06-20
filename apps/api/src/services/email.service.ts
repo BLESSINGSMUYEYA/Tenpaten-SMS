@@ -14,18 +14,17 @@ class EmailService {
   }
 
   private initTransporter() {
-    if (env.SENDGRID_API_KEY) {
-      // SendGrid transporter integration can be configured here
-      // For now, we use SMTP transport which can also handle SendGrid API keys via SMTP credentials
+    if (env.RESEND_API_KEY) {
+      // Resend transporter integration using Resend's SMTP gateway
       this.transporter = nodemailer.createTransport({
-        host: 'smtp.sendgrid.net',
+        host: 'smtp.resend.com',
         port: 587,
         auth: {
-          user: 'apikey',
-          pass: env.SENDGRID_API_KEY,
+          user: 'resend',
+          pass: env.RESEND_API_KEY,
         },
       });
-      console.log('📬 Email Service: Configured SendGrid SMTP Transporter');
+      console.log('📬 Email Service: Configured Resend SMTP Transporter');
     } else {
       // Dev fallback: creates a mock local transporter or logs to console
       // Using ethereal.email or a simple logging transporter
@@ -59,7 +58,7 @@ class EmailService {
         text: options.text || 'Tenpaten SMS Notification',
       };
 
-      if (!env.SENDGRID_API_KEY && env.NODE_ENV === 'development') {
+      if (!env.RESEND_API_KEY && env.NODE_ENV === 'development') {
         console.log(`✉️ [MOCK EMAIL SENT]
 To: ${options.to}
 Subject: ${options.subject}
