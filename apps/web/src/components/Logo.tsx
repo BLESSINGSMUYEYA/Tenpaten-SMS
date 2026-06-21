@@ -1,4 +1,7 @@
 import React from 'react';
+import logoHorizontal from '../assets/logo-horizontal.png';
+import logoStacked from '../assets/logo-stacked.png';
+import logoIcon from '../assets/logo-icon.png';
 
 interface LogoProps {
   className?: string;
@@ -14,12 +17,12 @@ export const Logo: React.FC<LogoProps> = ({
   width = 'auto',
   variant = 'horizontal',
 }) => {
-  let src = '/logo-horizontal.png';
+  let src = logoHorizontal;
   
   if (variant === 'stacked') {
-    src = '/logo-stacked.png';
+    src = logoStacked;
   } else if (variant === 'icon') {
-    src = '/logo-icon.png';
+    src = logoIcon;
   }
 
   return (

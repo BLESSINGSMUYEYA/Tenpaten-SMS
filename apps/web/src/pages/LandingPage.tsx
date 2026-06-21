@@ -10,7 +10,7 @@ export const LandingPage: React.FC = () => {
       <header className="w-full top-0 sticky z-50 border-b border-outline-variant bg-surface/90 backdrop-blur-md">
         <div className="flex justify-between items-center px-margin-desktop h-16 max-w-[1440px] mx-auto">
           <div className="flex items-center gap-md">
-            <Logo height="60px" />
+            <Logo height="100px" />
           </div>
           <nav className="hidden md:flex gap-lg">
             {['Features', 'About', 'Contact'].map(item => (
@@ -269,7 +269,7 @@ export const LandingPage: React.FC = () => {
                     <h3 className="font-headline-sm text-headline-sm text-on-surface">Our Mission</h3>
                   </div>
                   <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                    MyKlasi was born from a simple observation: African schools deserve tools as powerful as the education they deliver. We build intuitive, reliable, and affordable school management software that works even in low-connectivity environments — empowering head teachers, bursars, teachers, and parents to focus on what matters most: <strong className="text-on-surface">student success</strong>.
+                    MyKlasi was born from a simple observation: African schools deserve tools as powerful as the education they deliver. We build intuitive, reliable, and affordable school management software that works even in low-connectivity environments. empowering head teachers, bursars, teachers, and parents to focus on what matters most: <strong className="text-on-surface">student success</strong>.
                   </p>
                 </div>
 
