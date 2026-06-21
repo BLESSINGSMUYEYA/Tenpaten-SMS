@@ -10,7 +10,7 @@ export const LandingPage: React.FC = () => {
       <header className="w-full top-0 sticky z-50 border-b border-outline-variant bg-surface/90 backdrop-blur-md">
         <div className="flex justify-between items-center px-margin-desktop h-16 max-w-[1440px] mx-auto">
           <div className="flex items-center gap-md">
-            <Logo height="48px" />
+            <Logo height="60px" />
           </div>
           <nav className="hidden md:flex gap-lg">
             {['Features', 'About', 'Contact'].map(item => (
@@ -502,7 +502,7 @@ export const LandingPage: React.FC = () => {
       {/* ─── Footer ─── */}
       <footer className="w-full py-xl bg-surface-container-low border-t border-outline-variant mt-auto">
         <div className="flex flex-col md:flex-row justify-between items-center px-margin-desktop max-w-[1440px] mx-auto gap-md">
-          <Logo height="40px" />
+          <Logo height="52px" />
           <div className="flex flex-wrap justify-center gap-md">
             {['Privacy Policy', 'Terms of Service', 'Help Center', 'Accessibility'].map(link => (
               <a key={link} className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">

@@ -33,7 +33,7 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
         className={`flex flex-col fixed left-0 top-0 h-full z-50 p-4 bg-surface-container-lowest dark:bg-inverse-surface border-r border-surface-border dark:border-outline-variant shadow-sm w-72 pt-6 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       >
       <div className="px-4 mb-6 flex flex-col items-center text-center">
-        <Logo height="36px" className="mb-1" />
+        <Logo height="48px" className="mb-1" />
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto">
         <Link to="/teacher/dashboard" className={getLinkClass('/teacher/dashboard')} onClick={closeSidebar}>

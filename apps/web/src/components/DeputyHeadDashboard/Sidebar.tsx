@@ -40,7 +40,7 @@ export const Sidebar = ({
         }`}
       >
       <div className="px-4 mb-6 flex flex-col items-center text-center">
-        <Logo height="36px" className="mb-1" />
+        <Logo height="48px" className="mb-1" />
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto pr-1">
         <Link to="/deputy-head" className={getLinkClass('/deputy-head')} onClick={closeSidebar}>

@@ -35,7 +35,7 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
         } lg:translate-x-0`}
       >
         <div className="px-4 mb-6 flex flex-col items-center text-center">
-          <Logo height="36px" className="mb-1" />
+          <Logo height="48px" className="mb-1" />
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto">
           <Link to="/bursar/dashboard" className={getLinkClass('/bursar/dashboard')} onClick={closeSidebar}>

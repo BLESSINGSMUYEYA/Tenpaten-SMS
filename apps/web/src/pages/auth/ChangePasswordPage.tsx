@@ -61,7 +61,7 @@ export const ChangePasswordPage: React.FC = () => {
       <main className="relative z-10 w-full max-w-[440px] bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-lg md:p-xl flex flex-col gap-lg animate-slide-in-bottom">
 
         <header className="flex flex-col items-center text-center gap-sm">
-          <Logo height="64px" className="mb-xs" variant="stacked" />
+          <Logo height="110px" className="mb-xs" variant="stacked" />
           <div className="flex items-center gap-xs bg-error-container/60 border border-error/20 text-on-error-container px-md py-xs rounded-full">
             <AlertTriangle className="w-4 h-4 text-error animate-pulse shrink-0" />
             <span className="font-label-sm text-label-sm font-semibold">Password Change Required</span>

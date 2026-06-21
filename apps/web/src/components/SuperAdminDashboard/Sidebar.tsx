@@ -37,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
       {/* Sidebar Navigation - Desktop */}
       <aside className="bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 h-full w-72 p-4 pt-6 flex flex-col hidden lg:flex z-20 transition-all duration-300">
         <div className="px-4 mb-6 flex flex-col items-center text-center">
-          <Logo height="36px" className="mb-1" />
+          <Logo height="48px" className="mb-1" />
         </div>
         <div className="flex-1 overflow-y-auto py-md flex flex-col gap-xs">
           {navItems.map(item => (
@@ -82,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
       >
         <div className="px-4 mb-6 flex items-center justify-between w-full">
           <div className="flex flex-col items-center text-center">
-            <Logo height="36px" className="mb-1" />
+            <Logo height="48px" className="mb-1" />
           </div>
           <button
             className="p-sm text-on-surface hover:bg-surface-container-low rounded-full"

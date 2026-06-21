@@ -72,7 +72,7 @@ export const ParentDashboard: React.FC = () => {
       {/* SideNavBar - Desktop */}
       <aside className="hidden lg:flex flex-col h-screen p-4 pt-6 fixed left-0 top-0 w-72 bg-surface-container-low border-r border-outline-variant z-20">
         <div className="px-4 mb-6 flex flex-col items-center text-center">
-          <Logo height="36px" className="mb-1" />
+          <Logo height="48px" className="mb-1" />
         </div>
         <nav className="flex-1 space-y-xs font-bold text-on-surface-variant font-label-md text-label-md">
           <a className="flex items-center space-x-md bg-secondary-container text-on-secondary-container rounded-full px-md py-sm" href="#" onClick={e => e.preventDefault()}>

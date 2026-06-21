@@ -42,7 +42,7 @@ export const PrivateRoute: React.FC<{
         <div className="absolute inset-0 bg-gradient-to-tr from-brand-900/10 via-transparent to-brand-500/5 pointer-events-none" />
         <div className="flex flex-col items-center z-10">
           <div className="w-16 h-16 rounded-full border-4 border-brand-200 border-t-brand-600 animate-spin loader-glow mb-4" />
-          <Logo height="48px" className="animate-pulse mb-2" variant="stacked" />
+          <Logo height="96px" className="animate-pulse mb-2" variant="stacked" />
           <p className="text-sm text-muted-foreground mt-1">Securing connection...</p>
         </div>
       </div>

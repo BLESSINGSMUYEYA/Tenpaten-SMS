@@ -53,7 +53,7 @@ export const ForgotPasswordPage: React.FC = () => {
       <main className="relative z-10 w-full max-w-[440px] bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-lg md:p-xl flex flex-col gap-lg animate-slide-in-bottom">
 
         <header className="flex flex-col items-center text-center gap-sm">
-          <Logo height="64px" className="mb-xs" variant="stacked" />
+          <Logo height="110px" className="mb-xs" variant="stacked" />
           <p className="font-body-sm text-body-sm text-on-surface-variant">Reset your institution portal password</p>
         </header>
 
