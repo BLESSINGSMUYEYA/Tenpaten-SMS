@@ -10,7 +10,7 @@ export const DeputyHeadSettings: React.FC = () => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   // Profile forms
-  const [email, setEmail] = useState(user?.email || 'deputy.head@tenpaten.edu');
+  const [email, setEmail] = useState(user?.email || 'deputy.head@myklasi.online');
   const [phone, setPhone] = useState('+265 888 777 666');
   const [address, setAddress] = useState('Limbe, Blantyre, Malawi');
 

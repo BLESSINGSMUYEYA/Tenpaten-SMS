@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../services/api';
-import { resetPasswordBaseSchema, type ResetPasswordInput } from '@tenpaten/shared';
+import { resetPasswordBaseSchema, type ResetPasswordInput } from '@myklasi/shared';
 import { Key, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { Logo } from '../../components/Logo';
 

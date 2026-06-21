@@ -15,6 +15,7 @@ import peopleRoutes from './routes/people.routes';
 import attendanceRoutes from './routes/attendance.routes';
 import gradeRoutes from './routes/grade.routes';
 import timetableRoutes from './routes/timetable.routes';
+import financeRoutes from './routes/finance.routes';
 
 const app = express();
 
@@ -88,6 +89,7 @@ app.use('/api/people', peopleRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/grades', gradeRoutes);
 app.use('/api/timetable', timetableRoutes);
+app.use('/api/finance', financeRoutes);
 
 // ---- Error Handling ----
 app.use(notFoundHandler);

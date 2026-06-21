@@ -11,7 +11,7 @@ import {
   createSubjectSchema,
   assignSubjectSchema,
   createGradingScaleSchema,
-} from '@tenpaten/shared';
+} from '@myklasi/shared';
 
 const router = Router();
 

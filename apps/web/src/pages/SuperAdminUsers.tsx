@@ -127,7 +127,7 @@ export const SuperAdminUsers: React.FC = () => {
           <div className="mb-lg flex flex-col sm:flex-row sm:justify-between sm:items-end gap-md">
             <div>
               <h1 className="dash-page-title mb-xs">System Users</h1>
-              <p className="font-body-md text-body-md text-on-surface-variant">Oversee, authorize, and manage administrative school users on the Tenpaten platform.</p>
+              <p className="font-body-md text-body-md text-on-surface-variant">Oversee, authorize, and manage administrative school users on the MyKlasi platform.</p>
             </div>
             <button 
               onClick={() => setAddUserOpen(true)}

@@ -28,27 +28,27 @@
     --destructive-foreground: 210 20% 98%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 243.4 75.4% 58.6%;
+    --ring: 146 79% 27%;
     --radius: 0.75rem;
 
-    /* ── MD3 Primary (Indigo-based) ── */
-    --md-primary:                    243 75% 59%;   /* #6366f1 */
+    /* ── MD3 Primary (Green-based) ── */
+    --md-primary:                    146 79% 27%;   /* #0e7a3f */
     --md-on-primary:                 0 0% 100%;
-    --md-primary-container:          240 100% 93%;  /* #e0e7ff */
-    --md-on-primary-container:       243 75% 25%;
-    --md-primary-fixed:              240 100% 93%;
-    --md-primary-fixed-dim:          243 75% 75%;
-    --md-on-primary-fixed:           243 75% 10%;
-    --md-on-primary-fixed-variant:   243 75% 25%;
-    --md-inverse-primary:            243 75% 75%;
+    --md-primary-container:          146 50% 90%;   /* light mint green */
+    --md-on-primary-container:       146 80% 12%;
+    --md-primary-fixed:              146 50% 90%;
+    --md-primary-fixed-dim:          146 60% 75%;
+    --md-on-primary-fixed:           146 80% 10%;
+    --md-on-primary-fixed-variant:   146 79% 20%;
+    --md-inverse-primary:            146 60% 75%;
 
-    /* ── MD3 Secondary (Violet) ── */
-    --md-secondary:                  258 59% 55%;
+    /* ── MD3 Secondary (Gold/Yellow) ── */
+    --md-secondary:                  49 100% 45%;   /* #e0b000 */
     --md-on-secondary:               0 0% 100%;
-    --md-secondary-container:        258 100% 95%;
-    --md-on-secondary-container:     258 59% 20%;
-    --md-secondary-fixed:            258 100% 92%;
-    --md-on-secondary-fixed-variant: 258 59% 30%;
+    --md-secondary-container:        49 100% 92%;
+    --md-on-secondary-container:     49 100% 15%;
+    --md-secondary-fixed:            49 100% 92%;
+    --md-on-secondary-fixed-variant: 49 100% 25%;
 
     /* ── MD3 Tertiary (Cyan/Teal) ── */
     --md-tertiary:                   189 60% 42%;
@@ -101,26 +101,26 @@
     --destructive-foreground: 210 20% 98%;
     --border: 215 27.9% 16.9%;
     --input: 215 27.9% 16.9%;
-    --ring: 244.5 77.9% 62.2%;
+    --ring: 146 60% 55%;
 
-    /* MD3 Primary */
-    --md-primary:                    243 75% 72%;
-    --md-on-primary:                 243 75% 15%;
-    --md-primary-container:          243 75% 28%;
-    --md-on-primary-container:       240 100% 93%;
-    --md-primary-fixed:              240 100% 93%;
-    --md-primary-fixed-dim:          243 75% 75%;
-    --md-on-primary-fixed:           243 75% 10%;
-    --md-on-primary-fixed-variant:   243 75% 28%;
-    --md-inverse-primary:            243 75% 59%;
+    /* MD3 Primary (Green — logo-aligned) */
+    --md-primary:                    146 60% 55%;   /* bright green for dark bg */
+    --md-on-primary:                 146 80% 8%;
+    --md-primary-container:          146 60% 18%;
+    --md-on-primary-container:       146 50% 90%;
+    --md-primary-fixed:              146 50% 90%;
+    --md-primary-fixed-dim:          146 60% 55%;
+    --md-on-primary-fixed:           146 80% 8%;
+    --md-on-primary-fixed-variant:   146 60% 18%;
+    --md-inverse-primary:            146 79% 27%;
 
-    /* MD3 Secondary */
-    --md-secondary:                  258 59% 72%;
-    --md-on-secondary:               258 59% 15%;
-    --md-secondary-container:        258 59% 28%;
-    --md-on-secondary-container:     258 100% 95%;
-    --md-secondary-fixed:            258 100% 92%;
-    --md-on-secondary-fixed-variant: 258 59% 28%;
+    /* MD3 Secondary (Gold — logo-aligned) */
+    --md-secondary:                  49 100% 60%;   /* bright gold for dark bg */
+    --md-on-secondary:               49 100% 10%;
+    --md-secondary-container:        49 80% 20%;
+    --md-on-secondary-container:     49 100% 92%;
+    --md-secondary-fixed:            49 100% 92%;
+    --md-on-secondary-fixed-variant: 49 80% 20%;
 
     /* MD3 Tertiary */
     --md-tertiary:                   189 60% 65%;

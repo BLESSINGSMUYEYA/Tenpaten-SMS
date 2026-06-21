@@ -90,7 +90,7 @@ export const LandingPage: React.FC = () => {
                 style={{ animation: 'tpFadeUp 0.7s ease both', animationDelay: '160ms' }}
               >
                 Streamline your institution's operations, enhance communication, and foster academic excellence
-                with Tenpaten's comprehensive school management system designed for the African context.
+                with MyKlasi's comprehensive school management system designed for the African context.
               </p>
 
               {/* CTAs */}
@@ -242,7 +242,7 @@ export const LandingPage: React.FC = () => {
             ))}
           </div>
           <div className="font-label-sm text-label-sm text-on-surface-variant text-center md:text-right">
-            © {new Date().getFullYear()} Tenpaten School Management System. All rights reserved.
+            © {new Date().getFullYear()} MyKlasi School Management System. All rights reserved.
           </div>
         </div>
       </footer>

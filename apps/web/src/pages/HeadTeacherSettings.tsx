@@ -10,8 +10,8 @@ export const HeadTeacherSettings: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // States for toggles/inputs
-  const [schoolName, setSchoolName] = useState('Tenpaten Private Secondary School');
-  const [email, setEmail] = useState(user?.email || 'headteacher@tenpaten.com');
+  const [schoolName, setSchoolName] = useState('MyKlasi Private Secondary School');
+  const [email, setEmail] = useState(user?.email || 'headteacher@myklasi.online');
   const [termStart, setTermStart] = useState('2026-05-11');
   const [termEnd, setTermEnd] = useState('2026-08-07');
   const [emailAlerts, setEmailAlerts] = useState(true);
@@ -153,7 +153,7 @@ export const HeadTeacherSettings: React.FC = () => {
         </div>
 
         <footer className="mt-8 pt-6 pb-2 text-center border-t border-outline-variant">
-          <p className="text-label-sm text-on-surface-variant opacity-60">© 2026 Tenpaten School Management System. Academic Session: 2025/2026</p>
+          <p className="text-label-sm text-on-surface-variant opacity-60">© 2026 MyKlasi School Management System. Academic Session: 2025/2026</p>
         </footer>
       </main>
       <BottomNav />

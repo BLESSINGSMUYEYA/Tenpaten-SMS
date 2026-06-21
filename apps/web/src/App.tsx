@@ -46,6 +46,13 @@ const DeputyHeadSettings = lazy(() => import('./pages/DeputyHeadSettings').then(
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard').then(m => ({ default: m.StudentDashboard })));
 const ParentDashboard = lazy(() => import('./pages/ParentDashboard').then(m => ({ default: m.ParentDashboard })));
 
+// Bursar
+const BursarDashboard = lazy(() => import('./pages/BursarDashboard').then(m => ({ default: m.BursarDashboard })));
+const BursarFees = lazy(() => import('./pages/BursarFees').then(m => ({ default: m.BursarFees })));
+const BursarPayments = lazy(() => import('./pages/BursarPayments').then(m => ({ default: m.BursarPayments })));
+const BursarStudents = lazy(() => import('./pages/BursarStudents').then(m => ({ default: m.BursarStudents })));
+const BursarSettings = lazy(() => import('./pages/BursarSettings').then(m => ({ default: m.BursarSettings })));
+
 // Super Admin
 const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard').then(m => ({ default: m.SuperAdminDashboard })));
 const SuperAdminSchools = lazy(() => import('./pages/SuperAdminSchools').then(m => ({ default: m.SuperAdminSchools })));
@@ -344,6 +351,48 @@ const App: React.FC = () => {
                 element={
                   <PrivateRoute allowedRoles={['parent']}>
                     <ParentDashboard />
+                  </PrivateRoute>
+                }
+              />
+
+              {/* Bursar */}
+              <Route
+                path="/bursar/dashboard"
+                element={
+                  <PrivateRoute allowedRoles={['bursar']}>
+                    <BursarDashboard />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/bursar/fees"
+                element={
+                  <PrivateRoute allowedRoles={['bursar']}>
+                    <BursarFees />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/bursar/payments"
+                element={
+                  <PrivateRoute allowedRoles={['bursar']}>
+                    <BursarPayments />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/bursar/students"
+                element={
+                  <PrivateRoute allowedRoles={['bursar']}>
+                    <BursarStudents />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/bursar/settings"
+                element={
+                  <PrivateRoute allowedRoles={['bursar']}>
+                    <BursarSettings />
                   </PrivateRoute>
                 }
               />

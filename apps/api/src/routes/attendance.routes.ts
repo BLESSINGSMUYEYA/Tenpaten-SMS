@@ -4,7 +4,7 @@ import { authenticate } from '../middleware/auth.middleware';
 import { requireHeadOrDeputy, requireRoles } from '../middleware/rbac.middleware';
 import { validateBody } from '../middleware/validate.middleware';
 import { asyncHandler, sendSuccess, ValidationError, NotFoundError } from '../utils/errors';
-import { markAttendanceSchema } from '@tenpaten/shared';
+import { markAttendanceSchema } from '@myklasi/shared';
 
 const router = Router();
 

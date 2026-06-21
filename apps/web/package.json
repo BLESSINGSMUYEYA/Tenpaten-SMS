@@ -1,5 +1,5 @@
 {
-  "name": "@tenpaten/web",
+  "name": "@myklasi/web",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.6.0",
-    "@tenpaten/shared": "workspace:*",
+    "@myklasi/shared": "workspace:*",
     "axios": "^1.7.2",
     "clsx": "^2.1.1",
     "idb": "^8.0.3",

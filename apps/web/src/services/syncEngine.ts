@@ -21,7 +21,7 @@ let isSyncing = false;
 /**
  * Attempt to upload all pending attendance records.
  * Returns a summary of how many succeeded / failed.
- * Dispatches a DOM event `tenpaten:sync-complete` when finished.
+ * Dispatches a DOM event `myklasi:sync-complete` when finished.
  */
 export async function syncPendingAttendance(): Promise<SyncResult> {
   // Prevent concurrent sync runs
@@ -66,7 +66,7 @@ export async function syncPendingAttendance(): Promise<SyncResult> {
 
     // Notify the app that a sync attempt has finished
     window.dispatchEvent(
-      new CustomEvent<SyncResult>('tenpaten:sync-complete', {
+      new CustomEvent<SyncResult>('myklasi:sync-complete', {
         detail: { synced, failed },
       })
     );

@@ -10,7 +10,7 @@ async function startServer() {
   await connectDatabase();
 
   const server = app.listen(PORT, () => {
-    console.log(`🚀 Tenpaten SMS API running on http://localhost:${PORT} in ${env.NODE_ENV} mode`);
+    console.log(`🚀 MyKlasi SMS API running on http://localhost:${PORT} in ${env.NODE_ENV} mode`);
   });
 
   // Graceful Shutdown

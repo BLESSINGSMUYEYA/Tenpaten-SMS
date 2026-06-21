@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api';
-import { forgotPasswordSchema, type ForgotPasswordInput } from '@tenpaten/shared';
+import { forgotPasswordSchema, type ForgotPasswordInput } from '@myklasi/shared';
 import { Mail, LayoutGrid, CheckCircle } from 'lucide-react';
 import { Logo } from '../../components/Logo';
 
@@ -67,7 +67,7 @@ export const ForgotPasswordPage: React.FC = () => {
             <div>
               <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold mb-sm">Check your email</h2>
               <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                If the email is registered on Tenpaten under that school code, we've sent you a password reset link.
+                If the email is registered on MyKlasi under that school code, we've sent you a password reset link.
                 Please check your inbox (and spam folder) for instructions.
               </p>
             </div>

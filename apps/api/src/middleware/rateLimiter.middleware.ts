@@ -1,5 +1,5 @@
 import rateLimit from 'express-rate-limit';
-import type { ApiResponse } from '@tenpaten/shared';
+import type { ApiResponse } from '@myklasi/shared';
 
 // ---- Login Rate Limiter ----
 // 10 attempts per IP per 15 minutes — then lockout

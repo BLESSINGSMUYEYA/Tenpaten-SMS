@@ -77,7 +77,7 @@ export const SuperAdminDashboard: React.FC = () => {
           <div className="mb-lg flex flex-col sm:flex-row sm:justify-between sm:items-end gap-md">
             <div>
               <h1 className="dash-page-title mb-xs">Platform Overview</h1>
-              <p className="font-body-md text-body-md text-on-surface-variant">Live metrics and system health for Tenpaten.</p>
+              <p className="font-body-md text-body-md text-on-surface-variant">Live metrics and system health for MyKlasi.</p>
             </div>
             <button className="flex items-center justify-center gap-sm bg-primary text-on-primary px-4 py-2.5 rounded-lg hover:bg-primary-container transition-colors shadow-sm self-start sm:self-auto active:scale-95">
               <span className="material-symbols-outlined text-sm">download</span>

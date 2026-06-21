@@ -1,4 +1,4 @@
-// Tenpaten SMS — Shared Package
+// MyKlasi SMS — Shared Package
 // Re-exports all types, schemas, and constants
 
 export * from './types';

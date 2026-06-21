@@ -42,10 +42,10 @@ export interface CachedTerm {
 
 // ─── DB Initialisation ───────────────────────────────────────────────────────
 
-const DB_NAME = 'tenpaten-offline';
+const DB_NAME = 'myklasi-offline';
 const DB_VERSION = 1;
 
-type TenpatenDB = {
+type MyKlasiDB = {
   pendingAttendance: {
     key: string;
     value: PendingAttendanceRecord;
@@ -64,11 +64,11 @@ type TenpatenDB = {
   };
 };
 
-let dbPromise: Promise<IDBPDatabase<TenpatenDB>> | null = null;
+let dbPromise: Promise<IDBPDatabase<MyKlasiDB>> | null = null;
 
-function getDb(): Promise<IDBPDatabase<TenpatenDB>> {
+function getDb(): Promise<IDBPDatabase<MyKlasiDB>> {
   if (!dbPromise) {
-    dbPromise = openDB<TenpatenDB>(DB_NAME, DB_VERSION, {
+    dbPromise = openDB<MyKlasiDB>(DB_NAME, DB_VERSION, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('pendingAttendance')) {
           db.createObjectStore('pendingAttendance', { keyPath: 'id' });

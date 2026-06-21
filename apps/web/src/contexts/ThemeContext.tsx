@@ -15,7 +15,7 @@ const ThemeContext = createContext<ThemeContextValue>({
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     // Respect stored preference, otherwise fall back to system preference
-    const stored = localStorage.getItem('tenpaten-theme') as Theme | null;
+    const stored = localStorage.getItem('myklasi-theme') as Theme | null;
     if (stored === 'dark' || stored === 'light') return stored;
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
@@ -27,7 +27,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('tenpaten-theme', theme);
+    localStorage.setItem('myklasi-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));

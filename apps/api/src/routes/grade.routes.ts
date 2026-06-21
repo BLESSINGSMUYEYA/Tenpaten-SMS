@@ -5,7 +5,7 @@ import { requireRoles } from '../middleware/rbac.middleware';
 import { validateBody } from '../middleware/validate.middleware';
 import { asyncHandler, sendSuccess, ValidationError, NotFoundError } from '../utils/errors';
 import { calculateGrade, calculatePositions } from '../utils/helpers';
-import { saveGradesSchema } from '@tenpaten/shared';
+import { saveGradesSchema } from '@myklasi/shared';
 import { GradeStatus } from '@prisma/client';
 
 const router = Router();

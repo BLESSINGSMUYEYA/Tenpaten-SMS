@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { prisma } from '../config/database';
 import { UnauthorizedError } from '../utils/errors';
-import type { JwtPayload, UserRole } from '@tenpaten/shared';
+import type { JwtPayload, UserRole } from '@myklasi/shared';
 
 // Extend Express Request to include authenticated user
 declare global {

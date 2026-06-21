@@ -154,7 +154,7 @@ export function useMutation<TVariables = any, TData = any>(
           });
           setSavedOffline(true);
           // Dispatch event so OnlineContext refreshes the pending count
-          window.dispatchEvent(new Event('tenpaten:pending-saved'));
+          window.dispatchEvent(new Event('myklasi:pending-saved'));
           // Return a synthetic "success" result so the UI can show offline badge
           return { _offline: true } as TData & { _offline?: boolean };
         }

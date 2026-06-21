@@ -55,7 +55,7 @@ class EmailService {
         to: options.to,
         subject: options.subject,
         html: options.html,
-        text: options.text || 'Tenpaten SMS Notification',
+        text: options.text || 'MyKlasi SMS Notification',
       };
 
       if (!env.RESEND_API_KEY && env.NODE_ENV === 'development') {
@@ -93,9 +93,9 @@ Body Snippet: ${options.html.substring(0, 150)}...
     const loginUrl = `${env.FRONTEND_URL}/login`;
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
-        <h2 style="color: #4f46e5; margin-bottom: 20px;">Welcome to Tenpaten SMS</h2>
+        <h2 style="color: #4f46e5; margin-bottom: 20px;">Welcome to MyKlasi SMS</h2>
         <p>Dear ${options.firstName},</p>
-        <p>An account has been created for you at <strong>${options.schoolName}</strong> on the Tenpaten School Management System.</p>
+        <p>An account has been created for you at <strong>${options.schoolName}</strong> on the MyKlasi School Management System.</p>
         
         <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
           <p style="margin: 5px 0;"><strong>School Code:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 4px;">${options.schoolCode}</code></p>
@@ -106,20 +106,20 @@ Body Snippet: ${options.html.substring(0, 150)}...
         <p style="color: #ef4444; font-weight: bold;">Note: You will be required to change this password on your first login.</p>
 
         <div style="margin-top: 30px;">
-          <a href="${loginUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Log In to Tenpaten</a>
+          <a href="${loginUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Log In to MyKlasi</a>
         </div>
 
         <hr style="border: none; border-top: 1px solid #e0e0e0; margin-top: 30px; margin-bottom: 20px;" />
         <p style="font-size: 12px; color: #6b7280; text-align: center;">
           Every class. Every day. Every child.<br/>
-          Tenpaten SMS &bull; Private Secondary Schools Portal
+          MyKlasi SMS &bull; Private Secondary Schools Portal
         </p>
       </div>
     `;
 
     return this.sendEmail({
       to: options.email,
-      subject: `Welcome to Tenpaten SMS — ${options.schoolName}`,
+      subject: `Welcome to MyKlasi SMS — ${options.schoolName}`,
       html,
     });
   }
@@ -138,7 +138,7 @@ Body Snippet: ${options.html.substring(0, 150)}...
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
         <h2 style="color: #4f46e5; margin-bottom: 20px;">Reset Your Password</h2>
         <p>Dear ${options.firstName},</p>
-        <p>We received a request to reset the password for your Tenpaten account linked to school code <strong>${options.schoolCode}</strong>.</p>
+        <p>We received a request to reset the password for your MyKlasi account linked to school code <strong>${options.schoolCode}</strong>.</p>
         
         <p>Click the button below to set a new password. This link will expire in 1 hour.</p>
 
@@ -153,14 +153,14 @@ Body Snippet: ${options.html.substring(0, 150)}...
 
         <hr style="border: none; border-top: 1px solid #e0e0e0; margin-top: 30px; margin-bottom: 20px;" />
         <p style="font-size: 12px; color: #6b7280; text-align: center;">
-          Tenpaten SMS Support Team
+          MyKlasi SMS Support Team
         </p>
       </div>
     `;
 
     return this.sendEmail({
       to: options.email,
-      subject: 'Reset Your Tenpaten SMS Password',
+      subject: 'Reset Your MyKlasi SMS Password',
       html,
     });
   }

@@ -1,5 +1,5 @@
 // ============================================================
-// TENPATEN SMS — Prisma Schema
+// MYKLASI SMS — Prisma Schema
 // Multi-tenant school management system for Malawi
 // ALL tables include school_id (tenant isolation)
 // SOFT DELETE ONLY — is_deleted flag, never hard delete
@@ -101,7 +101,9 @@ model School {
   attendance       Attendance[]
   grades           Grade[]
   gradingScales    GradingScale[]
-
+  feeStructures    FeeStructure[]
+  invoices         Invoice[]
+  feePayments      FeePayment[]
 
   @@index([isDeleted])
   @@index([isActive, isDeleted])
@@ -135,6 +137,7 @@ model User {
   attendanceOverridden  AttendanceOverride[]
   gradesEntered         Grade[]          @relation("GradeEnteredBy")
   gradesApproved        Grade[]          @relation("GradeApprovedBy")
+  paymentsRecorded      FeePayment[]     @relation("PaymentsRecorder")
 
   passwordResetTokens   PasswordResetToken[]
 
@@ -195,6 +198,8 @@ model Term {
   timetableSlots TimetableSlot[]
   attendance     Attendance[]
   grades         Grade[]
+  feeStructures  FeeStructure[]
+  invoices       Invoice[]
 
 
   @@map("terms")
@@ -218,6 +223,7 @@ model Class {
   studentProfiles StudentProfile[]
   attendance      Attendance[]
   grades          Grade[]
+  feeStructures   FeeStructure[]
 
 
   @@map("classes")
@@ -312,6 +318,7 @@ model StudentProfile {
   class      Class      @relation(fields: [classId], references: [id])
   attendance Attendance[]
   grades     Grade[]
+  invoices   Invoice[]
 
 
   @@unique([admissionNumber, schoolId])
@@ -458,5 +465,79 @@ model GradingRule {
   @@index([gradingScaleId])
   @@map("grading_rules")
 }
+
+model FeeStructure {
+  id           String   @id @default(uuid())
+  schoolId     String   @map("school_id")
+  classId      String   @map("class_id")
+  termId       String   @map("term_id")
+  tuitionFee   Float    @map("tuition_fee")
+  boardingFee  Float    @default(0) @map("boarding_fee")
+  otherFee     Float    @default(0) @map("other_fee")
+  totalAmount  Float    @map("total_amount")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  isDeleted    Boolean  @default(false) @map("is_deleted")
+
+  school       School   @relation(fields: [schoolId], references: [id])
+  class        Class    @relation(fields: [classId], references: [id])
+  term         Term     @relation(fields: [termId], references: [id])
+  invoices     Invoice[]
+
+  @@unique([classId, termId])
+  @@index([schoolId, isDeleted])
+  @@map("fee_structures")
+}
+
+model Invoice {
+  id             String        @id @default(uuid())
+  schoolId       String        @map("school_id")
+  studentId      String        @map("student_id")
+  termId         String        @map("term_id")
+  feeStructureId String?       @map("fee_structure_id")
+  amountBilled   Float         @map("amount_billed")
+  amountPaid     Float         @default(0) @map("amount_paid")
+  balance        Float
+  status         String        @default("unpaid") // "unpaid", "partial", "paid"
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  isDeleted      Boolean       @default(false) @map("is_deleted")
+
+  school       School        @relation(fields: [schoolId], references: [id])
+  student      StudentProfile @relation(fields: [studentId], references: [id])
+  term         Term          @relation(fields: [termId], references: [id])
+  feeStructure FeeStructure? @relation(fields: [feeStructureId], references: [id])
+  payments     FeePayment[]
+
+  @@unique([studentId, termId])
+  @@index([schoolId, isDeleted])
+  @@index([studentId, isDeleted])
+  @@map("invoices")
+}
+
+model FeePayment {
+  id              String   @id @default(uuid())
+  schoolId        String   @map("school_id")
+  invoiceId       String   @map("invoice_id")
+  amount          Float
+  receiptNumber   String   @map("receipt_number")
+  paymentDate     DateTime @default(now()) @map("payment_date")
+  paymentMethod   String   @map("payment_method") // "cash", "mobile_money", "bank", "cheque"
+  referenceNumber String?  @map("reference_number")
+  recordedBy      String   @map("recorded_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  isDeleted       Boolean  @default(false) @map("is_deleted")
+
+  school         School   @relation(fields: [schoolId], references: [id])
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id])
+  recordedByUser User     @relation("PaymentsRecorder", fields: [recordedBy], references: [id])
+
+  @@unique([receiptNumber, schoolId])
+  @@index([schoolId, isDeleted])
+  @@index([invoiceId, isDeleted])
+  @@map("fee_payments")
+}
+
 
 

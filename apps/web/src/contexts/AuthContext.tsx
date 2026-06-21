@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api, setAccessTokenInMemory } from '../services/api';
-import type { User, LoginInput, ChangePasswordInput } from '@tenpaten/shared';
+import type { User, LoginInput, ChangePasswordInput } from '@myklasi/shared';
 
 interface AuthContextType {
   user: User | null;

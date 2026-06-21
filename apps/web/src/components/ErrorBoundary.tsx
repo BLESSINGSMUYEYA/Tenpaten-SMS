@@ -72,7 +72,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   System Encountered a Glitch
                 </h1>
                 <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-lg">
-                  Tenpaten encountered an unexpected runtime exception. We've logged this internally to be fixed immediately.
+                  MyKlasi encountered an unexpected runtime exception. We've logged this internally to be fixed immediately.
                   You can try reloading the application or returning home.
                 </p>
 
@@ -138,7 +138,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <p className="text-center font-body-sm text-body-sm text-on-surface-variant mt-lg leading-relaxed">
-              Tenpaten School Management System &bull; "Every class. Every day. Every child."
+              MyKlasi School Management System &bull; "Every class. Every day. Every child."
             </p>
           </div>
         </div>

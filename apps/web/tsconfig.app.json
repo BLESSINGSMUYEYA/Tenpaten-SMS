@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@tenpaten/shared": ["../../packages/shared/src/index.ts"]
+      "@myklasi/shared": ["../../packages/shared/src/index.ts"]
     },
 
     /* Bundler mode */

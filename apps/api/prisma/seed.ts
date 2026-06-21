@@ -30,7 +30,7 @@ async function main() {
   // ==========================================
   // ROLE-SPECIFIC DEFAULT PASSWORDS
   // These are INITIAL credentials — users should change them on first login.
-  // Super Admin:   Admin@Tenpaten2026
+  // Super Admin:   Admin@MyKlasi2026
   // Head Teacher:  HeadSS@2026
   // Deputy Head:   DeputySS@2026
   // Bursar:        BursarSS@2026
@@ -39,7 +39,7 @@ async function main() {
   // Student:       StudentSS@2026
   // ==========================================
   const salt = bcrypt.genSaltSync(10);
-  const adminPasswordHash    = bcrypt.hashSync('Admin@Tenpaten2026', salt);
+  const adminPasswordHash    = bcrypt.hashSync('Admin@MyKlasi2026', salt);
   const headPasswordHash     = bcrypt.hashSync('HeadSS@2026', salt);
   const deputyPasswordHash   = bcrypt.hashSync('DeputySS@2026', salt);
   const bursarPasswordHash   = bcrypt.hashSync('BursarSS@2026', salt);
@@ -54,8 +54,8 @@ async function main() {
   const superAdmin = await prisma.user.create({
     data: {
       firstName: 'Admin',
-      lastName: 'Tenpaten',
-      email: 'admin@tenpaten.com',
+      lastName: 'MyKlasi',
+      email: 'admin@myklasi.online',
       passwordHash: adminPasswordHash,
       role: UserRole.super_admin,
       isActive: true,
@@ -509,6 +509,101 @@ async function main() {
       },
     });
   }
+
+  // ==========================================
+  // 9. CREATE FINANCE DATA (FEE STRUCTURES, INVOICES, PAYMENTS)
+  // ==========================================
+  console.log('Creating Finance Data (Fee Structures, Invoices, Payments)...');
+
+  // Define fee structures for Form 1 in Term 2
+  const f1Structure = await prisma.feeStructure.create({
+    data: {
+      schoolId: school.id,
+      classId: classForm1E.id,
+      termId: term2.id,
+      tuitionFee: 150000,
+      boardingFee: 120000,
+      otherFee: 30000,
+      totalAmount: 300000,
+    },
+  });
+
+  const allForm1Students = await prisma.studentProfile.findMany({
+    where: { schoolId: school.id, classId: classForm1E.id },
+    include: { user: true },
+  });
+
+  // Modify Wongani Banda to be a boarding student to test boarding fee structure
+  const wongani = allForm1Students.find(s => s.user.firstName === 'Wongani');
+  if (wongani) {
+    await prisma.studentProfile.update({
+      where: { id: wongani.id },
+      data: { boardingStatus: 'boarding' },
+    });
+    wongani.boardingStatus = 'boarding';
+  }
+
+  // Create Invoices & Payments for the students
+  for (const student of allForm1Students) {
+    const isBoarder = student.boardingStatus === 'boarding';
+    const amountBilled = f1Structure.tuitionFee + f1Structure.otherFee + (isBoarder ? f1Structure.boardingFee : 0);
+
+    let amountPaid = 0;
+    let status = 'unpaid';
+
+    if (student.user.firstName === 'Alinafe') {
+      amountPaid = amountBilled;
+      status = 'paid';
+    } else if (student.user.firstName === 'Wongani') {
+      amountPaid = 200000;
+      status = 'partial';
+    } else if (student.user.firstName === 'Tiwonge') {
+      amountPaid = 100000;
+      status = 'partial';
+    } else {
+      amountPaid = 0;
+      status = 'unpaid';
+    }
+
+    const balance = amountBilled - amountPaid;
+
+    const invoice = await prisma.invoice.create({
+      data: {
+        schoolId: school.id,
+        studentId: student.id,
+        termId: term2.id,
+        feeStructureId: f1Structure.id,
+        amountBilled,
+        amountPaid,
+        balance,
+        status: status as any,
+      },
+    });
+
+    if (amountPaid > 0) {
+      const today = new Date();
+      const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+      const receiptNumber = `REC-${dateStr}-${student.user.firstName.toUpperCase()}`;
+      
+      const paymentMethod = student.user.firstName === 'Alinafe' ? 'bank' : 'mobile_money';
+      const referenceNumber = student.user.firstName === 'Alinafe' ? 'TXN-984210' : 'AIR-482094';
+
+      await prisma.feePayment.create({
+        data: {
+          schoolId: school.id,
+          invoiceId: invoice.id,
+          amount: amountPaid,
+          receiptNumber,
+          paymentMethod,
+          referenceNumber,
+          recordedBy: bursar.id,
+          paymentDate: new Date(),
+        },
+      });
+    }
+  }
+
+  console.log('Finance Data created successfully.');
 
   console.log('Students, Parents, and Term 1 Academic Grades loaded.');
   console.log('🌱 Database seeding completed successfully! All constraints and data verified.');

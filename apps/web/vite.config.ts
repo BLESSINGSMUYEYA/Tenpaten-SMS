@@ -15,11 +15,11 @@ export default defineConfig({
         type: 'module',
       },
       manifest: {
-        name: 'Tenpaten School Management',
-        short_name: 'Tenpaten',
+        name: 'MyKlasi School Management',
+        short_name: 'MyKlasi',
         description: 'Smart attendance, grades & communication for schools',
-        theme_color: '#4f46e5',
-        background_color: '#0f0f1a',
+        theme_color: '#0e7a3f',
+        background_color: '#f8f9fb',
         display: 'standalone',
         start_url: '/',
         icons: [
@@ -27,7 +27,25 @@ export default defineConfig({
             src: '/favicon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
-            purpose: 'any maskable',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/icon-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
           },
         ],
       },
@@ -55,7 +73,7 @@ export default defineConfig({
             urlPattern: /\/api\/schools\/(classes|terms)/,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'tenpaten-api-reference',
+              cacheName: 'myklasi-api-reference',
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
@@ -68,7 +86,7 @@ export default defineConfig({
             urlPattern: /\/api\/people\/students/,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'tenpaten-api-students',
+              cacheName: 'myklasi-api-students',
               expiration: {
                 maxEntries: 200,
                 maxAgeSeconds: 24 * 60 * 60, // 1 day
@@ -81,7 +99,7 @@ export default defineConfig({
             urlPattern: /\/api\//,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'tenpaten-api-general',
+              cacheName: 'myklasi-api-general',
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60, // 1 hour
@@ -96,7 +114,7 @@ export default defineConfig({
   envDir: '../../',
   resolve: {
     alias: {
-      '@tenpaten/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
+      '@myklasi/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
     },
   },
   server: {

@@ -145,7 +145,7 @@ export const HeadTeacherDashboard: React.FC = () => {
 
         <footer className="mt-margin-desktop pt-lg pb-xs text-center border-t border-outline-variant">
           <p className="text-label-sm text-on-surface-variant opacity-60">
-            © 2026 Tenpaten School Management System. All Rights Reserved.
+            © 2026 MyKlasi School Management System. All Rights Reserved.
             <span className="mx-2">|</span>
             Academic Session: 2025/2026
           </p>

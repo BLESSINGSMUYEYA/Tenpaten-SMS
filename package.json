@@ -1,8 +1,8 @@
 {
-  "name": "tenpaten-sms",
+  "name": "myklasi-sms",
   "version": "0.1.0",
   "private": true,
-  "description": "Tenpaten School Management System — Multi-tenant platform for secondary schools in Malawi",
+  "description": "MyKlasi School Management System — Multi-tenant platform for secondary schools in Malawi",
   "workspaces": [
     "apps/*",
     "packages/*"

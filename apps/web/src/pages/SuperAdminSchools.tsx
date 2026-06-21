@@ -3,7 +3,7 @@ import { Header } from '../components/SuperAdminDashboard/Header';
 import { Sidebar } from '../components/SuperAdminDashboard/Sidebar';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { api } from '../services/api';
-import { generateSchoolCode } from '@tenpaten/shared';
+import { generateSchoolCode } from '@myklasi/shared';
 
 interface School {
   id: string;
@@ -170,7 +170,7 @@ export const SuperAdminSchools: React.FC = () => {
           <div className="mb-lg flex flex-col sm:flex-row sm:justify-between sm:items-end gap-md">
             <div>
               <h1 className="dash-page-title mb-xs">Schools Management</h1>
-              <p className="font-body-md text-body-md text-on-surface-variant">Register, update, and manage school institutions onboarded to Tenpaten.</p>
+              <p className="font-body-md text-body-md text-on-surface-variant">Register, update, and manage school institutions onboarded to MyKlasi.</p>
             </div>
             <button
               onClick={() => setAddSchoolOpen(true)}

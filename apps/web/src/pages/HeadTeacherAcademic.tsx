@@ -175,7 +175,7 @@ export const HeadTeacherAcademic: React.FC = () => {
         )}
 
         <footer className="mt-8 pt-6 pb-2 text-center border-t border-outline-variant">
-          <p className="text-label-sm text-on-surface-variant opacity-60">© 2026 Tenpaten School Management System. Academic Session: 2025/2026</p>
+          <p className="text-label-sm text-on-surface-variant opacity-60">© 2026 MyKlasi School Management System. Academic Session: 2025/2026</p>
         </footer>
       </main>
       <BottomNav />

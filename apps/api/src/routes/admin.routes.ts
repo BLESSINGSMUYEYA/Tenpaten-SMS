@@ -8,7 +8,7 @@ import { asyncHandler, sendSuccess, ValidationError, NotFoundError } from '../ut
 import { createSchoolCode, createUniqueSchoolCode, generateTempPassword } from '../utils/helpers';
 
 import { emailService } from '../services/email.service';
-import { createSchoolSchema, updateSchoolProfileSchema } from '@tenpaten/shared';
+import { createSchoolSchema, updateSchoolProfileSchema } from '@myklasi/shared';
 import { UserRole, Prisma } from '@prisma/client';
 
 const router = Router();

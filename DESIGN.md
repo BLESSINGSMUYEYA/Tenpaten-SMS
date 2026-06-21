@@ -1,5 +1,5 @@
 ---
-name: Tenpaten SMS Modern Identity
+name: MyKlasi SMS Modern Identity
 colors:
   surface: '#f8f9ff'
   surface-dim: '#cbdbf5'
@@ -16,15 +16,15 @@ colors:
   outline: '#747780'
   outline-variant: '#c4c6d0'
   surface-tint: '#425e91'
-  primary: '#6366f1'
+  primary: '#0e7a3f'
   on-primary: '#ffffff'
-  primary-container: '#e0e7ff'
-  on-primary-container: '#1e1b4b'
-  inverse-primary: '#c7d2fe'
-  secondary: '#814bf2'
+  primary-container: '#d1fae5'
+  on-primary-container: '#022c22'
+  inverse-primary: '#6ee7b7'
+  secondary: '#e0b000'
   on-secondary: '#ffffff'
-  secondary-container: '#e0e7ff'
-  on-secondary-container: '#1e1b4b'
+  secondary-container: '#fef9c3'
+  on-secondary-container: '#713f12'
   tertiary: '#2a9ab3'
   on-tertiary: '#ffffff'
   tertiary-container: '#e0f2fe'
@@ -33,14 +33,14 @@ colors:
   on-error: '#ffffff'
   error-container: '#ffdad6'
   on-error-container: '#93000a'
-  primary-fixed: '#d7e2ff'
-  primary-fixed-dim: '#acc7ff'
-  on-primary-fixed: '#001a40'
-  on-primary-fixed-variant: '#294678'
-  secondary-fixed: '#6bfe9c'
-  secondary-fixed-dim: '#4ae183'
-  on-secondary-fixed: '#00210c'
-  on-secondary-fixed-variant: '#005228'
+  primary-fixed: '#d1fae5'
+  primary-fixed-dim: '#6ee7b7'
+  on-primary-fixed: '#022c22'
+  on-primary-fixed-variant: '#065f46'
+  secondary-fixed: '#fef9c3'
+  secondary-fixed-dim: '#fde68a'
+  on-secondary-fixed: '#713f12'
+  on-secondary-fixed-variant: '#92400e'
   tertiary-fixed: '#ffdcc1'
   tertiary-fixed-dim: '#fcb87d'
   on-tertiary-fixed: '#2e1500'
@@ -127,12 +127,13 @@ Drawing from the **Corporate / Modern** aesthetic with a lean toward **High-Cont
 
 ## Colors
 
-The color strategy is anchored by **Indigo**, chosen to evoke the institutional trust associated with traditional education. This is punctuated by **Teal/Cyan**, symbolizing growth, progress, and student success.
+The color strategy is anchored by **Green (#0e7a3f)**, the primary brand color from the MyKlasi logo, chosen to evoke growth, vitality, and the nurturing environment of education. This is paired with **Gold/Yellow (#ffd000)**, the secondary brand color, symbolizing achievement, illumination, and opportunity — the "light through the classroom door" captured in the logo icon.
 
 To ensure the high contrast required for outdoor readability, the system utilizes a "Slate" neutral palette. Pure black is avoided in favor of `#0F172A` to maintain a professional depth, while backgrounds use very light, cool-toned grays to reduce eye strain during prolonged administrative use. 
 
 Color is used functionally:
-- **Primary Indigo:** For structural elements, navigation, and primary actions.
+- **Primary Green:** For structural elements, navigation, primary actions, and brand identity.
+- **Secondary Gold:** For accents, highlights, CTAs requiring visual distinction, and "achievement" metrics.
 - **Accent Teal/Cyan:** For success states, financial credits, and "growth" metrics.
 - **Warning/Danger:** Strictly reserved for attendance alerts, overdue fees, or system errors.
 
@@ -163,7 +164,7 @@ To maintain a "print-ready" and clean aesthetic, the design system avoids heavy,
 - **Surface Levels:** The primary background is the lowest level (`#F8FAFC`). Cards and containers sit on a white (`#FFFFFF`) surface.
 - **Outlines:** Instead of shadows, use 1px solid borders (`#E2E8F0`) to define containers. This ensures clarity when the UI is printed or viewed on low-brightness screens.
 - **Interaction Depth:** Only "floating" elements like Modals or Dropdowns use a soft, neutral shadow (0px 4px 12px, 5% opacity black) to distinguish them from the base layout. 
-- **Active States:** Pressed or focused states use a 2px Primary Indigo ring to provide high-visibility feedback without changing the layout size.
+- **Active States:** Pressed or focused states use a 2px Primary Green ring to provide high-visibility feedback without changing the layout size.
 
 ## Shapes
 
@@ -177,7 +178,7 @@ The design system uses a **Rounded (0.5rem / 8px)** base to soften the "institut
 ## Components
 
 ### Buttons
-Primary buttons are solid Primary Indigo with white text. Secondary buttons use the Primary Indigo as an outline (Ghost style). The Vibrant Teal/Cyan is reserved exclusively for "Positive Actions" (e.g., Pay Fees, Approve Application). All buttons must have a minimum height of 48px on mobile.
+Primary buttons are solid Primary Green with white text. Secondary buttons use the Primary Green as an outline (Ghost style). The Gold accent is reserved exclusively for "Positive Actions" (e.g., Pay Fees, Approve Application). All buttons must have a minimum height of 48px on mobile.
 
 ### Inputs
 Text fields feature a floating label or a high-contrast top-aligned label. The border-bottom is thickened when focused to provide a clear indicator for users on mobile devices. Error states use the Danger Red with a supporting icon for accessibility.

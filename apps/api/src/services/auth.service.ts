@@ -14,7 +14,7 @@ import {
 } from '../middleware/auth.middleware';
 import { emailService } from './email.service';
 import { generateResetToken } from '../utils/helpers';
-import type { LoginInput, ForgotPasswordInput, ResetPasswordInput, ChangePasswordInput, UserRole } from '@tenpaten/shared';
+import type { LoginInput, ForgotPasswordInput, ResetPasswordInput, ChangePasswordInput, UserRole } from '@myklasi/shared';
 
 class AuthService {
   /**

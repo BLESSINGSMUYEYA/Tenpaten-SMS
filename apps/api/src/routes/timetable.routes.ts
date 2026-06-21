@@ -4,7 +4,7 @@ import { authenticate } from '../middleware/auth.middleware';
 import { requireHeadOrDeputy } from '../middleware/rbac.middleware';
 import { validateBody } from '../middleware/validate.middleware';
 import { asyncHandler, sendSuccess, ValidationError } from '../utils/errors';
-import { createTimetableSlotSchema } from '@tenpaten/shared';
+import { createTimetableSlotSchema } from '@myklasi/shared';
 import { DayOfWeek } from '@prisma/client';
 
 const router = Router();

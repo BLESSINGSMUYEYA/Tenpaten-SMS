@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { changePasswordSchema, type ChangePasswordInput } from '@tenpaten/shared';
+import { changePasswordSchema, type ChangePasswordInput } from '@myklasi/shared';
 import { getRoleHomePath } from '../../components/RouteGuards';
 import { Key, AlertTriangle } from 'lucide-react';
 import { Logo } from '../../components/Logo';

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { loginSchema, type LoginInput } from '@tenpaten/shared';
+import { loginSchema, type LoginInput } from '@myklasi/shared';
 import { Logo } from '../../components/Logo';
 
 export const LoginPage: React.FC = () => {

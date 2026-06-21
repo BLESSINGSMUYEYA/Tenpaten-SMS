@@ -1,3 +1,3 @@
-# Tenpaten-SMS
+# MyKlasi-SMS
 
-Tenpaten School Management System — Multi-tenant platform for secondary schools in Malawi.
+MyKlasi School Management System — Multi-tenant platform for secondary schools in Malawi.

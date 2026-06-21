@@ -67,7 +67,8 @@ export function OnlineContextProvider({ children }: { children: ReactNode }) {
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    window.addEventListener('tenpaten:sync-complete', handleSyncComplete);
+    window.addEventListener('myklasi:sync-complete', handleSyncComplete);
+    window.addEventListener('myklasi:pending-saved', handleSyncComplete);
 
     // On mount, if we're online, attempt to sync any leftover records
     if (navigator.onLine) {
@@ -77,7 +78,8 @@ export function OnlineContextProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      window.removeEventListener('tenpaten:sync-complete', handleSyncComplete);
+      window.removeEventListener('myklasi:sync-complete', handleSyncComplete);
+      window.removeEventListener('myklasi:pending-saved', handleSyncComplete);
     };
   }, [triggerSync, refreshPendingCount]);
 

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-import type { ApiResponse } from '@tenpaten/shared';
+import type { ApiResponse } from '@myklasi/shared';
 
 // ---- Custom Error Classes ----
 

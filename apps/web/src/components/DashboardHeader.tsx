@@ -13,6 +13,7 @@ const roleLabels: Record<string, string> = {
   head_teacher: 'Head Teacher',
   deputy_head: 'Deputy Head',
   teacher: 'Teacher',
+  bursar: 'Bursar',
   student: 'Student',
   parent: 'Parent',
 };

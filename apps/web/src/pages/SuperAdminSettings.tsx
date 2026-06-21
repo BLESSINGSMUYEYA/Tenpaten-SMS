@@ -6,8 +6,8 @@ export const SuperAdminSettings: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Configuration States
-  const [platformName, setPlatformName] = useState('Tenpaten Multi-Tenant SMS');
-  const [supportEmail, setSupportEmail] = useState('support@tenpaten.com');
+  const [platformName, setPlatformName] = useState('MyKlasi Multi-Tenant SMS');
+  const [supportEmail, setSupportEmail] = useState('support@myklasi.online');
   const [stripeActive, setStripeActive] = useState(true);
   const [paychanguActive, setPaychanguActive] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);

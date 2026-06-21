@@ -1,5 +1,5 @@
 // ============================================================
-// TENPATEN SMS — Shared Types
+// MYKLASI SMS — Shared Types
 // Used by both API and Web packages
 // ============================================================
 
@@ -372,3 +372,53 @@ export interface HeadTeacherStats {
   pendingGradeSubmissions: number;
   unpaidFeesCount: number;
 }
+
+// ---- Finance Models ----
+
+export interface FeeStructure extends BaseModel {
+  schoolId: string;
+  classId: string;
+  termId: string;
+  tuitionFee: number;
+  boardingFee: number;
+  otherFee: number;
+  totalAmount: number;
+  class?: Class;
+  term?: Term;
+}
+
+export interface Invoice extends BaseModel {
+  schoolId: string;
+  studentId: string;
+  termId: string;
+  feeStructureId?: string;
+  amountBilled: number;
+  amountPaid: number;
+  balance: number;
+  status: InvoiceStatus;
+  student?: StudentProfile;
+  term?: Term;
+}
+
+export interface FeePayment extends BaseModel {
+  schoolId: string;
+  invoiceId: string;
+  amount: number;
+  receiptNumber: string;
+  paymentDate: string;
+  paymentMethod: PaymentMethod;
+  referenceNumber?: string;
+  recordedBy: string;
+  invoice?: Invoice;
+  recordedByUser?: User;
+}
+
+export interface BursarStats {
+  totalInvoiced: number;
+  totalCollected: number;
+  totalOutstanding: number;
+  collectionRate: number;
+  recentPaymentsCount: number;
+  activeBillingStudents: number;
+}
+

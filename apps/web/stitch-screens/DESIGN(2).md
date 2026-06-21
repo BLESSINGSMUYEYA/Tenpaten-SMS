@@ -1,5 +1,5 @@
 ---
-name: Tenpaten School Management
+name: MyKlasi School Management
 colors:
   surface: '#f8f9ff'
   surface-dim: '#cbdbf5'

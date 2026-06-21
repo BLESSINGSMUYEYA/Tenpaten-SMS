@@ -123,17 +123,17 @@ export default {
 
         // ─── Brand palette ───
         brand: {
-          50:  '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          950: '#1e1b4b',
+          50:  '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981',
+          600: '#0e7a3f',
+          700: '#0b6333',
+          800: '#065f46',
+          900: '#064e3b',
+          950: '#022c22',
         },
       },
 
@@ -192,6 +192,7 @@ export default {
         "accordion-up":     "accordion-up 0.2s ease-out",
         "fade-in":          "fade-in 0.3s ease-out",
         "slide-in-bottom":  "slide-in-bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        "slide-in-right":   "slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
         "slide-down":       "slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         "slide-up":         "slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
         "scale-in":         "scale-in 0.2s ease-out",
@@ -224,6 +225,10 @@ export default {
         "scale-in": {
           from: { transform: "scale(0.95)", opacity: "0" },
           to:   { transform: "scale(1)",    opacity: "1" },
+        },
+        "slide-in-right": {
+          from: { transform: "translateX(100%)", opacity: "0" },
+          to:   { transform: "translateX(0)",    opacity: "1" },
         },
       },
     },

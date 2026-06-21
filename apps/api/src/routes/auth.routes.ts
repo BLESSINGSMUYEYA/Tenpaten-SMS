@@ -9,7 +9,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
-} from '@tenpaten/shared';
+} from '@myklasi/shared';
 import { env } from '../config/env';
 
 const router = Router();

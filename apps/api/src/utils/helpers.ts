@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
-import { generateSchoolCode, generateReceiptNumber, DEFAULT_GRADING_SCALE } from '@tenpaten/shared';
+import { generateSchoolCode, generateReceiptNumber, DEFAULT_GRADING_SCALE } from '@myklasi/shared';
 import { prisma } from '../config/database';
 
 // ---- School Code Generation ----

@@ -1,5 +1,5 @@
 {
-  "name": "@tenpaten/api",
+  "name": "@myklasi/api",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.15.0",
-    "@tenpaten/shared": "workspace:*",
+    "@myklasi/shared": "workspace:*",
     "africastalking": "^0.6.3",
     "bcrypt": "^5.1.1",
     "bull": "^4.12.2",

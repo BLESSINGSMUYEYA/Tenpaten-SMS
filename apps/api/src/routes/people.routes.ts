@@ -7,7 +7,7 @@ import { validateBody } from '../middleware/validate.middleware';
 import { asyncHandler, sendSuccess, ValidationError, NotFoundError } from '../utils/errors';
 import { generateTempPassword, generateAdmissionNumber } from '../utils/helpers';
 import { emailService } from '../services/email.service';
-import { createUserSchema, createStudentSchema } from '@tenpaten/shared';
+import { createUserSchema, createStudentSchema } from '@myklasi/shared';
 import { UserRole, Prisma, StudentStatus, User } from '@prisma/client';
 
 const router = Router();

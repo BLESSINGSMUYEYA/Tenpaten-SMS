@@ -15,7 +15,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "paths": {
-      "@tenpaten/shared": ["../../packages/shared/src/index.ts"]
+      "@myklasi/shared": ["../../packages/shared/src/index.ts"]
     }
   },
   "include": ["src/**/*", "../../packages/shared/src/**/*"],

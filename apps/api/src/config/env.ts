@@ -20,13 +20,13 @@ const envSchema = z.object({
 
   // Email
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default('noreply@tenpaten.com'),
-  EMAIL_FROM_NAME: z.string().default('Tenpaten SMS'),
+  EMAIL_FROM: z.string().default('noreply@myklasi.online'),
+  EMAIL_FROM_NAME: z.string().default('MyKlasi SMS'),
 
   // SMS
   AFRICASTALKING_API_KEY: z.string().optional(),
   AFRICASTALKING_USERNAME: z.string().default('sandbox'),
-  AFRICASTALKING_SENDER_ID: z.string().default('TENPATEN'),
+  AFRICASTALKING_SENDER_ID: z.string().default('MYKLASI'),
 
   // Cloudinary
   CLOUDINARY_CLOUD_NAME: z.string().optional(),

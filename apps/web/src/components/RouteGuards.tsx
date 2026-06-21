@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import type { UserRole } from '@tenpaten/shared';
+import type { UserRole } from '@myklasi/shared';
 import { Logo } from './Logo';
 
 // Helper to determine role-specific home routes

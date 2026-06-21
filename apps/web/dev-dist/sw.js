@@ -81,7 +81,7 @@ define(['./workbox-b5b81451'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.4nq1khb4las"
+    "revision": "0.9bkhohmspbg"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
@@ -93,7 +93,7 @@ define(['./workbox-b5b81451'], (function (workbox) { 'use strict';
     })]
   }), 'POST');
   workbox.registerRoute(/\/api\/schools\/(classes|terms)/, new workbox.NetworkFirst({
-    "cacheName": "tenpaten-api-reference",
+    "cacheName": "myklasi-api-reference",
     "networkTimeoutSeconds": 5,
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 50,
@@ -101,7 +101,7 @@ define(['./workbox-b5b81451'], (function (workbox) { 'use strict';
     })]
   }), 'GET');
   workbox.registerRoute(/\/api\/people\/students/, new workbox.NetworkFirst({
-    "cacheName": "tenpaten-api-students",
+    "cacheName": "myklasi-api-students",
     "networkTimeoutSeconds": 5,
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 200,
@@ -109,7 +109,7 @@ define(['./workbox-b5b81451'], (function (workbox) { 'use strict';
     })]
   }), 'GET');
   workbox.registerRoute(/\/api\//, new workbox.NetworkFirst({
-    "cacheName": "tenpaten-api-general",
+    "cacheName": "myklasi-api-general",
     "networkTimeoutSeconds": 5,
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 100,

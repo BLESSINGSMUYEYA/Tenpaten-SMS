@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ForbiddenError } from '../utils/errors';
-import type { UserRole } from '@tenpaten/shared';
+import type { UserRole } from '@myklasi/shared';
 
 // ---- Role-Based Access Control Middleware ----
 
