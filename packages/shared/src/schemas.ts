@@ -8,20 +8,23 @@ export const passwordSchema = z
   .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
   .regex(/[0-9]/, 'Password must contain at least one number');
 
-// ---- Auth ----
-
 export const loginSchema = z.object({
   schoolCode: z
     .string()
     .min(1, 'School code is required')
-    .regex(/^[A-Z]{2,5}-\d{4}-\d{4}$/, 'Invalid school code format (e.g. SJP-2025-4821)'),
-  email: z.string().email('Invalid email address'),
+    .regex(/^[a-zA-Z]{2,5}-\d{4}-\d{4}$/, 'Invalid school code format (e.g. SJP-2025-4821)')
+    .transform((val) => val.toUpperCase()),
+  email: z.string().email('Invalid email address').transform((val) => val.toLowerCase().trim()),
   password: z.string().min(1, 'Password is required'),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  schoolCode: z.string().min(1, 'School code is required'),
+  email: z.string().email('Invalid email address').transform((val) => val.toLowerCase().trim()),
+  schoolCode: z
+    .string()
+    .min(1, 'School code is required')
+    .regex(/^[a-zA-Z]{2,5}-\d{4}-\d{4}$/, 'Invalid school code format (e.g. SJP-2025-4821)')
+    .transform((val) => val.toUpperCase()),
 });
 
 export const resetPasswordBaseSchema = z.object({
