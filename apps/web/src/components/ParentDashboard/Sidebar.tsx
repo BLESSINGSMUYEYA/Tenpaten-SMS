@@ -14,33 +14,33 @@ export const Sidebar = ({ isOpen, closeSidebar }: { isOpen: boolean; closeSideba
         />
       )}
       <aside
-        className={`flex flex-col fixed left-0 top-0 h-full z-50 p-4 bg-surface-container-lowest dark:bg-inverse-surface border-r border-surface-border dark:border-outline-variant shadow-sm w-72 pt-6 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+        className={`flex flex-col fixed left-0 top-0 h-full z-50 bg-surface-container-lowest dark:bg-inverse-surface border-r border-surface-border dark:border-outline-variant shadow-sm w-72 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       >
-      <div className="px-4 mb-6 flex flex-col items-center text-center">
-        <Logo height="48px" className="mb-1" />
-      </div>
-      <nav className="flex-1 space-y-2">
-        <Link to="/parent/dashboard" className="flex items-center gap-4 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold font-label-md text-label-md">
-          <span className="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-          Dashboard
-        </Link>
-        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
-          <span className="material-symbols-outlined" data-icon="child_care">child_care</span>
-          My Children
-        </Link>
+        <div className="h-14 flex items-center px-6 border-b border-outline-variant w-full shrink-0">
+          <Logo height="80px" />
+        </div>
+        <nav className="flex-1 space-y-2 p-4">
+          <Link to="/parent/dashboard" className="flex items-center gap-4 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold font-label-md text-label-md">
+            <span className="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+            Dashboard
+          </Link>
+          <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
+            <span className="material-symbols-outlined" data-icon="child_care">child_care</span>
+            My Children
+          </Link>
 
-        <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
-          <span className="material-symbols-outlined" data-icon="analytics">analytics</span>
-          Academic Reports
-        </Link>
+          <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
+            <span className="material-symbols-outlined" data-icon="analytics">analytics</span>
+            Academic Reports
+          </Link>
 
-      </nav>
-      <div className="mt-auto border-t border-surface-border dark:border-outline-variant pt-4 flex flex-col gap-2">
-        <button onClick={() => { closeSidebar(); logout(); }} className="flex items-center gap-4 px-4 py-3 text-on-error-container bg-error-container hover:bg-error/20 rounded-lg font-bold font-label-md text-label-md transition-colors w-full text-left">
-          <span className="material-symbols-outlined" data-icon="logout">logout</span>
-          Logout
-        </button>
-      </div>
+        </nav>
+        <div className="mt-auto border-t border-surface-border dark:border-outline-variant pt-4 flex flex-col gap-2">
+          <button onClick={() => { closeSidebar(); logout(); }} className="flex items-center gap-4 px-4 py-3 text-on-error-container bg-error-container hover:bg-error/20 rounded-lg font-bold font-label-md text-label-md transition-colors w-full text-left">
+            <span className="material-symbols-outlined" data-icon="logout">logout</span>
+            Logout
+          </button>
+        </div>
       </aside>
     </>
   );

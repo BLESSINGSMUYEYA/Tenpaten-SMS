@@ -13,11 +13,10 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
 
   const getLinkClass = (path: string) => {
     const isActive = location.pathname === path;
-    return `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors font-label-md text-label-md [&>.material-symbols-outlined]:text-[20px] ${
-      isActive
+    return `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors font-label-md text-label-md [&>.material-symbols-outlined]:text-[20px] ${isActive
         ? 'bg-primary-container text-on-primary-container font-bold shadow-sm'
         : 'text-on-surface-variant hover:bg-surface-container'
-    }`;
+      }`;
   };
 
   return (
@@ -30,14 +29,13 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
         />
       )}
       <aside
-        className={`flex flex-col fixed left-0 top-0 h-full z-50 p-4 bg-surface-container-lowest dark:bg-inverse-surface border-r border-surface-border dark:border-outline-variant shadow-sm w-72 pt-6 transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
+        className={`flex flex-col fixed left-0 top-0 h-full z-50 bg-surface-container-lowest dark:bg-inverse-surface border-r border-surface-border dark:border-outline-variant shadow-sm w-72 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          } lg:translate-x-0`}
       >
-        <div className="px-4 mb-6 flex flex-col items-center text-center">
-          <Logo height="48px" className="mb-1" />
+        <div className="h-14 flex items-center px-6 border-b border-outline-variant w-full shrink-0">
+          <Logo height="80px" />
         </div>
-        <nav className="flex-1 space-y-1 overflow-y-auto">
+        <nav className="flex-1 space-y-1 overflow-y-auto p-4">
           <Link to="/bursar/dashboard" className={getLinkClass('/bursar/dashboard')} onClick={closeSidebar}>
             <span className="material-symbols-outlined" data-icon="dashboard">
               dashboard

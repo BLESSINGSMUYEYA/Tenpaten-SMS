@@ -36,42 +36,38 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
         />
       )}
       <aside
-        className={`flex flex-col fixed left-0 top-0 h-full z-50 p-4 bg-surface-container-lowest dark:bg-inverse-surface border-r border-surface-border dark:border-outline-variant shadow-sm w-72 pt-6 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+        className={`flex flex-col fixed left-0 top-0 h-full z-50 bg-surface-container-lowest dark:bg-inverse-surface border-r border-surface-border dark:border-outline-variant shadow-sm w-72 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       >
-      <div className="px-4 mb-6 flex flex-col items-center text-center">
-        <Logo height="48px" className="mb-1" />
-      </div>
-
-
-
-      <nav className="flex-1 space-y-1 overflow-y-auto">
-        {navItems.map(item => (
-          <Link
-            key={item.label}
-            to={item.to}
-            onClick={closeSidebar}
-            className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 active:scale-95 ${
-              isActive(item.to)
+        <div className="h-14 flex items-center px-6 border-b border-outline-variant w-full shrink-0">
+          <Logo height="80px" />
+        </div>
+        <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+          {navItems.map(item => (
+            <Link
+              key={item.label}
+              to={item.to}
+              onClick={closeSidebar}
+              className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 active:scale-95 ${isActive(item.to)
                 ? 'bg-primary-container text-on-primary-container font-bold'
                 : 'text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-high'
-            }`}
+                }`}
+            >
+              <span className="material-symbols-outlined" data-icon={item.icon}>{item.icon}</span>
+              <span className="font-label-md text-label-md">{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+
+        <div className="px-4 py-4 border-t border-surface-border mt-auto flex flex-col gap-2">
+          <button
+            className="w-full flex items-center justify-center gap-2 bg-error-container text-on-error-container py-3 rounded-lg font-bold hover:bg-error/20"
+            onClick={() => { closeSidebar(); logout(); }}
           >
-            <span className="material-symbols-outlined" data-icon={item.icon}>{item.icon}</span>
-            <span className="font-label-md text-label-md">{item.label}</span>
-          </Link>
-        ))}
-      </nav>
+            <span className="material-symbols-outlined" data-icon="logout">logout</span> Logout
+          </button>
+        </div>
 
-      <div className="px-4 py-4 border-t border-surface-border mt-auto flex flex-col gap-2">
-        <button
-          className="w-full flex items-center justify-center gap-2 bg-error-container text-on-error-container py-3 rounded-lg font-bold hover:bg-error/20"
-          onClick={() => { closeSidebar(); logout(); }}
-        >
-          <span className="material-symbols-outlined" data-icon="logout">logout</span> Logout
-        </button>
-      </div>
-
-    </aside>
+      </aside>
     </>
   );
 };

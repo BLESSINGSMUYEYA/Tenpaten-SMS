@@ -35,27 +35,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
         />
       )}
       {/* Sidebar Navigation - Desktop */}
-      <aside className="bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 h-full w-72 p-4 pt-6 flex flex-col hidden lg:flex z-20 transition-all duration-300">
-        <div className="px-4 mb-6 flex flex-col items-center text-center">
-          <Logo height="48px" className="mb-1" />
+      <aside className="bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 h-full w-72 flex flex-col hidden lg:flex z-20 transition-all duration-300">
+        <div className="h-14 flex items-center px-6 border-b border-outline-variant w-full shrink-0">
+          <Logo height="80px" />
         </div>
-        <div className="flex-1 overflow-y-auto py-md flex flex-col gap-xs">
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-xs">
           {navItems.map(item => (
             <Link
               key={item.label}
               to={item.to}
-              className={`flex items-center gap-md px-md py-sm rounded-lg transition-colors [&>.material-symbols-outlined]:text-[20px] ${
-                isActive(item.to)
-                  ? 'bg-primary-container text-on-primary-container font-bold'
-                  : 'text-on-surface-variant hover:bg-surface-container-low'
-              }`}
+              className={`flex items-center gap-md px-md py-sm rounded-lg transition-colors [&>.material-symbols-outlined]:text-[20px] ${isActive(item.to)
+                ? 'bg-primary-container text-on-primary-container font-bold'
+                : 'text-on-surface-variant hover:bg-surface-container-low'
+                }`}
             >
               <span className="material-symbols-outlined">{item.icon}</span>
               <span className="font-label-md text-label-md">{item.label}</span>
             </Link>
           ))}
         </div>
-        <div className="mt-auto border-t border-outline-variant py-md flex flex-col gap-xs">
+        <div className="mt-auto border-t border-outline-variant p-4 flex flex-col gap-xs">
           <a
             className="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors"
             href="#"
@@ -76,39 +75,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
 
       {/* Sidebar Navigation - Mobile Drawer */}
       <aside
-        className={`bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 h-full w-72 p-4 pt-6 flex flex-col z-45 lg:hidden transition-transform duration-300 transform ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 h-full w-72 flex flex-col z-45 lg:hidden transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
-        <div className="px-4 mb-6 flex items-center justify-between w-full">
-          <div className="flex flex-col items-center text-center">
-            <Logo height="48px" className="mb-1" />
-          </div>
+        <div className="h-14 flex items-center justify-between px-6 border-b border-outline-variant w-full shrink-0">
+          <Logo height="38px" />
           <button
-            className="p-sm text-on-surface hover:bg-surface-container-low rounded-full"
+            className="p-1 text-on-surface hover:bg-surface-container-low rounded-full flex items-center justify-center"
             onClick={closeSidebar}
           >
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto py-md flex flex-col gap-xs">
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-xs">
           {navItems.map(item => (
             <Link
               key={item.label}
               to={item.to}
               onClick={closeSidebar}
-              className={`flex items-center gap-md px-md py-sm rounded-lg transition-colors [&>.material-symbols-outlined]:text-[20px] ${
-                isActive(item.to)
-                  ? 'bg-primary-container text-on-primary-container font-bold'
-                  : 'text-on-surface-variant hover:bg-surface-container-low'
-              }`}
+              className={`flex items-center gap-md px-md py-sm rounded-lg transition-colors [&>.material-symbols-outlined]:text-[20px] ${isActive(item.to)
+                ? 'bg-primary-container text-on-primary-container font-bold'
+                : 'text-on-surface-variant hover:bg-surface-container-low'
+                }`}
             >
               <span className="material-symbols-outlined">{item.icon}</span>
               <span className="font-label-md text-label-md">{item.label}</span>
             </Link>
           ))}
         </div>
-        <div className="mt-auto border-t border-outline-variant py-md flex flex-col gap-xs">
+        <div className="mt-auto border-t border-outline-variant p-4 flex flex-col gap-xs">
           <a
             className="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors"
             href="#"
