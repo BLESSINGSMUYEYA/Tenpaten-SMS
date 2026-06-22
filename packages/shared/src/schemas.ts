@@ -14,7 +14,7 @@ export const loginSchema = z.object({
     .min(1, 'School code is required')
     .regex(/^[a-zA-Z]{2,5}-\d{4}-\d{4}$/, 'Invalid school code format (e.g. SJP-2025-4821)')
     .transform((val) => val.toUpperCase()),
-  email: z.string().email('Invalid email address').transform((val) => val.toLowerCase().trim()),
+  email: z.string().min(1, 'Email or Username/ID is required').transform((val) => val.toLowerCase().trim()),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -149,7 +149,7 @@ export const assignSubjectSchema = z.object({
 export const createUserSchema = z.object({
   firstName: z.string().min(2, 'First name required'),
   lastName: z.string().min(2, 'Last name required'),
-  email: z.string().email('Invalid email'),
+  email: z.string().email('Invalid email').optional().or(z.literal('')).nullable(),
   phone: z.string().optional(),
   role: z.enum(['head_teacher', 'deputy_head', 'teacher', 'bursar']),
   photoUrl: z.string().url().optional(),

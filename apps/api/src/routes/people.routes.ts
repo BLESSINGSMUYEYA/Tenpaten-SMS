@@ -53,13 +53,31 @@ router.post(
     const schoolId = req.user!.schoolId!;
     const { firstName, lastName, email, phone, role, photoUrl } = req.body;
 
-    // Check email uniqueness
-    const existing = await prisma.user.findFirst({
-      where: { email, schoolId, isDeleted: false },
-    });
+    // Check email uniqueness if email is provided
+    if (email) {
+      const existing = await prisma.user.findFirst({
+        where: { email, schoolId, isDeleted: false },
+      });
 
-    if (existing) {
-      throw new ValidationError({ email: ['User with this email already exists in this school'] });
+      if (existing) {
+        throw new ValidationError({ email: ['User with this email already exists in this school'] });
+      }
+    }
+
+    // Auto-generate unique username for staff (e.g. name.surname, name.surname2, etc.)
+    const cleanFirst = firstName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanLast = lastName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const baseUsername = `${cleanFirst}.${cleanLast}`;
+    let username = baseUsername;
+    let counter = 1;
+
+    while (true) {
+      const existingUser = await prisma.user.findFirst({
+        where: { username, schoolId, isDeleted: false },
+      });
+      if (!existingUser) break;
+      counter++;
+      username = `${baseUsername}${counter}`;
     }
 
     const tempPassword = generateTempPassword();
@@ -79,7 +97,8 @@ router.post(
         schoolId,
         firstName,
         lastName,
-        email,
+        email: email || null,
+        username,
         phone,
         passwordHash,
         role: role as UserRole,
@@ -89,23 +108,27 @@ router.post(
       },
     });
 
-    // Send welcome email asynchronously
-    emailService.sendWelcomeEmail({
-      email,
-      firstName,
-      schoolName: school.name,
-      schoolCode: school.schoolCode,
-      tempPassword,
-    }).catch(err => {
-      console.error('Failed to send staff welcome email:', err);
-    });
+    // Send welcome email asynchronously if email is provided
+    if (email) {
+      emailService.sendWelcomeEmail({
+        email,
+        firstName,
+        schoolName: school.name,
+        schoolCode: school.schoolCode,
+        tempPassword,
+      }).catch(err => {
+        console.error('Failed to send staff welcome email:', err);
+      });
+    }
 
     sendSuccess(res, {
       id: newUser.id,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
       email: newUser.email,
+      username: newUser.username,
       role: newUser.role,
+      tempPassword,
     }, 'Staff onboarded successfully', 201);
   })
 );
@@ -217,19 +240,6 @@ router.post(
 
     const commonSalt = await bcrypt.genSalt(10);
 
-    // Generate unique student email/credentials
-    const cleanFirstName = firstName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const cleanLastName = lastName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const studentEmail = `${cleanFirstName}.${cleanLastName}@${school.schoolCode.toLowerCase()}.edu`;
-
-    const existingStudentUser = await prisma.user.findFirst({
-      where: { email: studentEmail, schoolId, isDeleted: false },
-    });
-
-    if (existingStudentUser) {
-      throw new ValidationError({ email: ['Student with generated email address already exists. Please adjust names.'] });
-    }
-
     // Count students to generate sequence admission number
     const studentCount = await prisma.studentProfile.count({
       where: { schoolId },
@@ -239,6 +249,9 @@ router.post(
     const tempPassword = generateTempPassword();
     const studentPasswordHash = await bcrypt.hash(tempPassword, commonSalt);
 
+    let parentTempPassword: string | null = null;
+    const cleanParentUsername = `parent.${admissionNumber.replace(/\//g, '.')}`;
+
     const result = await prisma.$transaction(async (tx) => {
       // Create guardian user if not exists
       if (!parentUser) {
@@ -246,8 +259,10 @@ router.post(
         const parentFirstName = guardianNames[0] || 'Parent';
         const parentLastName = guardianNames.slice(1).join(' ') || 'Guardian';
         const parentTempPass = generateTempPassword();
+        parentTempPassword = parentTempPass;
         const parentHash = await bcrypt.hash(parentTempPass, commonSalt);
-        const parentEmail = guardian.email || `guardian.${cleanFirstName}.${cleanLastName}@${school.schoolCode.toLowerCase()}.edu`;
+        const parentEmail = guardian.email || null;
+        const parentUsername = parentEmail ? null : cleanParentUsername;
 
         parentUser = await tx.user.create({
           data: {
@@ -255,6 +270,7 @@ router.post(
             firstName: parentFirstName,
             lastName: parentLastName,
             email: parentEmail,
+            username: parentUsername,
             phone: guardian.phone,
             passwordHash: parentHash,
             role: UserRole.parent,
@@ -275,13 +291,14 @@ router.post(
         }
       }
 
-      // Create student user
+      // Create student user (no fake email, login username is their admissionNumber)
       const stdUser = await tx.user.create({
         data: {
           schoolId,
           firstName,
           lastName,
-          email: studentEmail,
+          email: null,
+          username: admissionNumber,
           passwordHash: studentPasswordHash,
           role: UserRole.student,
           isActive: true,
@@ -317,7 +334,13 @@ router.post(
       return { student: stdProfile, user: stdUser };
     });
 
-    sendSuccess(res, result, 'Student enrolled successfully', 201);
+    sendSuccess(res, {
+      student: result.student,
+      user: result.user,
+      tempPassword,
+      parentUsername: guardian.email ? null : cleanParentUsername,
+      parentTempPassword,
+    }, 'Student enrolled successfully', 201);
   })
 );
 

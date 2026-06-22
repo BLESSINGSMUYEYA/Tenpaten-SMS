@@ -21,7 +21,7 @@ class AuthService {
    * Login User
    */
   public async login(input: LoginInput) {
-    const { schoolCode, email, password } = input;
+    const { schoolCode, email, password } = input; // email acts as the login identifier
 
     // 1. If it's a super_admin login (using admin school code), handle accordingly
     const isSuperAdminCode = schoolCode === 'TPTN-2026-0000' || schoolCode === 'ADMIN-2026-0000';
@@ -56,12 +56,25 @@ class AuthService {
         throw new ForbiddenError('Your school account is deactivated. Please contact support.');
       }
 
-      // Find user under this school
+      const searchKey = email.trim();
+      const lowerKey = searchKey.toLowerCase();
+      const upperKey = searchKey.toUpperCase();
+
+      // Find user under this school by email, username, or student admission number
       user = await prisma.user.findFirst({
         where: {
-          email,
           schoolId: school.id,
           isDeleted: false,
+          OR: [
+            { email: lowerKey },
+            { username: lowerKey },
+            {
+              studentProfile: {
+                admissionNumber: upperKey,
+                isDeleted: false,
+              },
+            },
+          ],
         },
         include: {
           school: true,
@@ -88,7 +101,7 @@ class AuthService {
       userId: user.id,
       schoolId: user.schoolId ?? undefined,
       role: user.role as UserRole,
-      email: user.email,
+      email: user.email ?? '',
     };
 
     const accessToken = generateAccessToken(tokenPayload);
@@ -141,7 +154,7 @@ class AuthService {
       userId: user.id,
       schoolId: user.schoolId ?? undefined,
       role: user.role as UserRole,
-      email: user.email,
+      email: user.email ?? '',
     };
 
     const accessToken = generateAccessToken(tokenPayload);
@@ -186,16 +199,29 @@ class AuthService {
         throw new NotFoundError('School');
       }
 
+      const searchKey = email.trim();
+      const lowerKey = searchKey.toLowerCase();
+      const upperKey = searchKey.toUpperCase();
+
       user = await prisma.user.findFirst({
         where: {
-          email,
           schoolId: school.id,
           isDeleted: false,
+          OR: [
+            { email: lowerKey },
+            { username: lowerKey },
+            {
+              studentProfile: {
+                admissionNumber: upperKey,
+                isDeleted: false,
+              },
+            },
+          ],
         },
       });
     }
 
-    if (!user) {
+    if (!user || !user.email) {
       // Return true to avoid email harvesting
       return true;
     }

@@ -66,7 +66,7 @@ export async function authenticate(
       userId: user.id,
       schoolId: user.schoolId ?? undefined,
       role: user.role as UserRole,
-      email: user.email,
+      email: user.email ?? '',
     };
 
     next();
@@ -95,7 +95,7 @@ export async function optionalAuth(
       userId: payload.userId,
       schoolId: payload.schoolId,
       role: payload.role,
-      email: payload.email,
+      email: payload.email ?? '',
     };
   } catch {
     // Ignore invalid token for optional auth

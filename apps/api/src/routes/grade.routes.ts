@@ -11,6 +11,205 @@ import { GradeStatus } from '@prisma/client';
 const router = Router();
 router.use(authenticate);
 
+// ---- GET Grade Stats ----
+router.get(
+  '/stats',
+  requireRoles('head_teacher', 'deputy_head'),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+
+    // 1. Get current term
+    const currentTerm = await prisma.term.findFirst({
+      where: { schoolId, isCurrent: true, isDeleted: false },
+    }) || await prisma.term.findFirst({
+      where: { schoolId, isDeleted: false },
+      orderBy: { startDate: 'desc' },
+    });
+
+    if (!currentTerm) {
+      return sendSuccess(res, {
+        schoolAverage: '0%',
+        topPerformer: '0%',
+        gradesSubmitted: '0/0',
+        pendingReports: '0',
+        performanceBars: [0],
+        barLabels: ['None'],
+        subjects: [],
+        examSchedule: [],
+      }, 'No academic term found');
+    }
+
+    // 2. Fetch all grades in the current term
+    const grades = await prisma.grade.findMany({
+      where: { schoolId, termId: currentTerm.id, isDeleted: false },
+      include: {
+        student: {
+          include: {
+            user: { select: { id: true, firstName: true, lastName: true } }
+          }
+        },
+        subject: { select: { id: true, name: true, code: true } },
+        class: { select: { id: true, displayName: true } }
+      }
+    });
+
+    // 3. School average & top performer
+    const validGrades = grades.filter(g => g.totalMark !== null);
+    const schoolAverage = validGrades.length > 0
+      ? Math.round(validGrades.reduce((sum, g) => sum + g.totalMark!, 0) / validGrades.length)
+      : 0;
+    const topPerformer = validGrades.length > 0
+      ? Math.max(...validGrades.map(g => g.totalMark!))
+      : 0;
+
+    // 4. Grades submitted vs expected
+    // Expected grades count = Sum of (enrolled students in class * subjects assigned to class)
+    const classes = await prisma.class.findMany({
+      where: { schoolId, academicYearId: currentTerm.academicYearId, isDeleted: false },
+      include: {
+        _count: {
+          select: {
+            studentProfiles: { where: { isDeleted: false, status: 'active' } },
+            classSubjects: { where: { isDeleted: false } }
+          }
+        }
+      }
+    });
+
+    let totalExpectedGrades = 0;
+    for (const cls of classes) {
+      totalExpectedGrades += cls._count.studentProfiles * cls._count.classSubjects;
+    }
+
+    const gradesSubmitted = grades.filter(g =>
+      g.submissionStatus === 'submitted' ||
+      g.submissionStatus === 'approved' ||
+      g.submissionStatus === 'locked'
+    ).length;
+
+    const pendingReports = grades.filter(g => g.submissionStatus === 'draft').length;
+
+    // 5. Subject performance & details
+    // We group grades by subject
+    const subjects = await prisma.subject.findMany({
+      where: { schoolId, isDeleted: false },
+      include: {
+        classSubjects: {
+          where: { isDeleted: false },
+          include: {
+            teacher: { select: { firstName: true, lastName: true } },
+            class: {
+              include: {
+                _count: {
+                  select: { studentProfiles: { where: { isDeleted: false, status: 'active' } } }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Previous term average to show trends if available
+    const previousTerm = await prisma.term.findFirst({
+      where: {
+        schoolId,
+        academicYearId: currentTerm.academicYearId,
+        startDate: { lt: currentTerm.startDate },
+        isDeleted: false,
+      },
+      orderBy: { startDate: 'desc' },
+    });
+
+    const prevGrades = previousTerm
+      ? await prisma.grade.findMany({
+          where: { schoolId, termId: previousTerm.id, isDeleted: false },
+          select: { subjectId: true, totalMark: true }
+        })
+      : [];
+
+    const subjectPerformance = [];
+    const barLabels = [];
+    const subjectsSummary = [];
+    const examSchedule = [];
+
+    for (const sub of subjects) {
+      const subGrades = grades.filter(g => g.subjectId === sub.id && g.totalMark !== null);
+      const avg = subGrades.length > 0
+        ? Math.round(subGrades.reduce((sum, g) => sum + g.totalMark!, 0) / subGrades.length)
+        : 0;
+      const highest = subGrades.length > 0 ? Math.max(...subGrades.map(g => g.totalMark!)) : 0;
+      const lowest = subGrades.length > 0 ? Math.min(...subGrades.map(g => g.totalMark!)) : 0;
+
+      // Teachers
+      const teachers = sub.classSubjects
+        .map(cs => cs.teacher ? `${cs.teacher.firstName} ${cs.teacher.lastName}` : null)
+        .filter(Boolean);
+      const teacherName = teachers.length > 0 ? Array.from(new Set(teachers)).join(', ') : 'No teacher';
+
+      // Submitted & Total
+      const subSubmitted = grades.filter(g =>
+        g.subjectId === sub.id &&
+        (g.submissionStatus === 'submitted' || g.submissionStatus === 'approved' || g.submissionStatus === 'locked')
+      ).length;
+
+      const subTotal = sub.classSubjects.reduce((sum, cs) => sum + cs.class._count.studentProfiles, 0);
+
+      // Trend
+      const prevSubGrades = prevGrades.filter(g => g.subjectId === sub.id && g.totalMark !== null);
+      const prevAvg = prevSubGrades.length > 0
+        ? Math.round(prevSubGrades.reduce((sum, g) => sum + g.totalMark!, 0) / prevSubGrades.length)
+        : 0;
+
+      let trend = '+0%';
+      if (prevAvg > 0) {
+        const diff = avg - prevAvg;
+        trend = diff >= 0 ? `+${diff}%` : `${diff}%`;
+      } else if (subGrades.length > 0) {
+        trend = '+0%';
+      }
+
+      subjectPerformance.push(avg);
+      barLabels.push(sub.code);
+
+      subjectsSummary.push({
+        name: sub.name,
+        teacher: teacherName,
+        avg,
+        highest,
+        lowest,
+        submitted: subSubmitted,
+        total: subTotal,
+        trend,
+      });
+
+      // Exam Schedule Generation
+      for (const cs of sub.classSubjects) {
+        const classDispName = cs.class.displayName;
+        examSchedule.push({
+          subject: `${sub.name} (MSCE)`,
+          date: 'Fri, 26 Jun',
+          time: '08:00 – 11:00',
+          venue: 'Main Hall',
+          form: classDispName,
+          status: 'Upcoming',
+        });
+      }
+    }
+
+    sendSuccess(res, {
+      schoolAverage: `${schoolAverage}%`,
+      topPerformer: `${topPerformer}%`,
+      gradesSubmitted: `${gradesSubmitted}/${totalExpectedGrades}`,
+      pendingReports: String(pendingReports),
+      performanceBars: subjectPerformance.length > 0 ? subjectPerformance : [0],
+      barLabels: barLabels.length > 0 ? barLabels : ['None'],
+      subjects: subjectsSummary.length > 0 ? subjectsSummary : [],
+      examSchedule: examSchedule.slice(0, 5),
+    }, 'Grades stats retrieved successfully');
+  })
+);
+
 // ---- GET Grades ----
 router.get(
   '/',

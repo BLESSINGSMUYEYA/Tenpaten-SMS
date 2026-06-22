@@ -59,6 +59,13 @@ export const HeadTeacherPeople: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tab, setTab] = useState<Tab>('staff');
 
+  // Success toast
+  const [successToast, setSuccessToast] = useState<string | null>(null);
+  const showSuccessToast = (msg: string) => {
+    setSuccessToast(msg);
+    setTimeout(() => setSuccessToast(null), 6000);
+  };
+
   // Search & Filter states
   const [staffSearch, setStaffSearch] = useState('');
   const [staffStatusFilter, setStaffStatusFilter] = useState('All');
@@ -98,13 +105,15 @@ export const HeadTeacherPeople: React.FC = () => {
 
   const handleAddStaffSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!sFirstName || !sLastName || !sEmail) return;
+    if (!sFirstName || !sLastName) return;
+
+    const staffName = sFirstName;
 
     try {
-      await addStaff({
+      const res = await addStaff({
         firstName: sFirstName,
         lastName: sLastName,
-        email: sEmail,
+        email: sEmail || undefined,
         phone: sPhone || undefined,
         role: sRole,
       });
@@ -117,6 +126,14 @@ export const HeadTeacherPeople: React.FC = () => {
       setSPhone('');
       setAddStaffOpen(false);
       refetchStaff();
+
+      const generatedUsername = res?.username;
+      const generatedPassword = res?.tempPassword;
+
+      showSuccessToast(
+        `✅ ${staffName} has been onboarded! Username: "${generatedUsername}", Password: "${generatedPassword}"` +
+        (sEmail ? `. A welcome email was sent to ${sEmail}.` : '.')
+      );
     } catch (err) {
       console.error(err);
     }
@@ -126,8 +143,10 @@ export const HeadTeacherPeople: React.FC = () => {
     e.preventDefault();
     if (!stFirstName || !stLastName || !stClassId || !stParentName || !stParentPhone) return;
 
+    const studentName = `${stFirstName} ${stLastName}`;
+
     try {
-      await enrollStudent({
+      const res = await enrollStudent({
         firstName: stFirstName,
         lastName: stLastName,
         classId: stClassId,
@@ -150,6 +169,19 @@ export const HeadTeacherPeople: React.FC = () => {
       setStParentEmail('');
       setAddStudentOpen(false);
       refetchStudents();
+      
+      const stdUsername = res?.student?.admissionNumber || res?.user?.username;
+      const stdPassword = res?.tempPassword;
+      const pUsername = res?.parentUsername;
+      const pPassword = res?.parentTempPassword;
+
+      let msg = `✅ ${studentName} enrolled! Username: "${stdUsername}", Password: "${stdPassword}"`;
+      if (pUsername && pPassword) {
+        msg += ` | Guardian Username: "${pUsername}", Password: "${pPassword}"`;
+      } else if (stParentEmail) {
+        msg += `. A welcome email was sent to guardian at ${stParentEmail}.`;
+      }
+      showSuccessToast(msg);
     } catch (err) {
       console.error(err);
     }
@@ -192,6 +224,22 @@ export const HeadTeacherPeople: React.FC = () => {
     <>
       <Header onMenuClick={() => setSidebarOpen(true)} />
       <Sidebar isOpen={sidebarOpen} closeSidebar={() => setSidebarOpen(false)} />
+
+      {/* Success Toast */}
+      {successToast && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] max-w-lg w-[90%] animate-fade-in">
+          <div className="bg-primary-container border border-primary/20 text-on-primary-container px-5 py-3.5 rounded-xl shadow-lg flex items-start gap-3">
+            <span className="material-symbols-outlined text-primary text-xl flex-shrink-0 mt-0.5">mark_email_read</span>
+            <div className="flex-1">
+              <p className="text-sm font-bold">{successToast}</p>
+              <p className="text-xs text-on-primary-container/70 mt-1">The recipient will need to change their password on first login.</p>
+            </div>
+            <button onClick={() => setSuccessToast(null)} className="text-on-primary-container/60 hover:text-on-primary-container flex-shrink-0">
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       <main className="lg:ml-72 pt-20 pb-24 lg:pb-8 px-4 md:px-8 min-h-screen bg-surface text-on-surface transition-colors">
         {/* Page Header */}
@@ -556,8 +604,8 @@ export const HeadTeacherPeople: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">School Email *</label>
-                  <input type="email" placeholder="name@school.com" value={sEmail} onChange={e => setSEmail(e.target.value)} required
+                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">School Email (Optional)</label>
+                  <input type="email" placeholder="name@school.com" value={sEmail} onChange={e => setSEmail(e.target.value)}
                     className="w-full px-4 py-2 bg-surface-container-low border border-outline-variant text-on-surface text-sm outline-none focus:border-primary rounded-lg" />
                 </div>
               </div>

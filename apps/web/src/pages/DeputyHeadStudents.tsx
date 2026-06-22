@@ -60,6 +60,13 @@ export const DeputyHeadStudents: React.FC = () => {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(null);
 
+  // Success toast
+  const [successToast, setSuccessToast] = useState<string | null>(null);
+  const showSuccessToast = (msg: string) => {
+    setSuccessToast(msg);
+    setTimeout(() => setSuccessToast(null), 6000);
+  };
+
   // ── API Hooks ────────────────────────────────────────────────
   const { data: students, loading, error: fetchError, refetch } =
     useQuery<StudentProfile[]>('/people/students');
@@ -104,8 +111,10 @@ export const DeputyHeadStudents: React.FC = () => {
     e.preventDefault();
     if (!newFirstName || !newLastName || !newClassId || !guardianFullName || !guardianPhone) return;
 
+    const studentName = `${newFirstName} ${newLastName}`;
+
     try {
-      await registerStudent({
+      const res = await registerStudent({
         firstName: newFirstName,
         lastName: newLastName,
         gender: newGender,
@@ -123,6 +132,19 @@ export const DeputyHeadStudents: React.FC = () => {
       resetForm();
       setIsRegisterModalOpen(false);
       refetch();
+
+      const stdUsername = res?.student?.admissionNumber || res?.user?.username;
+      const stdPassword = res?.tempPassword;
+      const pUsername = res?.parentUsername;
+      const pPassword = res?.parentTempPassword;
+
+      let msg = `✅ ${studentName} enrolled! Username: "${stdUsername}", Password: "${stdPassword}"`;
+      if (pUsername && pPassword) {
+        msg += ` | Guardian Username: "${pUsername}", Password: "${pPassword}"`;
+      } else if (guardianEmail) {
+        msg += `. A welcome email was sent to guardian at ${guardianEmail}.`;
+      }
+      showSuccessToast(msg);
     } catch (err) {
       console.error('Failed to register student:', err);
     }
@@ -150,6 +172,22 @@ export const DeputyHeadStudents: React.FC = () => {
       <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       <Sidebar isOpen={sidebarOpen} closeSidebar={() => setSidebarOpen(false)} />
       <main className="lg:ml-72 pt-20 pb-24 lg:pb-8 px-margin-mobile md:px-margin-desktop min-h-screen bg-surface text-on-surface transition-colors">
+
+        {/* Success Toast */}
+        {successToast && (
+          <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] max-w-lg w-[90%] animate-fade-in">
+            <div className="bg-primary-container border border-primary/20 text-on-primary-container px-5 py-3.5 rounded-xl shadow-lg flex items-start gap-3">
+              <span className="material-symbols-outlined text-primary text-xl flex-shrink-0 mt-0.5">mark_email_read</span>
+              <div className="flex-1">
+                <p className="text-sm font-bold">{successToast}</p>
+                <p className="text-xs text-on-primary-container/70 mt-1">The recipient will need to change their password on first login.</p>
+              </div>
+              <button onClick={() => setSuccessToast(null)} className="text-on-primary-container/60 hover:text-on-primary-container flex-shrink-0">
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Page Header */}
         <div className="py-6 flex flex-col md:flex-row md:items-end justify-between gap-4">

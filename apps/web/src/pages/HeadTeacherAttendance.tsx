@@ -3,99 +3,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { Header } from '../components/HeadTeacherDashboard/Header';
 import { Sidebar } from '../components/HeadTeacherDashboard/Sidebar';
 import { BottomNav } from '../components/HeadTeacherDashboard/BottomNav';
+import { useQuery } from '../hooks/useApi';
 
-// ── Class-level data ──────────────────────────────────────
-interface ClassData {
-  name: string;
-  teacher: string;
-  total: number;
-  present: number;
-  absent: number;
-  rate: number;
-}
-
-const classes: ClassData[] = [
-  { name: 'Form 1A', teacher: 'Mr. Mwale', total: 45, present: 43, absent: 2, rate: 95.6 },
-  { name: 'Form 1B', teacher: 'Ms. Phiri', total: 44, present: 40, absent: 4, rate: 90.9 },
-  { name: 'Form 2A', teacher: 'Mr. Tembo', total: 42, present: 42, absent: 0, rate: 100 },
-  { name: 'Form 2B', teacher: 'Mrs. Msiska', total: 41, present: 33, absent: 8, rate: 80.5 },
-  { name: 'Form 3A', teacher: 'Mr. Banda', total: 38, present: 37, absent: 1, rate: 97.4 },
-  { name: 'Form 3B', teacher: 'Mrs. Chimwaza', total: 39, present: 35, absent: 4, rate: 89.7 },
-  { name: 'Form 4A', teacher: 'Mr. Mwale', total: 36, present: 36, absent: 0, rate: 100 },
-  { name: 'Form 4B', teacher: 'Mr. Banda', total: 35, present: 32, absent: 3, rate: 91.4 },
-];
-
-// ── Student-level mock data (per class) ───────────────────
 type AttendanceStatus = 'present' | 'absent' | 'late';
-
-interface StudentRecord {
-  id: number;
-  name: string;
-  admissionNo: string;
-  status: AttendanceStatus;
-  timeIn: string | null;
-  reason: string | null;
-}
-
-const firstNames = ['Chimwemwe', 'Kondwani', 'Thokozani', 'Blessings', 'Tadala', 'Mphatso', 'Grace', 'Precious', 'Comfort', 'Hope', 'Gift', 'Mercy', 'Lovemore', 'Dalitso', 'Faith', 'Tiyamike', 'Martha', 'Joseph', 'James', 'Peter', 'Ruth', 'Esther', 'Daniel', 'Samuel', 'Mary', 'Lucia', 'Agnes', 'Patrick', 'Charles', 'Tamandani', 'Elina', 'Wezzie', 'Madalitso', 'Bright', 'Innocent', 'Stella', 'Naomi', 'Victoria', 'George', 'Francis', 'Bertha', 'Alinafe', 'Yankho', 'Chisomo', 'Takondwa'];
-const lastNames = ['Phiri', 'Banda', 'Mwale', 'Tembo', 'Msiska', 'Chimwaza', 'Kamanga', 'Nyirenda', 'Gondwe', 'Chirwa', 'Mkandawire', 'Ng\'oma', 'Kalua', 'Lungu', 'Moyo', 'Jere', 'Nkhoma', 'Mbewe', 'Chisi', 'Kumwenda'];
-const absenceReasons = ['Illness', 'Family emergency', 'No reason given', 'Medical appointment', 'Transport issues'];
-
-function generateStudents(cls: ClassData, classIndex: number): StudentRecord[] {
-  const students: StudentRecord[] = [];
-  // Use deterministic "randomness" from class index
-  let absentCount = 0;
-  let lateCount = 0;
-  const maxLate = Math.floor(cls.present * 0.1); // ~10% of present are late
-
-  for (let i = 0; i < cls.total; i++) {
-    const seed = (classIndex * 100 + i * 7 + 3) % 100;
-    const fnIdx = (classIndex * 13 + i) % firstNames.length;
-    const lnIdx = (classIndex * 7 + i * 3) % lastNames.length;
-
-    let status: AttendanceStatus = 'present';
-    let timeIn: string | null = `07:${String(10 + (seed % 20)).padStart(2, '0')}`;
-    let reason: string | null = null;
-
-    if (absentCount < cls.absent && seed > 70) {
-      status = 'absent';
-      timeIn = null;
-      reason = absenceReasons[seed % absenceReasons.length];
-      absentCount++;
-    } else if (status === 'present' && lateCount < maxLate && seed > 55 && seed <= 70) {
-      status = 'late';
-      timeIn = `07:${String(35 + (seed % 25)).padStart(2, '0')}`;
-      lateCount++;
-    }
-
-    students.push({
-      id: i + 1,
-      name: `${firstNames[fnIdx]} ${lastNames[lnIdx]}`,
-      admissionNo: `MK-${2024 + classIndex}-${String(i + 1).padStart(3, '0')}`,
-      status,
-      timeIn,
-      reason,
-    });
-  }
-
-  // If we haven't hit the absent count yet, mark last few students as absent
-  while (absentCount < cls.absent) {
-    const idx = cls.total - 1 - absentCount;
-    if (idx >= 0 && students[idx].status !== 'absent') {
-      students[idx].status = 'absent';
-      students[idx].timeIn = null;
-      students[idx].reason = absenceReasons[absentCount % absenceReasons.length];
-      absentCount++;
-    } else {
-      break;
-    }
-  }
-
-  return students;
-}
-
-const weekTrend = [93.2, 94.8, 96.5, 91.1, 95.3];
-const trendLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
 // ── Status helpers ────────────────────────────────────────
 const statusConfig: Record<AttendanceStatus, { label: string; icon: string; bg: string; text: string; dot: string }> = {
@@ -124,20 +34,24 @@ const statusConfig: Record<AttendanceStatus, { label: string; icon: string; bg: 
 
 // ── Detail Panel component ────────────────────────────────
 interface DetailPanelProps {
-  cls: ClassData;
-  classIndex: number;
+  cls: any;
   selectedDate: string;
   onClose: () => void;
 }
 
-const DetailPanel: React.FC<DetailPanelProps> = ({ cls, classIndex, selectedDate, onClose }) => {
+const DetailPanel: React.FC<DetailPanelProps> = ({ cls, selectedDate, onClose }) => {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<AttendanceStatus | 'all'>('all');
 
-  const students = useMemo(() => generateStudents(cls, classIndex), [cls, classIndex]);
+  // Fetch real students and their attendance status on selected date
+  const { data: students, loading, error } = useQuery<any[]>(
+    `/attendance/stats/class-detail?classId=${cls.id}&date=${selectedDate}`,
+    true,
+    [cls.id, selectedDate]
+  );
 
   const filtered = useMemo(() => {
-    return students.filter(s => {
+    return (students || []).filter(s => {
       const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
         s.admissionNo.toLowerCase().includes(search.toLowerCase());
       const matchFilter = filterStatus === 'all' || s.status === filterStatus;
@@ -145,8 +59,10 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ cls, classIndex, selectedDate
     });
   }, [students, search, filterStatus]);
 
-  const lateCount = students.filter(s => s.status === 'late').length;
-  const presentOnTime = cls.present - lateCount;
+  const total = students ? students.length : 0;
+  const presentOnTime = students ? students.filter(s => s.status === 'present').length : 0;
+  const lateCount = students ? students.filter(s => s.status === 'late').length : 0;
+  const absentCount = students ? students.filter(s => s.status === 'absent').length : 0;
 
   return (
     <>
@@ -181,10 +97,10 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ cls, classIndex, selectedDate
           {/* ── Mini Stats Row ── */}
           <div className="grid grid-cols-4 gap-2.5">
             {[
-              { label: 'Total', value: cls.total, icon: 'people', color: 'text-on-surface-variant bg-surface-container' },
+              { label: 'Total', value: total, icon: 'people', color: 'text-on-surface-variant bg-surface-container' },
               { label: 'Present', value: presentOnTime, icon: 'check_circle', color: 'text-primary bg-primary-container/40' },
               { label: 'Late', value: lateCount, icon: 'schedule', color: 'text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30' },
-              { label: 'Absent', value: cls.absent, icon: 'cancel', color: 'text-error bg-error-container/40' },
+              { label: 'Absent', value: absentCount, icon: 'cancel', color: 'text-error bg-error-container/40' },
             ].map(s => (
               <div key={s.label} className={`rounded-lg px-3 py-2.5 text-center ${s.color}`}>
                 <span className="material-symbols-outlined text-[16px] mb-0.5 block">{s.icon}</span>
@@ -226,7 +142,17 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ cls, classIndex, selectedDate
 
         {/* ── Student List ── */}
         <div className="flex-1 overflow-y-auto px-4 py-3">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-2 text-on-surface-variant">
+              <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+              <p className="text-sm">Loading students...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-10 text-error">
+              <span className="material-symbols-outlined text-[48px] opacity-30 mb-2">error</span>
+              <p className="font-medium">Failed to load attendance list</p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant">
               <span className="material-symbols-outlined text-[48px] opacity-30 mb-3">search_off</span>
               <p className="font-medium">No students found</p>
@@ -235,7 +161,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ cls, classIndex, selectedDate
           ) : (
             <div className="space-y-1.5">
               {filtered.map((student, idx) => {
-                const cfg = statusConfig[student.status];
+                const cfg = statusConfig[student.status as AttendanceStatus] || statusConfig.present;
                 return (
                   <div
                     key={student.id}
@@ -293,7 +219,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ cls, classIndex, selectedDate
         <div className="flex-shrink-0 border-t border-outline-variant bg-surface-container-low px-6 py-3 flex items-center justify-between">
           <p className="text-label-sm text-on-surface-variant">
             Showing <span className="font-bold text-on-surface">{filtered.length}</span> of{' '}
-            <span className="font-bold text-on-surface">{students.length}</span> students
+            <span className="font-bold text-on-surface">{total}</span> students
           </p>
           <button
             onClick={onClose}
@@ -313,7 +239,14 @@ export const HeadTeacherAttendance: React.FC = () => {
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Head Teacher';
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState('2026-05-28');
-  const [detailClass, setDetailClass] = useState<{ cls: ClassData; index: number } | null>(null);
+  const [detailClass, setDetailClass] = useState<any | null>(null);
+
+  // Fetch real attendance stats from backend
+  const { data: stats, loading, error } = useQuery<any>(
+    `/attendance/stats?date=${selectedDate}`,
+    true,
+    [selectedDate]
+  );
 
   const rateColor = (rate: number) => {
     if (rate >= 95) return 'text-secondary bg-secondary-container/40';
@@ -321,9 +254,13 @@ export const HeadTeacherAttendance: React.FC = () => {
     return 'text-on-error-container bg-error-container';
   };
 
-  const totalPresent = classes.reduce((a, c) => a + c.present, 0);
-  const totalStudents = classes.reduce((a, c) => a + c.total, 0);
-  const overallRate = ((totalPresent / totalStudents) * 100).toFixed(1);
+  const overallRate = stats?.overallRate || '0%';
+  const presentToday = stats?.presentToday || '0';
+  const absentToday = stats?.absentToday || '0';
+  const classesBelow85 = stats?.classesBelow85 || '0';
+  const weekTrend = stats?.weekTrend || [];
+  const trendLabels = stats?.trendLabels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  const classes = stats?.classes || [];
 
   return (
     <>
@@ -354,84 +291,101 @@ export const HeadTeacherAttendance: React.FC = () => {
           </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {[
-            { label: 'Overall Rate', value: `${overallRate}%`, icon: 'how_to_reg', color: 'bg-secondary-container text-secondary' },
-            { label: 'Present Today', value: `${totalPresent}`, icon: 'check_circle', color: 'bg-primary-container text-primary' },
-            { label: 'Absent Today', value: `${totalStudents - totalPresent}`, icon: 'cancel', color: 'bg-error-container text-on-error-container' },
-            { label: 'Classes Below 85%', value: `${classes.filter(c => c.rate < 85).length}`, icon: 'warning', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
-          ].map(c => (
-            <div key={c.label} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex items-center gap-4">
-              <div className={`w-11 h-11 rounded-full flex items-center justify-center ${c.color}`}>
-                <span className="material-symbols-outlined text-[20px]">{c.icon}</span>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+            <p className="text-on-surface-variant text-sm font-medium">Fetching attendance stats...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-error-container text-on-error-container p-6 rounded-xl border border-error/20 my-4 text-center">
+            <span className="material-symbols-outlined text-[40px] mb-2">error</span>
+            <h3 className="font-bold text-lg mb-1">Failed to load attendance data</h3>
+            <p className="text-sm opacity-90">{error}</p>
+          </div>
+        ) : (
+          <>
+            {/* Summary Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              {[
+                { label: 'Overall Rate', value: overallRate, icon: 'how_to_reg', color: 'bg-secondary-container text-secondary' },
+                { label: 'Present Today', value: presentToday, icon: 'check_circle', color: 'bg-primary-container text-primary' },
+                { label: 'Absent Today', value: absentToday, icon: 'cancel', color: 'bg-error-container text-on-error-container' },
+                { label: 'Classes Below 85%', value: classesBelow85, icon: 'warning', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
+              ].map(c => (
+                <div key={c.label} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex items-center gap-4">
+                  <div className={`w-11 h-11 rounded-full flex items-center justify-center ${c.color}`}>
+                    <span className="material-symbols-outlined text-[20px]">{c.icon}</span>
+                  </div>
+                  <div>
+                    <p className="text-label-sm text-on-surface-variant">{c.label}</p>
+                    <p className="text-headline-sm font-bold text-on-background mt-0.5">{c.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Weekly Trend Chart */}
+            {weekTrend.length > 0 && (
+              <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mb-6 shadow-sm">
+                <h3 className="font-bold text-on-background mb-4">This Week's Attendance Trend</h3>
+                <div className="flex items-end gap-4 h-32">
+                  {weekTrend.map((rate: number, i: number) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                      <span className="text-xs font-bold text-on-surface-variant">{rate}%</span>
+                      <div
+                        className={`w-full rounded-t-md transition-colors ${rate >= 95 ? 'bg-secondary-container hover:bg-secondary' : rate >= 85 ? 'bg-amber-200 hover:bg-amber-400' : 'bg-error-container hover:bg-error'}`}
+                        style={{ height: `${Math.max(rate - 70, 5)}%`, minHeight: '8px', maxHeight: '100%' }}
+                      />
+                      <span className="text-xs text-on-surface-variant font-medium">{trendLabels[i]}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div>
-                <p className="text-label-sm text-on-surface-variant">{c.label}</p>
-                <p className="text-headline-sm font-bold text-on-background mt-0.5">{c.value}</p>
+            )}
+
+            {/* Class Breakdown */}
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+              <div className="px-6 py-4 bg-surface-container-low border-b border-outline-variant flex justify-between items-center">
+                <h3 className="font-bold text-on-background">Class Attendance Breakdown</h3>
+                <span className="text-label-sm text-on-surface-variant">{selectedDate}</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-surface-container-low border-b border-outline-variant">
+                    <tr>
+                      {['Class', 'Class Teacher', 'Total', 'Present', 'Absent', 'Rate', 'Action'].map(h => (
+                        <th key={h} className="px-6 py-3 text-xs font-bold text-on-surface-variant uppercase tracking-wider">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-outline-variant">
+                    {classes.map((c: any, i: number) => (
+                      <tr key={i} className="hover:bg-surface-container-low transition-colors">
+                        <td className="px-6 py-4 font-bold text-on-surface text-sm">{c.name}</td>
+                        <td className="px-6 py-4 text-on-surface-variant text-sm">{c.teacher}</td>
+                        <td className="px-6 py-4 text-on-surface-variant text-sm">{c.total}</td>
+                        <td className="px-6 py-4 text-secondary font-bold text-sm">{c.present}</td>
+                        <td className="px-6 py-4 text-error font-bold text-sm">{c.absent}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${rateColor(c.rate)}`}>{c.rate}%</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => setDetailClass(c)}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 transition-all active:scale-95"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">visibility</span>
+                            Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Weekly Trend Chart */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mb-6 shadow-sm">
-          <h3 className="font-bold text-on-background mb-4">This Week's Attendance Trend</h3>
-          <div className="flex items-end gap-4 h-32">
-            {weekTrend.map((rate, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-xs font-bold text-on-surface-variant">{rate}%</span>
-                <div
-                  className={`w-full rounded-t-md transition-colors ${rate >= 95 ? 'bg-secondary-container hover:bg-secondary' : rate >= 85 ? 'bg-amber-200 hover:bg-amber-400' : 'bg-error-container hover:bg-error'}`}
-                  style={{ height: `${rate - 70}%`, minHeight: '8px', maxHeight: '100%' }}
-                />
-                <span className="text-xs text-on-surface-variant font-medium">{trendLabels[i]}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Class Breakdown */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
-          <div className="px-6 py-4 bg-surface-container-low border-b border-outline-variant flex justify-between items-center">
-            <h3 className="font-bold text-on-background">Class Attendance Breakdown</h3>
-            <span className="text-label-sm text-on-surface-variant">{selectedDate}</span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-surface-container-low border-b border-outline-variant">
-                <tr>
-                  {['Class', 'Class Teacher', 'Total', 'Present', 'Absent', 'Rate', 'Action'].map(h => (
-                    <th key={h} className="px-6 py-3 text-xs font-bold text-on-surface-variant uppercase tracking-wider">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant">
-                {classes.map((c, i) => (
-                  <tr key={i} className="hover:bg-surface-container-low transition-colors">
-                    <td className="px-6 py-4 font-bold text-on-surface text-sm">{c.name}</td>
-                    <td className="px-6 py-4 text-on-surface-variant text-sm">{c.teacher}</td>
-                    <td className="px-6 py-4 text-on-surface-variant text-sm">{c.total}</td>
-                    <td className="px-6 py-4 text-secondary font-bold text-sm">{c.present}</td>
-                    <td className="px-6 py-4 text-error font-bold text-sm">{c.absent}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${rateColor(c.rate)}`}>{c.rate}%</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => setDetailClass({ cls: c, index: i })}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 transition-all active:scale-95"
-                      >
-                        <span className="material-symbols-outlined text-[14px]">visibility</span>
-                        Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+          </>
+        )}
 
         <footer className="mt-8 pt-6 pb-2 text-center border-t border-outline-variant">
           <p className="text-label-sm text-on-surface-variant opacity-60">© 2026 MyKlasi School Management System. Academic Session: 2025/2026</p>
@@ -442,8 +396,7 @@ export const HeadTeacherAttendance: React.FC = () => {
       {/* ── Detail Panel Overlay ── */}
       {detailClass && (
         <DetailPanel
-          cls={detailClass.cls}
-          classIndex={detailClass.index}
+          cls={detailClass}
           selectedDate={selectedDate}
           onClose={() => setDetailClass(null)}
         />

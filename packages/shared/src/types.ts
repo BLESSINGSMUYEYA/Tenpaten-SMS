@@ -74,7 +74,8 @@ export interface User extends BaseModel {
   schoolId?: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string | null;
+  username?: string | null;
   phone?: string;
   role: UserRole;
   isActive: boolean;
@@ -349,7 +350,7 @@ export interface JwtPayload {
   userId: string;
   schoolId?: string;
   role: UserRole;
-  email: string;
+  email?: string | null;
   iat?: number;
   exp?: number;
 }

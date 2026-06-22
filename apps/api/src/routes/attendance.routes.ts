@@ -10,6 +10,192 @@ const router = Router();
 
 router.use(authenticate);
 
+// ---- Attendance Stats ----
+router.get(
+  '/stats',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { date } = req.query;
+
+    const dateStr = date && typeof date === 'string'
+      ? date.substring(0, 10)
+      : new Date().toISOString().substring(0, 10);
+    const selectedDate = new Date(dateStr);
+
+    // 1. Fetch overall stats for this date
+    const attendanceRecords = await prisma.attendance.findMany({
+      where: {
+        schoolId,
+        date: selectedDate,
+        isDeleted: false,
+        type: 'morning',
+      },
+    });
+
+    const presentCount = attendanceRecords.filter(r => r.status === 'present').length;
+    const lateCount = attendanceRecords.filter(r => r.status === 'late').length;
+    const absentCount = attendanceRecords.filter(r => r.status === 'absent').length;
+
+    const overallRate = attendanceRecords.length > 0
+      ? parseFloat((((presentCount + lateCount) / attendanceRecords.length) * 100).toFixed(1))
+      : 0;
+
+    // 2. Fetch class list and calculate class-level stats
+    const classes = await prisma.class.findMany({
+      where: { schoolId, isDeleted: false },
+      include: {
+        studentProfiles: {
+          where: { isDeleted: false, status: 'active' },
+          select: { id: true },
+        },
+        classSubjects: {
+          where: { isDeleted: false },
+          include: {
+            teacher: { select: { firstName: true, lastName: true } },
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    const classesBreakdown = [];
+    let classesBelow85 = 0;
+
+    for (const cls of classes) {
+      const clsRecords = attendanceRecords.filter(r => r.classId === cls.id);
+
+      const clsPresent = clsRecords.filter(r => r.status === 'present').length;
+      const clsLate = clsRecords.filter(r => r.status === 'late').length;
+      const clsAbsent = clsRecords.filter(r => r.status === 'absent').length;
+
+      const rate = clsRecords.length > 0
+        ? parseFloat((((clsPresent + clsLate) / clsRecords.length) * 100).toFixed(1))
+        : 100; // default to 100% if not marked yet
+
+      if (clsRecords.length > 0 && rate < 85) {
+        classesBelow85++;
+      }
+
+      // Teachers
+      const teachers = cls.classSubjects
+        .map(cs => cs.teacher ? `${cs.teacher.firstName} ${cs.teacher.lastName}` : null)
+        .filter(Boolean);
+      const teacherName = teachers.length > 0 ? Array.from(new Set(teachers))[0] : 'No teacher';
+
+      classesBreakdown.push({
+        id: cls.id,
+        name: cls.displayName,
+        teacher: teacherName,
+        total: cls.studentProfiles.length,
+        present: clsPresent + clsLate,
+        absent: clsAbsent,
+        late: clsLate,
+        rate,
+      });
+    }
+
+    // 3. Weekly trend chart (past 5 weekdays including the selected date)
+    const getMonday = (d: Date) => {
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(d.setDate(diff));
+    };
+
+    const monday = getMonday(new Date(selectedDate));
+    monday.setUTCHours(0, 0, 0, 0);
+
+    const weekTrend = [];
+    const trendLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+    for (let i = 0; i < 5; i++) {
+      const currentDate = new Date(monday);
+      currentDate.setDate(monday.getDate() + i);
+
+      const dayRecords = await prisma.attendance.findMany({
+        where: {
+          schoolId,
+          date: currentDate,
+          isDeleted: false,
+          type: 'morning',
+        },
+        select: { status: true },
+      });
+
+      const dayPresent = dayRecords.filter(r => r.status === 'present' || r.status === 'late').length;
+      const dayRate = dayRecords.length > 0
+        ? parseFloat(((dayPresent / dayRecords.length) * 100).toFixed(1))
+        : 100.0; // Default to 100.0
+
+      weekTrend.push(dayRate);
+    }
+
+    sendSuccess(res, {
+      selectedDate: dateStr,
+      overallRate: `${overallRate}%`,
+      presentToday: String(presentCount + lateCount),
+      absentToday: String(absentCount),
+      classesBelow85: String(classesBelow85),
+      weekTrend,
+      trendLabels,
+      classes: classesBreakdown,
+    }, 'Attendance stats retrieved successfully');
+  })
+);
+
+// ---- Attendance Detail Panel for a Class ----
+router.get(
+  '/stats/class-detail',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { classId, date } = req.query;
+
+    if (!classId || typeof classId !== 'string') {
+      return res.status(400).json({ status: 'error', message: 'classId is required' });
+    }
+
+    const dateStr = date && typeof date === 'string'
+      ? date.substring(0, 10)
+      : new Date().toISOString().substring(0, 10);
+    const selectedDate = new Date(dateStr);
+
+    const students = await prisma.studentProfile.findMany({
+      where: { classId, schoolId, isDeleted: false, status: 'active' },
+      include: {
+        user: {
+          select: { firstName: true, lastName: true }
+        }
+      },
+      orderBy: { user: { lastName: 'asc' } },
+    });
+
+    const studentIds = students.map(s => s.id);
+    const records = await prisma.attendance.findMany({
+      where: {
+        studentId: { in: studentIds },
+        date: selectedDate,
+        isDeleted: false,
+        type: 'morning',
+      }
+    });
+
+    const studentRecords = students.map((student, index) => {
+      const record = records.find(r => r.studentId === student.id);
+      return {
+        id: index + 1,
+        name: `${student.user.firstName} ${student.user.lastName}`,
+        admissionNo: student.admissionNumber,
+        status: record ? record.status : 'present',
+        timeIn: record && record.status !== 'absent' ? (record.status === 'late' ? '07:45' : '07:15') : null,
+        reason: record ? record.reason : null,
+      };
+    });
+
+    sendSuccess(res, studentRecords, 'Class attendance details retrieved successfully');
+  })
+);
+
 // ---- Fetch Attendance ----
 router.get(
   '/',

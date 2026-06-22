@@ -47,6 +47,13 @@ export const DeputyHeadStaff = () => {
   const [filterRole, setFilterRole] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Success toast
+  const [successToast, setSuccessToast] = useState<string | null>(null);
+  const showSuccessToast = (msg: string) => {
+    setSuccessToast(msg);
+    setTimeout(() => setSuccessToast(null), 6000);
+  };
+
   // ── Live data from the API ──
   const { data: staff, loading, error: fetchError, refetch } = useQuery<StaffMember[]>('/people/staff');
   const { mutate: onboardStaff, loading: onboarding, error: onboardError } = useMutation('/people/staff', 'post');
@@ -70,19 +77,29 @@ export const DeputyHeadStaff = () => {
 
   const handleOnboardTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newFirstName || !newLastName || !newEmail) return;
+    if (!newFirstName || !newLastName) return;
+
+    const staffName = newFirstName;
 
     try {
-      await onboardStaff({
+      const res = await onboardStaff({
         firstName: newFirstName,
         lastName: newLastName,
-        email: newEmail,
+        email: newEmail || undefined,
         phone: newPhone || undefined,
         role: newRole,
       });
       resetForm();
       setIsModalOpen(false);
       refetch();
+      
+      const generatedUsername = res?.username;
+      const generatedPassword = res?.tempPassword;
+
+      showSuccessToast(
+        `✅ ${staffName} has been onboarded! Username: "${generatedUsername}", Password: "${generatedPassword}"` +
+        (newEmail ? `. A welcome email was sent to ${newEmail}.` : '.')
+      );
     } catch (err) {
       console.error('Failed to onboard staff:', err);
     }
@@ -104,6 +121,22 @@ export const DeputyHeadStaff = () => {
       <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       <Sidebar isOpen={sidebarOpen} closeSidebar={() => setSidebarOpen(false)} />
       <main className="lg:ml-72 pt-20 pb-24 lg:pb-8 px-margin-mobile md:px-margin-desktop min-h-screen bg-surface text-on-surface transition-colors">
+
+        {/* Success Toast */}
+        {successToast && (
+          <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] max-w-lg w-[90%] animate-fade-in">
+            <div className="bg-primary-container border border-primary/20 text-on-primary-container px-5 py-3.5 rounded-xl shadow-lg flex items-start gap-3">
+              <span className="material-symbols-outlined text-primary text-xl flex-shrink-0 mt-0.5">mark_email_read</span>
+              <div className="flex-1">
+                <p className="text-sm font-bold">{successToast}</p>
+                <p className="text-xs text-on-primary-container/70 mt-1">The recipient will need to change their password on first login.</p>
+              </div>
+              <button onClick={() => setSuccessToast(null)} className="text-on-primary-container/60 hover:text-on-primary-container flex-shrink-0">
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Page Header */}
         <div className="py-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -345,10 +378,9 @@ export const DeputyHeadStaff = () => {
               {/* Email + Phone */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-label-md text-on-surface-variant mb-1 font-bold">School Email *</label>
+                  <label className="block text-label-md text-on-surface-variant mb-1 font-bold">School Email (Optional)</label>
                   <input
                     type="email"
-                    required
                     placeholder="k.nkrumah@school.edu"
                     value={newEmail}
                     onChange={e => setNewEmail(e.target.value)}

@@ -108,7 +108,7 @@ export const LoginPage: React.FC = () => {
           {/* Email/Username Input */}
           <div className="flex flex-col gap-xs">
             <label className="font-label-sm text-label-sm text-on-surface" htmlFor="email">
-              Email Address
+              Email or Username / ID
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none">
@@ -118,8 +118,8 @@ export const LoginPage: React.FC = () => {
                 {...register('email')}
                 className={`w-full pl-[36px] pr-md py-[10px] bg-surface-container-lowest border ${errors.email ? 'border-error focus:ring-error/20' : 'border-outline focus:border-primary focus:ring-primary-fixed-dim'} rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 transition-all`}
                 id="email"
-                placeholder="Enter your email"
-                type="email"
+                placeholder="Enter email or username / ID"
+                type="text"
               />
             </div>
             {errors.email && (

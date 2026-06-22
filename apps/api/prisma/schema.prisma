@@ -115,7 +115,8 @@ model User {
   schoolId           String?
   firstName          String
   lastName           String
-  email              String
+  email              String?
+  username           String?
   phone              String?
   passwordHash       String
   role               UserRole
@@ -142,6 +143,7 @@ model User {
   passwordResetTokens   PasswordResetToken[]
 
   @@unique([email, schoolId])
+  @@unique([username, schoolId])
   @@index([schoolId, isDeleted])
   @@index([role, isDeleted])
   @@index([schoolId, role, isDeleted])
