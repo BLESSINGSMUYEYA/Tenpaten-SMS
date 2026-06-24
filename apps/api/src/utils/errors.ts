@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import type { ApiResponse } from '@myklasi/shared';
 
@@ -54,8 +54,8 @@ export class ConflictError extends AppError {
 
 export function errorHandler(
   err: Error,
-  _req: Request,
-  res: Response,
+  _req: ExpressRequest,
+  res: ExpressResponse,
   _next: NextFunction
 ): void {
   // Zod validation errors
@@ -132,7 +132,7 @@ export function errorHandler(
 
 // ---- 404 Handler ----
 
-export function notFoundHandler(req: Request, res: Response): void {
+export function notFoundHandler(req: ExpressRequest, res: ExpressResponse): void {
   const response: ApiResponse = {
     success: false,
     message: `Route ${req.method} ${req.path} not found`,
@@ -143,9 +143,9 @@ export function notFoundHandler(req: Request, res: Response): void {
 // ---- Async wrapper ----
 
 export function asyncHandler(
-  fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>
+  fn: (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => Promise<unknown>
 ) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 }
@@ -153,7 +153,7 @@ export function asyncHandler(
 // ---- Success response helper ----
 
 export function sendSuccess<T>(
-  res: Response,
+  res: ExpressResponse,
   data: T,
   message?: string,
   statusCode = 200

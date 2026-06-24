@@ -23,7 +23,9 @@ export async function connectDatabase(): Promise<void> {
     console.log('✅ Database connected successfully');
   } catch (error) {
     console.error('❌ Database connection failed:', error);
-    process.exit(1);
+    // Do NOT call process.exit(1) in serverless — it crashes the function runtime.
+    // Throw so the caller (api/index.ts) can return a proper 500 response.
+    throw error;
   }
 }
 
