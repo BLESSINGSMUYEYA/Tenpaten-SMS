@@ -252,16 +252,22 @@ export const BursarStudents: React.FC = () => {
               </div>
 
               {/* Parent/Guardian Info Card */}
-              <div className="bg-surface-container p-md rounded-xl border border-outline-variant/60 flex flex-col gap-sm">
+              <div className="bg-surface-container p-md rounded-xl border border-outline-variant/60 flex flex-col gap-sm relative">
                 <h4 className="font-label-md text-label-md font-bold text-on-surface border-b border-outline-variant/40 pb-xs">Guardian Details</h4>
-                {/* Wait! Let's display mock parent details since standard relations are loaded.
-                    Alinafe Phiri parent is Gondwe Phiri, Wongani Banda parent is John Banda, etc.
-                    We loaded relations in query. Let's see: in prisma seed we created these parent relations!
-                */}
                 <div className="flex flex-col gap-xs text-body-sm text-on-surface-variant">
-                  <p><strong>Name:</strong> {selectedInvoice.student?.user.firstName === 'Alinafe' ? 'Gondwe Phiri' : selectedInvoice.student?.user.firstName === 'Wongani' ? 'John Banda' : selectedInvoice.student?.user.firstName === 'Tiwonge' ? 'Maria Mwale' : 'Blessings Mwenitete'}</p>
-                  <p><strong>Phone:</strong> {selectedInvoice.student?.user.firstName === 'Alinafe' ? '0888456123' : selectedInvoice.student?.user.firstName === 'Wongani' ? '0999789456' : selectedInvoice.student?.user.firstName === 'Tiwonge' ? '0888123987' : '0999321654'}</p>
-                  <p><strong>Email:</strong> {selectedInvoice.student?.user.firstName === 'Alinafe' ? 'parent.alinafe@mail.com' : selectedInvoice.student?.user.firstName === 'Wongani' ? 'parent.wongani@mail.com' : selectedInvoice.student?.user.firstName === 'Tiwonge' ? 'parent.tiwonge@mail.com' : 'parent.lusekelo@mail.com'}</p>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {(selectedInvoice.student as any)?.parents && (selectedInvoice.student as any).parents.length > 0 ? (
+                    <>
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      <p><strong>Name:</strong> {(selectedInvoice.student as any).parents[0].parent.user.firstName} {(selectedInvoice.student as any).parents[0].parent.user.lastName}</p>
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      <p><strong>Phone:</strong> {(selectedInvoice.student as any).parents[0].parent.phoneNumber || 'N/A'}</p>
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      <p><strong>Email:</strong> {(selectedInvoice.student as any).parents[0].parent.user.email || 'N/A'}</p>
+                    </>
+                  ) : (
+                    <p className="italic">No guardian linked to this student.</p>
+                  )}
                 </div>
                 {selectedInvoice.balance > 0 && (
                   <button

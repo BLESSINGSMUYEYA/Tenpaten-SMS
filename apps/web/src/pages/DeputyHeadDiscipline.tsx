@@ -22,42 +22,7 @@ export const DeputyHeadDiscipline = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSeverity, setFilterSeverity] = useState('All');
 
-  // Stateful incident logs
-  const [cases, setCases] = useState<DisciplineCase[]>([
-    {
-      id: 1,
-      studentName: 'Chinedu Okafor',
-      class: 'Form 3A',
-      category: 'Chronic Tardiess',
-      date: '2026-05-24',
-      severity: 'medium',
-      actionTaken: 'Saturday morning detention issued.',
-      status: 'active',
-      description: 'Lateness to class or morning assembly recorded 5 times this month without medical notes.',
-    },
-    {
-      id: 2,
-      studentName: 'Sarah Mwangi',
-      class: 'Form 4B',
-      category: 'Dress Code Violation',
-      date: '2026-05-23',
-      severity: 'low',
-      actionTaken: 'Verbal warning and parental notification.',
-      status: 'resolved',
-      description: 'Arrived at the school gate wearing unprescribed uniform cardigans.',
-    },
-    {
-      id: 3,
-      studentName: 'Tariq Jobe',
-      class: 'Form 3A',
-      category: 'Academic Dishonesty',
-      date: '2026-05-20',
-      severity: 'high',
-      actionTaken: 'Suspension pending parental conference.',
-      status: 'active',
-      description: 'Found possessing unauthorized formula reference cards during the Physics midterm paper.',
-    },
-  ]);
+  const [cases, setCases] = useState<DisciplineCase[]>([]);
 
   // Form state
   const [studentName, setStudentName] = useState('');
@@ -169,7 +134,7 @@ export const DeputyHeadDiscipline = () => {
             </div>
             <div>
               <p className="text-on-surface-variant font-label-md">Resolved Cases (Term)</p>
-              <h3 className="font-headline-md text-secondary mt-1">{resolvedCount + 14}</h3>
+              <h3 className="font-headline-md text-secondary mt-1">{resolvedCount}</h3>
             </div>
           </div>
           <div className="bg-surface-container-lowest border border-surface-border dark:border-outline-variant p-6 rounded-xl shadow-sm flex items-center gap-4">
@@ -178,7 +143,7 @@ export const DeputyHeadDiscipline = () => {
             </div>
             <div>
               <p className="text-on-surface-variant font-label-md">Conduct Score Average</p>
-              <h3 className="font-headline-md text-primary mt-1">A-</h3>
+              <h3 className="font-headline-md text-primary mt-1">N/A</h3>
             </div>
           </div>
         </div>

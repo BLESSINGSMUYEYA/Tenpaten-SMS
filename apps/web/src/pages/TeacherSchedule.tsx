@@ -3,6 +3,7 @@ import { Header } from '../components/TeacherDashboard/Header';
 import { Sidebar } from '../components/TeacherDashboard/Sidebar';
 import { BottomNav } from '../components/TeacherDashboard/BottomNav';
 import { useQuery } from '../hooks/useApi';
+import { Link } from 'react-router-dom';
 
 // API day enum → display name mapping
 const DAY_MAP: Record<string, string> = {
@@ -51,6 +52,14 @@ const getPeriodStyle = (periodNumber: number) => {
   return styles[(periodNumber - 1) % styles.length];
 };
 
+const getPeriodTimeFromConfig = (config: any[], num: number) => {
+  const period = config?.find(c => !c.isBreak && c.periodNumber === num);
+  if (period) {
+    return { time: `${period.startTime} - ${period.endTime}`, label: period.label };
+  }
+  return { time: '00:00 - 00:00', label: `Period ${num}` };
+};
+
 export const TeacherSchedule = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -61,9 +70,11 @@ export const TeacherSchedule = () => {
     DISPLAY_DAYS.find(d => TODAY_MAP[d] === todayJsDay) || 'Monday';
   const [selectedDay, setSelectedDay] = useState<string>(todayDisplay);
 
-  // Fetch timetable (auto-scoped to this teacher by backend)
   const { data: timetableSlots, loading, error } = useQuery<TimetableSlot[]>('/timetable');
   const { data: termList } = useQuery<TermRecord[]>('/schools/terms');
+  const { data: mySchool } = useQuery<any>('/schools/my-school');
+  
+  const timetableConfig = mySchool?.timetableConfig || [];
 
   // Current term for display context
   const currentTerm = termList?.find(t => t.isCurrent) || termList?.[0];
@@ -196,7 +207,10 @@ export const TeacherSchedule = () => {
                       <div className="flex flex-col gap-1.5">
                         {/* Period label */}
                         <div className="flex items-center gap-2">
-                          <span className="font-label-sm text-outline font-bold">Period {slot.periodNumber}</span>
+                          <span className="font-label-sm text-outline font-bold">
+                            {getPeriodTimeFromConfig(timetableConfig, slot.periodNumber).label} 
+                            <span className="font-normal opacity-70 ml-1">({getPeriodTimeFromConfig(timetableConfig, slot.periodNumber).time})</span>
+                          </span>
                           {slot.room && (
                             <span className="px-1.5 py-0.5 text-[10px] bg-surface-container border border-surface-border dark:border-outline-variant text-on-surface-variant rounded-full flex items-center gap-1">
                               <span className="material-symbols-outlined text-[10px]">location_on</span>
@@ -207,20 +221,41 @@ export const TeacherSchedule = () => {
 
                         {/* Slot Card */}
                         <div
-                          className={`flex justify-between items-center py-3 px-4 border rounded-xl shadow-sm transition-all hover:shadow-md ${colorClass}`}
+                          className={`flex flex-col sm:flex-row justify-between items-start sm:items-center py-3 px-4 border rounded-xl shadow-sm transition-all hover:shadow-md gap-3 sm:gap-0 ${colorClass}`}
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 w-full sm:w-auto">
                             <div className="w-10 h-10 rounded-full bg-surface-container-lowest border border-surface-border dark:border-outline-variant flex items-center justify-center text-on-surface flex-shrink-0">
                               <span className="material-symbols-outlined text-[18px]">{iconName}</span>
                             </div>
-                            <div>
-                              <h3 className="font-title-sm font-bold text-on-surface">{slot.subject.name}</h3>
+                            <div className="flex-1">
+                              <h3 className="font-title-sm font-bold text-on-surface flex items-center gap-2">
+                                {slot.subject.name}
+                                <span className={`px-2 py-0.5 border text-[9px] font-bold rounded-full uppercase tracking-wider ${badgeClass} sm:hidden`}>
+                                  {slot.subject.code}
+                                </span>
+                              </h3>
                               <p className="font-body-sm text-on-surface-variant font-medium">{slot.class.displayName}</p>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-0.5 border text-[10px] font-bold rounded-full uppercase tracking-wider ${badgeClass}`}>
+                          <div className="flex items-center gap-2 self-end sm:self-auto w-full sm:w-auto justify-end border-t border-outline-variant/30 pt-3 sm:pt-0 sm:border-0 mt-1 sm:mt-0">
+                            <div className="flex gap-2 w-full sm:w-auto">
+                              <Link
+                                to={`/teacher/attendance?classId=${slot.class.id}`}
+                                className={`flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg text-[11px] sm:text-[10px] font-bold hover:brightness-95 active:scale-95 transition-all flex items-center gap-1 bg-surface-container-lowest border ${badgeClass}`}
+                              >
+                                <span className="material-symbols-outlined text-[14px]">fact_check</span>
+                                Attendance
+                              </Link>
+                              <Link
+                                to={`/teacher/grades?classId=${slot.class.id}`}
+                                className={`flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg text-[11px] sm:text-[10px] font-bold hover:brightness-95 active:scale-95 transition-all flex items-center gap-1 bg-surface-container-lowest border ${badgeClass}`}
+                              >
+                                <span className="material-symbols-outlined text-[14px]">grading</span>
+                                Grades
+                              </Link>
+                            </div>
+                            <span className={`px-2 py-0.5 border text-[10px] font-bold rounded-full uppercase tracking-wider ${badgeClass} hidden sm:block`}>
                               {slot.subject.code}
                             </span>
                           </div>

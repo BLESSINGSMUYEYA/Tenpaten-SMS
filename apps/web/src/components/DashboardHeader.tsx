@@ -16,6 +16,8 @@ const roleLabels: Record<string, string> = {
   bursar: 'Bursar',
   student: 'Student',
   parent: 'Parent',
+  it_coordinator: 'IT Coordinator',
+  school_director: 'School Director',
 };
 
 export const DashboardHeader = ({ onMenuClick, zenMode = false }: DashboardHeaderProps) => {

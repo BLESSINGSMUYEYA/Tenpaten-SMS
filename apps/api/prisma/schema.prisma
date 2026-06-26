@@ -27,6 +27,7 @@ model School {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   isDeleted         Boolean          @default(false)
+  timetableConfig   Json?
   academicYears     AcademicYear[]
   attendance        Attendance[]
   classes           Class[]
@@ -463,6 +464,9 @@ enum SchoolType {
 
 enum UserRole {
   super_admin
+  director
+  school_director
+  it_coordinator
   head_teacher
   deputy_head
   teacher

@@ -8,7 +8,7 @@ import { useQuery } from '../hooks/useApi';
 
 export const HeadTeacherDashboard: React.FC = () => {
   const { user } = useAuth();
-  const fullName = user ? `${user.firstName} ${user.lastName}` : 'Head Teacher';
+  const fullName = user ? `${user.firstName} ${user.lastName}` : 'Administrator';
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Dynamic Queries
@@ -87,12 +87,10 @@ export const HeadTeacherDashboard: React.FC = () => {
               </div>
               <div className="flex-1 min-h-[240px] relative rounded-lg border border-outline-variant/50 overflow-hidden flex items-end px-4 pb-4 gap-4"
                 style={{ backgroundImage: 'linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
-                <div className="w-full flex justify-between items-end h-[200px] gap-2 mt-auto">
-                  {[60, 65, 50, 80, 75, 90, 95].map((h, i) => (
-                    <div key={i} className="w-full bg-primary-container rounded-t-sm hover:bg-primary transition-colors group relative" style={{ height: `${h}%` }}>
-                      <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-xs hidden group-hover:block bg-surface border border-outline text-on-surface px-1.5 py-0.5 rounded shadow font-bold">{h}%</span>
-                    </div>
-                  ))}
+                <div className="w-full flex justify-between items-end h-[200px] gap-2 mt-auto opacity-50">
+                  <div className="absolute inset-0 flex items-center justify-center text-on-surface-variant font-label-md">
+                    No attendance trend data available
+                  </div>
                 </div>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { Sidebar } from '../components/TeacherDashboard/Sidebar';
 import { BottomNav } from '../components/TeacherDashboard/BottomNav';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { api } from '../services/api';
+import { useSearchParams } from 'react-router-dom';
 
 interface GradeItem {
   id?: string;
@@ -46,8 +47,11 @@ export const TeacherGrades = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
+  const [searchParams] = useSearchParams();
+  const initialClassId = searchParams.get('classId') || '';
+
   // Filter keys
-  const [selectedClassId, setSelectedClassId] = useState('');
+  const [selectedClassId, setSelectedClassId] = useState(initialClassId);
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
   const [selectedTermId, setSelectedTermId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -93,7 +97,7 @@ export const TeacherGrades = () => {
     if (classList && classList.length > 0 && !selectedClassId) {
       setSelectedClassId(classList[0].id);
     }
-  }, [classList]);
+  }, [classList, selectedClassId]);
 
   useEffect(() => {
     if (subjectList && subjectList.length > 0 && !selectedSubjectId) {

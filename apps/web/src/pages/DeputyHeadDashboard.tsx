@@ -5,18 +5,16 @@ import { Sidebar } from '../components/DeputyHeadDashboard/Sidebar';
 import { BottomNav } from '../components/DeputyHeadDashboard/BottomNav';
 import { useQuery } from '../hooks/useApi';
 
-const getPeriodTime = (num: number) => {
-  switch (num) {
-    case 1: return { time: '07:30', period: 'AM' };
-    case 2: return { time: '08:15', period: 'AM' };
-    case 3: return { time: '09:00', period: 'AM' };
-    case 4: return { time: '10:15', period: 'AM' };
-    case 5: return { time: '11:00', period: 'AM' };
-    case 6: return { time: '11:45', period: 'AM' };
-    case 7: return { time: '01:30', period: 'PM' };
-    case 8: return { time: '02:15', period: 'PM' };
-    default: return { time: '03:00', period: 'PM' };
+const getPeriodTimeFromConfig = (config: any[], num: number) => {
+  const period = config?.find(c => !c.isBreak && c.periodNumber === num);
+  if (period) {
+    const startTime = period.startTime; // e.g., "08:00"
+    const [hr, min] = startTime.split(':').map(Number);
+    const periodLabel = hr >= 12 ? 'PM' : 'AM';
+    const displayHr = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
+    return { time: `${displayHr.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`, period: periodLabel };
   }
+  return { time: '00:00', period: 'AM' };
 };
 
 export const DeputyHeadDashboard: React.FC = () => {
@@ -29,6 +27,9 @@ export const DeputyHeadDashboard: React.FC = () => {
   const { data: timetableSlots, loading: loadingTimetable } = useQuery<any[]>('/timetable');
   const { data: gradesList, loading: loadingGrades } = useQuery<any[]>('/grades');
   const { data: announcements, loading: loadingAnnouncements } = useQuery<any[]>('/announcements');
+  const { data: mySchool } = useQuery<any>('/schools/my-school');
+
+  const timetableConfig = mySchool?.timetableConfig || [];
 
   // Derive Hero Stats
   const totalSlotsCount = timetableSlots ? timetableSlots.length : 0;
@@ -48,7 +49,7 @@ export const DeputyHeadDashboard: React.FC = () => {
     .filter((s: any) => s.day === currentDay)
     .slice(0, 4)
     .map((s: any) => {
-      const periodTime = getPeriodTime(s.periodNumber);
+      const periodTime = getPeriodTimeFromConfig(timetableConfig, s.periodNumber);
       return {
         time: periodTime.time,
         period: periodTime.period,

@@ -88,33 +88,50 @@ router.post(
   '/schools',
   validateBody(createSchoolSchema),
   asyncHandler(async (req, res) => {
-    const { name, type, district, country, headTeacher, customInitials } = req.body;
+    const {
+      name, type, district, country,
+      subscriptionPlan, email: schoolEmail, phone: schoolPhone, address: schoolAddress,
+      schoolDirector, headTeacher,
+      customInitials,
+    } = req.body;
 
-    // Check if head teacher email already exists
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        email: headTeacher.email,
-        isDeleted: false,
-      },
+    // ── Uniqueness checks ──────────────────────────────────────────────────
+    const emailsToCheck = [schoolDirector.email, headTeacher?.email].filter(Boolean) as string[];
+    const existingUsers = await prisma.user.findMany({
+      where: { email: { in: emailsToCheck }, isDeleted: false },
+      select: { email: true },
     });
 
-    if (existingUser) {
-      throw new ValidationError({ 'headTeacher.email': ['A user with this email address already exists in the system'] });
+    if (existingUsers.length > 0) {
+      const taken = existingUsers.map((u: { email: string | null }) => u.email);
+      const errors: Record<string, string[]> = {};
+      if (taken.includes(schoolDirector.email)) {
+        errors['schoolDirector.email'] = ['This email is already registered in the system'];
+      }
+      if (headTeacher && taken.includes(headTeacher.email)) {
+        errors['headTeacher.email'] = ['This email is already registered in the system'];
+      }
+      throw new ValidationError(errors);
     }
 
-    // Generate a unique, collision-resilient school code
-    // customInitials is a Super Admin override (2-5 uppercase letters); optional
+    // ── School code generation ─────────────────────────────────────────────
     const normalizedInitials = customInitials
       ? String(customInitials).toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5)
       : undefined;
     const schoolCode = await createUniqueSchoolCode(name, normalizedInitials || undefined);
 
-    // Generate temporary password for the Head Teacher
-    const tempPassword = generateTempPassword();
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(tempPassword, salt);
+    // ── Temp passwords ─────────────────────────────────────────────────────
+    const directorTempPassword = generateTempPassword();
+    const directorHash = await bcrypt.hash(directorTempPassword, await bcrypt.genSalt(10));
 
-    // Transactional creation of School and Head Teacher User
+    let htTempPassword: string | null = null;
+    let htHash: string | null = null;
+    if (headTeacher) {
+      htTempPassword = generateTempPassword();
+      htHash = await bcrypt.hash(htTempPassword, await bcrypt.genSalt(10));
+    }
+
+    // ── Transactional creation ─────────────────────────────────────────────
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const newSchool = await tx.school.create({
         data: {
@@ -123,40 +140,76 @@ router.post(
           district,
           country: country || 'Malawi',
           schoolCode,
+          subscriptionPlan: subscriptionPlan || 'basic',
+          email: schoolEmail,
+          phone: schoolPhone,
+          address: schoolAddress,
           isActive: true,
           setupComplete: false,
         },
       });
 
-      const newHeadTeacher = await tx.user.create({
+      // Always create the School Director
+      const newDirector = await tx.user.create({
         data: {
           schoolId: newSchool.id,
-          firstName: headTeacher.firstName,
-          lastName: headTeacher.lastName,
-          email: headTeacher.email,
-          phone: headTeacher.phone,
-          passwordHash,
-          role: UserRole.head_teacher,
+          firstName: schoolDirector.firstName,
+          lastName: schoolDirector.lastName,
+          email: schoolDirector.email,
+          phone: schoolDirector.phone,
+          passwordHash: directorHash,
+          role: UserRole.school_director,
           isActive: true,
-          mustChangePassword: true, // Force change on first login
+          mustChangePassword: true,
         },
       });
 
-      return { school: newSchool, headTeacher: newHeadTeacher };
+      // Optionally create the Head Teacher
+      let newHeadTeacher = null;
+      if (headTeacher && htHash) {
+        newHeadTeacher = await tx.user.create({
+          data: {
+            schoolId: newSchool.id,
+            firstName: headTeacher.firstName,
+            lastName: headTeacher.lastName,
+            email: headTeacher.email,
+            phone: headTeacher.phone,
+            passwordHash: htHash,
+            role: UserRole.head_teacher,
+            isActive: true,
+            mustChangePassword: true,
+          },
+        });
+      }
+
+      return { school: newSchool, schoolDirector: newDirector, headTeacher: newHeadTeacher };
     });
 
-    // Send Welcome Email asynchronously
+    // ── Welcome emails (async, non-blocking) ──────────────────────────────
     emailService.sendWelcomeEmail({
-      email: headTeacher.email,
-      firstName: headTeacher.firstName,
+      email: schoolDirector.email,
+      firstName: schoolDirector.firstName,
       schoolName: name,
       schoolCode,
-      tempPassword,
-    }).catch((err) => {
-      console.error('Welcome email failed to send:', err);
-    });
+      tempPassword: directorTempPassword,
+    }).catch((err: unknown) => console.error('Director welcome email failed:', err));
 
-    sendSuccess(res, result, 'School and Head Teacher created successfully', 201);
+    if (headTeacher && htTempPassword) {
+      emailService.sendWelcomeEmail({
+        email: headTeacher.email,
+        firstName: headTeacher.firstName,
+        schoolName: name,
+        schoolCode,
+        tempPassword: htTempPassword,
+      }).catch((err: unknown) => console.error('Head Teacher welcome email failed:', err));
+    }
+
+    sendSuccess(
+      res,
+      result,
+      `School onboarded successfully. ${headTeacher ? '2 accounts' : '1 account'} created.`,
+      201
+    );
   })
 );
 

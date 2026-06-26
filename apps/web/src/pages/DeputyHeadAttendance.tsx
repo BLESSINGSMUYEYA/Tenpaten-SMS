@@ -26,16 +26,7 @@ export const DeputyHeadAttendance: React.FC = () => {
   const [newTime, setNewTime] = useState('07:35 AM');
   const [newReason, setNewReason] = useState('Missed the school bus');
 
-  // Mock data
-  const [records, setRecords] = useState<AttendanceRecord[]>([
-    { id: 1, studentName: 'Blessings Gondwe', class: 'Form 3A', status: 'late', time: '07:32 AM', reason: 'Heavy traffic on Chipembere Hwy' },
-    { id: 2, studentName: 'Fiona Phiri', class: 'Form 4B', status: 'absent', time: '-', reason: 'Medical appointment' },
-    { id: 3, studentName: 'Mwayi Mwale', class: 'Form 2C', status: 'late', time: '07:45 AM', reason: 'Overslept' },
-    { id: 4, studentName: 'Tamara Nyirenda', class: 'Form 1A', status: 'present', time: '07:12 AM' },
-    { id: 5, studentName: 'Tadala Chisale', class: 'Form 3A', status: 'present', time: '07:15 AM' },
-    { id: 6, studentName: 'Chikondi Banda', class: 'Form 4B', status: 'present', time: '07:05 AM' },
-  ]);
-
+  const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const handleAddRecord = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudentName) return;
@@ -98,7 +89,7 @@ export const DeputyHeadAttendance: React.FC = () => {
             </div>
             <div>
               <p className="text-on-surface-variant font-label-md">Average Attendance</p>
-              <h3 className="font-headline-md text-primary mt-1">94.6%</h3>
+              <h3 className="font-headline-md text-primary mt-1">0%</h3>
             </div>
           </div>
           <div className="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl shadow-sm flex items-center gap-md">
@@ -107,7 +98,7 @@ export const DeputyHeadAttendance: React.FC = () => {
             </div>
             <div>
               <p className="text-on-surface-variant font-label-md">On Duty Today</p>
-              <h3 className="font-headline-md text-secondary mt-1">98%</h3>
+              <h3 className="font-headline-md text-secondary mt-1">0%</h3>
             </div>
           </div>
           <div className="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl shadow-sm flex items-center gap-md">
@@ -116,7 +107,7 @@ export const DeputyHeadAttendance: React.FC = () => {
             </div>
             <div>
               <p className="text-on-surface-variant font-label-md">Late Arrivals Today</p>
-              <h3 className="font-headline-md text-amber-600 dark:text-amber-300 mt-1">{lateCount + 12}</h3>
+              <h3 className="font-headline-md text-amber-600 dark:text-amber-300 mt-1">{lateCount}</h3>
             </div>
           </div>
           <div className="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl shadow-sm flex items-center gap-md">
@@ -125,38 +116,18 @@ export const DeputyHeadAttendance: React.FC = () => {
             </div>
             <div>
               <p className="text-on-surface-variant font-label-md">Unexcused Absences</p>
-              <h3 className="font-headline-md text-error mt-1">{absentCount + 5}</h3>
+              <h3 className="font-headline-md text-error mt-1">{absentCount}</h3>
             </div>
           </div>
         </div>
 
         {/* Visual Attendance Heatmap representation by class */}
         <section className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm p-lg mb-margin-desktop">
-          <h3 className="text-title-lg font-bold text-primary mb-md">Class-wise Attendance Ratio</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-lg">
-            {[
-              { form: 'Form 1A', rate: 96.5, count: '30/31', color: 'bg-primary' },
-              { form: 'Form 2C', rate: 91.2, count: '38/40', color: 'bg-primary' },
-              { form: 'Form 3A', rate: 94.8, count: '33/35', color: 'bg-secondary' },
-              { form: 'Form 4B', rate: 89.2, count: '25/28', color: 'bg-error' },
-            ].map(item => (
-              <div key={item.form} className="bg-surface-container border border-outline-variant rounded-xl p-md flex flex-col justify-between">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-on-surface text-sm">{item.form}</span>
-                  <span className="text-xs text-on-surface-variant font-medium">{item.count} present</span>
-                </div>
-                <div className="flex items-end gap-3 mt-1">
-                  <span className="font-headline-sm font-bold text-on-surface">{item.rate}%</span>
-                  <span className="text-xs text-outline font-medium mb-1">Target: 95%</span>
-                </div>
-                <div className="w-full h-2 bg-surface-container-high rounded-full overflow-hidden mt-3">
-                  <div className={`h-full ${item.color} rounded-full`} style={{ width: `${item.rate}%` }}></div>
-                </div>
-              </div>
-            ))}
+          <h3 className="text-title-lg font-bold text-primary mb-md flex items-center gap-2">Class-wise Attendance Ratio <span className="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[10px] font-bold rounded-full uppercase tracking-wider">Coming Soon</span></h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-lg opacity-50">
+            {/* Heatmap will be populated with real data soon */}
           </div>
         </section>
-
         {/* Filters and Table bar */}
         <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
           <div className="p-lg border-b border-outline-variant flex flex-col md:flex-row justify-between items-center gap-md">

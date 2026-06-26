@@ -38,25 +38,23 @@ interface GradeRecord {
   subjectId: string;
 }
 
-interface MessageRecord {
-  id: string;
-  subject: string;
-  body: string;
-  createdAt: string;
-  sender: {
-    firstName: string;
-    lastName: string;
-    role: string;
-  };
-}
 
-// ─── Day mapping ──────────────────────────────────────────────────────────────
+
+
 const JS_DAY_TO_API: Record<number, string> = {
   1: 'Mon',
   2: 'Tue',
   3: 'Wed',
   4: 'Thu',
   5: 'Fri',
+};
+
+const getPeriodTimeFromConfig = (config: any[], num: number) => {
+  const period = config?.find(c => !c.isBreak && c.periodNumber === num);
+  if (period) {
+    return { time: `${period.startTime} - ${period.endTime}`, label: period.label };
+  }
+  return { time: '00:00 - 00:00', label: `Period ${num}` };
 };
 
 // ─── Quick Attendance Modal ───────────────────────────────────────────────────
@@ -269,7 +267,8 @@ export const TeacherDashboard: React.FC = () => {
   const { data: timetableSlots } = useQuery<TimetableSlot[]>('/timetable');
   const { data: termList } = useQuery<TermRecord[]>('/schools/terms');
   const { data: grades } = useQuery<GradeRecord[]>('/grades');
-  const { data: messages } = useQuery<MessageRecord[]>('/messages');
+  const { data: mySchool } = useQuery<any>('/schools/my-school');
+  const timetableConfig = mySchool?.timetableConfig || [];
 
   // Current term
   const currentTerm = termList?.find(t => t.isCurrent) || termList?.[0];
@@ -331,11 +330,6 @@ export const TeacherDashboard: React.FC = () => {
     return new Set((timetableSlots || []).map(s => s.class.id)).size;
   }, [timetableSlots]);
 
-  // Recent messages (last 3)
-  const recentMessages = useMemo(() => {
-    return (messages || []).slice(0, 3);
-  }, [messages]);
-
   return (
     <>
       <Header onMenuClick={toggleSidebar} />
@@ -385,10 +379,10 @@ export const TeacherDashboard: React.FC = () => {
                       >
                         <div className="flex justify-between items-start">
                           <span className={`font-label-sm px-2 py-0.5 rounded text-[11px] font-bold uppercase ${idx === 0 ? 'bg-primary text-white' : 'text-on-surface-variant'}`}>
-                            {idx === 0 ? 'Current' : idx === 1 ? 'Upcoming' : `Period ${slot.periodNumber}`}
+                            {idx === 0 ? 'Current' : idx === 1 ? 'Upcoming' : getPeriodTimeFromConfig(timetableConfig, slot.periodNumber).label}
                           </span>
                           <span className={`font-label-sm text-[11px] ${idx === 0 ? 'text-on-primary-container/80' : 'text-on-surface-variant'}`}>
-                            Period {slot.periodNumber}
+                            {getPeriodTimeFromConfig(timetableConfig, slot.periodNumber).time}
                           </span>
                         </div>
                         <div>
@@ -436,7 +430,7 @@ export const TeacherDashboard: React.FC = () => {
                       Mark register for <span className="font-bold text-on-surface">{currentSlot.class.displayName}</span>
                     </p>
                     <p className="font-body-sm text-on-surface-variant mb-md text-center">
-                      {currentSlot.subject.name} — Period {currentSlot.periodNumber}
+                      {currentSlot.subject.name} — {getPeriodTimeFromConfig(timetableConfig, currentSlot.periodNumber).label}
                     </p>
                     <div className="grid grid-cols-2 gap-sm">
                       <button
@@ -540,48 +534,20 @@ export const TeacherDashboard: React.FC = () => {
             {/* Recent Messages */}
             <section className="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col">
               <div className="px-md py-sm border-b border-outline-variant flex justify-between items-center">
-                <h3 className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Recent Messages</h3>
-                {recentMessages.length > 0 && (
-                  <span className="bg-primary text-white font-label-sm px-xs rounded-full">
-                    {recentMessages.length}
-                  </span>
-                )}
+                <h3 className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant flex items-center gap-2">
+                  Recent Messages
+                  <span className="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[9px] font-bold rounded-full uppercase tracking-wider">Coming Soon</span>
+                </h3>
               </div>
-              <div className="overflow-y-auto max-h-[360px]">
-                {recentMessages.length > 0 ? (
-                  <ul className="divide-y divide-outline-variant">
-                    {recentMessages.map(m => {
-                      const initials = `${m.sender.firstName.charAt(0)}${m.sender.lastName.charAt(0)}`.toUpperCase();
-                      const timeAgo = new Date(m.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-                      return (
-                        <li key={m.id} className="p-md hover:bg-surface-container-low transition-colors cursor-pointer group">
-                          <div className="flex gap-md">
-                            <div className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-label-md text-label-md font-bold flex-shrink-0">
-                              {initials}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex justify-between items-center mb-xs">
-                                <span className="font-label-md text-label-md font-semibold group-hover:text-primary">
-                                  {m.sender.firstName} {m.sender.lastName}
-                                </span>
-                                <span className="font-label-sm text-on-surface-variant">{timeAgo}</span>
-                              </div>
-                              <p className="font-body-sm text-on-surface-variant line-clamp-1">{m.subject}</p>
-                            </div>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <div className="py-10 text-center">
-                    <span className="material-symbols-outlined text-3xl text-outline block mb-2">mail</span>
-                    <p className="font-body-sm text-on-surface-variant">No messages yet.</p>
-                  </div>
-                )}
+              <div className="overflow-y-auto max-h-[360px] flex-1">
+                <div className="py-10 text-center h-full flex flex-col items-center justify-center">
+                  <span className="material-symbols-outlined text-4xl text-tertiary/50 block mb-2">construction</span>
+                  <p className="font-body-md text-on-surface">Internal Messaging</p>
+                  <p className="font-body-sm text-on-surface-variant max-w-[200px] mt-1">This feature is currently in development and will be available soon.</p>
+                </div>
               </div>
               <div className="mt-auto p-md border-t border-outline-variant text-center">
-                <Link to="/teacher/messages" className="font-label-md text-primary hover:underline">View All Messages</Link>
+                <span className="font-label-md text-on-surface-variant opacity-50 cursor-not-allowed">View All Messages</span>
               </div>
             </section>
 

@@ -24,22 +24,34 @@ export const Sidebar = ({ isOpen, closeSidebar }: { isOpen: boolean; closeSideba
             <span className="material-symbols-outlined" data-icon="dashboard">dashboard</span>
             Dashboard
           </Link>
-          <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
-            <span className="material-symbols-outlined" data-icon="assignment">assignment</span>
-            My Assignments
-          </Link>
-          <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
-            <span className="material-symbols-outlined" data-icon="grade">grade</span>
-            My Grades
-          </Link>
-          <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
-            <span className="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
-            Timetable
-          </Link>
-          <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
-            <span className="material-symbols-outlined" data-icon="notifications">notifications</span>
-            School Notices
-          </Link>
+          <div className="flex items-center justify-between px-4 py-3 text-on-surface-variant opacity-60 cursor-not-allowed rounded-lg font-medium font-label-md text-label-md">
+            <div className="flex items-center gap-4">
+              <span className="material-symbols-outlined" data-icon="assignment">assignment</span>
+              My Assignments
+            </div>
+            <span className="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[9px] font-bold rounded-full uppercase tracking-wider">Soon</span>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 text-on-surface-variant opacity-60 cursor-not-allowed rounded-lg font-medium font-label-md text-label-md">
+            <div className="flex items-center gap-4">
+              <span className="material-symbols-outlined" data-icon="grade">grade</span>
+              My Grades
+            </div>
+            <span className="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[9px] font-bold rounded-full uppercase tracking-wider">Soon</span>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 text-on-surface-variant opacity-60 cursor-not-allowed rounded-lg font-medium font-label-md text-label-md">
+            <div className="flex items-center gap-4">
+              <span className="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+              Timetable
+            </div>
+            <span className="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[9px] font-bold rounded-full uppercase tracking-wider">Soon</span>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 text-on-surface-variant opacity-60 cursor-not-allowed rounded-lg font-medium font-label-md text-label-md">
+            <div className="flex items-center gap-4">
+              <span className="material-symbols-outlined" data-icon="notifications">notifications</span>
+              School Notices
+            </div>
+            <span className="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[9px] font-bold rounded-full uppercase tracking-wider">Soon</span>
+          </div>
         </nav>
         <div className="mt-auto border-t border-surface-border dark:border-outline-variant pt-4 flex flex-col gap-2">
           <button onClick={() => { closeSidebar(); logout(); }} className="flex items-center gap-4 px-4 py-3 text-on-error-container bg-error-container hover:bg-error/20 rounded-lg font-bold font-label-md text-label-md transition-colors w-full text-left">

@@ -63,17 +63,35 @@ export const MALAWI_DISTRICTS = [
   'Salima', 'Thyolo', 'Zomba',
 ] as const;
 
+// Reusable person block
+const personSchema = z.object({
+  firstName: z.string().min(2, 'First name required'),
+  lastName: z.string().min(2, 'Last name required'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().optional(),
+});
+
 export const createSchoolSchema = z.object({
+  // Institution details
   name: z.string().min(3, 'School name must be at least 3 characters'),
   type: z.enum(['secondary', 'primary', 'mixed']),
   district: z.enum(MALAWI_DISTRICTS),
   country: z.string().default('Malawi'),
-  headTeacher: z.object({
-    firstName: z.string().min(2, 'First name required'),
-    lastName: z.string().min(2, 'Last name required'),
-    email: z.string().email('Invalid email'),
-    phone: z.string().optional(),
-  }),
+  subscriptionPlan: z.enum(['free', 'basic', 'premium', 'enterprise']).default('basic'),
+
+  // Optional contact info set at creation time
+  email: z.string().email('Invalid contact email').optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+
+  // School Director — the institutional owner/signatory (always required at onboarding)
+  schoolDirector: personSchema,
+
+  // Head Teacher — the day-to-day academic lead (optional at onboarding)
+  headTeacher: personSchema.optional(),
+
+  // Super Admin override for school code initials
+  customInitials: z.string().max(5).optional(),
 });
 
 export const updateSchoolProfileSchema = z.object({
@@ -151,7 +169,7 @@ export const createUserSchema = z.object({
   lastName: z.string().min(2, 'Last name required'),
   email: z.string().email('Invalid email').optional().or(z.literal('')).nullable(),
   phone: z.string().optional(),
-  role: z.enum(['head_teacher', 'deputy_head', 'teacher', 'bursar']),
+  role: z.enum(['director', 'head_teacher', 'deputy_head', 'teacher', 'bursar']),
   photoUrl: z.string().url().optional(),
 });
 
@@ -181,9 +199,22 @@ export const createTimetableSlotSchema = z.object({
   subjectId: z.string().uuid(),
   teacherId: z.string().uuid(),
   day: z.enum(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']),
-  periodNumber: z.number().int().min(1).max(10),
+  periodNumber: z.number().int().min(1),
   room: z.string().optional(),
   termId: z.string().uuid(),
+});
+
+export const updateTimetableConfigSchema = z.object({
+  timetableConfig: z.array(
+    z.object({
+      periodNumber: z.number().int().min(1).optional(),
+      isBreak: z.boolean().optional(),
+      startTime: z.string().min(1),
+      endTime: z.string().min(1),
+      label: z.string().min(1),
+      icon: z.string().optional(),
+    })
+  )
 });
 
 // ---- Attendance ----
@@ -289,3 +320,4 @@ export type CreateFeeStructureInput = z.infer<typeof createFeeStructureSchema>;
 export type RecordPaymentInput = z.infer<typeof recordPaymentSchema>;
 export type CreateAnnouncementInput = z.infer<typeof createAnnouncementSchema>;
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+export type UpdateTimetableConfigInput = z.infer<typeof updateTimetableConfigSchema>;

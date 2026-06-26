@@ -36,24 +36,16 @@ export const StudentDashboard: React.FC = () => {
       <main className="lg:ml-72 pt-20 pb-24 lg:pb-8 px-margin-mobile md:px-margin-desktop min-h-screen bg-surface text-on-surface transition-colors">
         <div className="py-6 flex flex-col gap-6">
           {/* Welcome Banner */}
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-gutter-desktop">
-            <div className="md:col-span-2 relative overflow-hidden bg-primary rounded-xl p-6 flex items-center justify-between text-on-primary">
+          <section className="grid grid-cols-1">
+            <div className="relative overflow-hidden bg-primary rounded-xl p-6 flex items-center justify-between text-on-primary">
               <div className="relative z-10">
                 <span className="bg-secondary px-3 py-1 rounded-full font-label-sm text-label-sm text-on-secondary mb-2 inline-block font-medium">Student Center</span>
                 <h2 className="font-headline-sm font-bold mb-1">Welcome back, {firstName}!</h2>
                 <p className="font-body-sm opacity-90 max-w-sm">Review your term updates and academic performance below.</p>
               </div>
-              <div className="hidden lg:block">
+              <div className="hidden lg:block pr-8">
                 <span className="material-symbols-outlined text-[100px] opacity-10">workspace_premium</span>
               </div>
-            </div>
-            {/* Attendance Card */}
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 bg-secondary/10 text-secondary border border-secondary/20 rounded-full flex items-center justify-center font-title-lg font-bold mb-2">
-                98%
-              </div>
-              <p className="font-label-md font-medium text-on-surface uppercase tracking-wider">Attendance Summary</p>
-              <p className="font-label-sm text-on-surface-variant mt-1">Excellent daily attendance</p>
             </div>
           </section>
 

@@ -8,11 +8,12 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { icon: 'dashboard', label: 'Dashboard', to: '/head-teacher' },
+  { icon: 'dashboard', label: 'Dashboard', to: '/dashboard' },
   { icon: 'group', label: 'People', to: '/head-teacher/people' },
   { icon: 'school', label: 'Academic', to: '/head-teacher/academic' },
+  { icon: 'calendar_today', label: 'Timetables', to: '/head-teacher/timetable' },
   { icon: 'event_available', label: 'Attendance', to: '/head-teacher/attendance' },
-
+  { icon: 'account_balance', label: 'Finance & Billing', to: '/head-teacher/settings?tab=billing' },
   { icon: 'settings', label: 'Settings', to: '/head-teacher/settings' },
 ];
 
@@ -21,8 +22,8 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
   const location = useLocation();
 
   const isActive = (to: string) =>
-    to === '/head-teacher'
-      ? location.pathname === '/head-teacher'
+    to === '/dashboard'
+      ? location.pathname === '/dashboard'
       : location.pathname.startsWith(to);
 
   return (

@@ -21,6 +21,7 @@ const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ defaul
 const HeadTeacherDashboard = lazy(() => import('./pages/HeadTeacherDashboard').then(m => ({ default: m.HeadTeacherDashboard })));
 const HeadTeacherPeople = lazy(() => import('./pages/HeadTeacherPeople').then(m => ({ default: m.HeadTeacherPeople })));
 const HeadTeacherAcademic = lazy(() => import('./pages/HeadTeacherAcademic').then(m => ({ default: m.HeadTeacherAcademic })));
+const HeadTeacherTimetable = lazy(() => import('./pages/HeadTeacherTimetable').then(m => ({ default: m.HeadTeacherTimetable })));
 const HeadTeacherAttendance = lazy(() => import('./pages/HeadTeacherAttendance').then(m => ({ default: m.HeadTeacherAttendance })));
 const HeadTeacherSettings = lazy(() => import('./pages/HeadTeacherSettings').then(m => ({ default: m.HeadTeacherSettings })));
 
@@ -56,8 +57,29 @@ const BursarSettings = lazy(() => import('./pages/BursarSettings').then(m => ({ 
 // Super Admin
 const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard').then(m => ({ default: m.SuperAdminDashboard })));
 const SuperAdminSchools = lazy(() => import('./pages/SuperAdminSchools').then(m => ({ default: m.SuperAdminSchools })));
+const SuperAdminSchoolDetail = lazy(() => import('./pages/SuperAdminSchoolDetail').then(m => ({ default: m.SuperAdminSchoolDetail })));
 const SuperAdminUsers = lazy(() => import('./pages/SuperAdminUsers').then(m => ({ default: m.SuperAdminUsers })));
 const SuperAdminSettings = lazy(() => import('./pages/SuperAdminSettings').then(m => ({ default: m.SuperAdminSettings })));
+const SuperAdminAnalytics = lazy(() => import('./pages/SuperAdminAnalytics').then(m => ({ default: m.SuperAdminAnalytics })));
+const SuperAdminBilling = lazy(() => import('./pages/SuperAdminBilling').then(m => ({ default: m.SuperAdminBilling })));
+const SuperAdminSupport = lazy(() => import('./pages/SuperAdminSupport').then(m => ({ default: m.SuperAdminSupport })));
+const SuperAdminBroadcast = lazy(() => import('./pages/SuperAdminBroadcast').then(m => ({ default: m.SuperAdminBroadcast })));
+const SuperAdminAuditLog = lazy(() => import('./pages/SuperAdminAuditLog').then(m => ({ default: m.SuperAdminAuditLog })));
+const SuperAdminPlatform = lazy(() => import('./pages/SuperAdminPlatform').then(m => ({ default: m.SuperAdminPlatform })));
+
+// IT Coordinator
+const ITCoordinatorDashboard = lazy(() => import('./pages/ITCoordinatorDashboard').then(m => ({ default: m.ITCoordinatorDashboard })));
+const ITCoordinatorInfrastructure = lazy(() => import('./pages/ITCoordinatorInfrastructure').then(m => ({ default: m.ITCoordinatorInfrastructure })));
+const ITCoordinatorUsers = lazy(() => import('./pages/ITCoordinatorUsers').then(m => ({ default: m.ITCoordinatorUsers })));
+const ITCoordinatorSettings = lazy(() => import('./pages/ITCoordinatorSettings').then(m => ({ default: m.ITCoordinatorSettings })));
+
+// School Director
+const SchoolDirectorDashboard = lazy(() => import('./pages/SchoolDirectorDashboard').then(m => ({ default: m.SchoolDirectorDashboard })));
+const SchoolDirectorReports = lazy(() => import('./pages/SchoolDirectorReports').then(m => ({ default: m.SchoolDirectorReports })));
+const SchoolDirectorSettings = lazy(() => import('./pages/SchoolDirectorSettings').then(m => ({ default: m.SchoolDirectorSettings })));
+
+// Unified Setup
+const SchoolSetupWizard = lazy(() => import('./pages/SchoolSetupWizard').then(m => ({ default: m.SchoolSetupWizard })));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 const PageLoader: React.FC = () => (
@@ -167,12 +189,68 @@ const App: React.FC = () => {
                   </PrivateRoute>
                 }
               />
+              <Route
+                path="/super-admin/schools/:id"
+                element={
+                  <PrivateRoute allowedRoles={['super_admin']}>
+                    <SuperAdminSchoolDetail />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/super-admin/analytics"
+                element={
+                  <PrivateRoute allowedRoles={['super_admin']}>
+                    <SuperAdminAnalytics />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/super-admin/billing"
+                element={
+                  <PrivateRoute allowedRoles={['super_admin']}>
+                    <SuperAdminBilling />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/super-admin/support"
+                element={
+                  <PrivateRoute allowedRoles={['super_admin']}>
+                    <SuperAdminSupport />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/super-admin/broadcast"
+                element={
+                  <PrivateRoute allowedRoles={['super_admin']}>
+                    <SuperAdminBroadcast />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/super-admin/audit"
+                element={
+                  <PrivateRoute allowedRoles={['super_admin']}>
+                    <SuperAdminAuditLog />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/super-admin/platform"
+                element={
+                  <PrivateRoute allowedRoles={['super_admin']}>
+                    <SuperAdminPlatform />
+                  </PrivateRoute>
+                }
+              />
 
-              {/* Head Teacher */}
+              {/* School Administration (Unified for Director & Head Teacher) */}
               <Route
                 path="/dashboard"
                 element={
-                  <PrivateRoute allowedRoles={['head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
                     <HeadTeacherDashboard />
                   </PrivateRoute>
                 }
@@ -188,7 +266,7 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/people"
                 element={
-                  <PrivateRoute allowedRoles={['head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
                     <HeadTeacherPeople />
                   </PrivateRoute>
                 }
@@ -196,15 +274,23 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/academic"
                 element={
-                  <PrivateRoute allowedRoles={['head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
                     <HeadTeacherAcademic />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/head-teacher/timetable"
+                element={
+                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
+                    <HeadTeacherTimetable />
                   </PrivateRoute>
                 }
               />
               <Route
                 path="/head-teacher/attendance"
                 element={
-                  <PrivateRoute allowedRoles={['head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
                     <HeadTeacherAttendance />
                   </PrivateRoute>
                 }
@@ -212,8 +298,16 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/settings"
                 element={
-                  <PrivateRoute allowedRoles={['head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
                     <HeadTeacherSettings />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/head-teacher/setup"
+                element={
+                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
+                    <SchoolSetupWizard />
                   </PrivateRoute>
                 }
               />
@@ -393,6 +487,74 @@ const App: React.FC = () => {
                 element={
                   <PrivateRoute allowedRoles={['bursar']}>
                     <BursarSettings />
+                  </PrivateRoute>
+                }
+              />
+
+              {/* IT Coordinator */}
+              <Route
+                path="/it-coordinator"
+                element={
+                  <PrivateRoute allowedRoles={['it_coordinator']}>
+                    <ITCoordinatorDashboard />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/it-coordinator/infrastructure"
+                element={
+                  <PrivateRoute allowedRoles={['it_coordinator']}>
+                    <ITCoordinatorInfrastructure />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/it-coordinator/users"
+                element={
+                  <PrivateRoute allowedRoles={['it_coordinator']}>
+                    <ITCoordinatorUsers />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/it-coordinator/settings"
+                element={
+                  <PrivateRoute allowedRoles={['it_coordinator']}>
+                    <ITCoordinatorSettings />
+                  </PrivateRoute>
+                }
+              />
+
+              {/* School Director */}
+              <Route
+                path="/school-director"
+                element={
+                  <PrivateRoute allowedRoles={['school_director']}>
+                    <SchoolDirectorDashboard />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/school-director/reports"
+                element={
+                  <PrivateRoute allowedRoles={['school_director']}>
+                    <SchoolDirectorReports />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/school-director/settings"
+                element={
+                  <PrivateRoute allowedRoles={['school_director']}>
+                    <SchoolDirectorSettings />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/school-director/setup"
+                element={
+                  <PrivateRoute allowedRoles={['school_director']}>
+                    <SchoolSetupWizard />
                   </PrivateRoute>
                 }
               />

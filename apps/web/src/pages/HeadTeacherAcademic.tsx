@@ -4,12 +4,16 @@ import { Header } from '../components/HeadTeacherDashboard/Header';
 import { Sidebar } from '../components/HeadTeacherDashboard/Sidebar';
 import { BottomNav } from '../components/HeadTeacherDashboard/BottomNav';
 import { useQuery } from '../hooks/useApi';
+import { ClassesManagement } from '../components/academics/ClassesManagement';
+import { SubjectsManagement } from '../components/academics/SubjectsManagement';
+import { GradeApprovalsPanel } from '../components/academics/GradeApprovalsPanel';
+import { ConfigurationsManagement } from '../components/academics/ConfigurationsManagement';
 
 export const HeadTeacherAcademic: React.FC = () => {
   const { user } = useAuth();
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Head Teacher';
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'results' | 'exams'>('results');
+  const [activeTab, setActiveTab] = useState<'results' | 'exams' | 'classes' | 'subjects' | 'approvals' | 'configs'>('results');
 
   // Fetch real grade stats from backend
   const { data: stats, loading, error } = useQuery<any>('/grades/stats');
@@ -101,8 +105,8 @@ export const HeadTeacherAcademic: React.FC = () => {
             )}
 
             {/* Tabs */}
-            <div className="flex gap-1 bg-surface-container rounded-lg p-1 w-fit mb-4">
-              {(['results', 'exams'] as const).map(t => (
+            <div className="flex flex-wrap gap-1 bg-surface-container rounded-lg p-1 w-fit mb-4">
+              {(['results', 'exams', 'classes', 'subjects', 'approvals', 'configs'] as const).map(t => (
                 <button
                   key={t}
                   onClick={() => setActiveTab(t)}
@@ -110,7 +114,17 @@ export const HeadTeacherAcademic: React.FC = () => {
                     activeTab === t ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-high'
                   }`}
                 >
-                  {t === 'results' ? 'Grade Results' : 'Exam Schedule'}
+                  {t === 'results'
+                    ? 'Grade Results'
+                    : t === 'exams'
+                    ? 'Exam Schedule'
+                    : t === 'classes'
+                    ? 'Classes'
+                    : t === 'subjects'
+                    ? 'Subjects'
+                    : t === 'approvals'
+                    ? 'Grade Approvals'
+                    : 'Configurations'}
                 </button>
               ))}
             </div>
@@ -195,6 +209,18 @@ export const HeadTeacherAcademic: React.FC = () => {
                 )}
               </div>
             )}
+
+            {/* Classes Management */}
+            {activeTab === 'classes' && <ClassesManagement />}
+
+            {/* Subjects Management */}
+            {activeTab === 'subjects' && <SubjectsManagement />}
+
+            {/* Grade Approvals */}
+            {activeTab === 'approvals' && <GradeApprovalsPanel />}
+
+            {/* School Configurations */}
+            {activeTab === 'configs' && <ConfigurationsManagement />}
           </>
         )}
 

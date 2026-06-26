@@ -4,6 +4,7 @@ import { Sidebar } from '../components/TeacherDashboard/Sidebar';
 import { BottomNav } from '../components/TeacherDashboard/BottomNav';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { useOnline } from '../contexts/OnlineContext';
+import { useSearchParams } from 'react-router-dom';
 
 type AttendanceStatus = 'present' | 'absent' | 'late';
 
@@ -46,11 +47,13 @@ export const TeacherAttendance = () => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const { isOnline, refreshPendingCount } = useOnline();
+  const [searchParams] = useSearchParams();
+  const initialClassId = searchParams.get('classId') || '';
 
   const [view, setView] = useState<'today' | 'history'>('today');
 
   // Today Tab state
-  const [selectedClassId, setSelectedClassId] = useState('');
+  const [selectedClassId, setSelectedClassId] = useState(initialClassId);
   const [selectedTermId, setSelectedTermId] = useState('');
   const [todayStatuses, setTodayStatuses] = useState<Record<string, AttendanceStatus>>({});
   const [todaySearch, setTodaySearch] = useState('');
@@ -59,7 +62,7 @@ export const TeacherAttendance = () => {
 
   // History Tab state
   const [historySearch, setHistorySearch] = useState('');
-  const [historyClassId, setHistoryClassId] = useState('');
+  const [historyClassId, setHistoryClassId] = useState(initialClassId);
 
   // Queries — offline fallback built into useQuery
   const { data: classList, isFromCache: classesFromCache } = useQuery<ClassRecord[]>('/schools/classes');
@@ -91,9 +94,13 @@ export const TeacherAttendance = () => {
 
   // Automatically select current class and term
   useEffect(() => {
-    if (classList && classList.length > 0 && !selectedClassId) {
-      setSelectedClassId(classList[0].id);
-      setHistoryClassId(classList[0].id);
+    if (classList && classList.length > 0) {
+      if (!selectedClassId) {
+        setSelectedClassId(classList[0].id);
+      }
+      if (!historyClassId) {
+        setHistoryClassId(classList[0].id);
+      }
     }
   }, [classList]);
 

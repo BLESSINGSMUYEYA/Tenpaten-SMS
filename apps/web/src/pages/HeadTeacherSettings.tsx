@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Header } from '../components/HeadTeacherDashboard/Header';
 import { Sidebar } from '../components/HeadTeacherDashboard/Sidebar';
 import { BottomNav } from '../components/HeadTeacherDashboard/BottomNav';
+import { Link } from 'react-router-dom';
 
 export const HeadTeacherSettings: React.FC = () => {
   const { user } = useAuth();
@@ -135,6 +136,23 @@ export const HeadTeacherSettings: React.FC = () => {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Institutional Setup Panel */}
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
+              <h3 className="font-bold text-on-background text-base mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">domain</span> Global Configuration
+              </h3>
+              <p className="font-body-sm text-on-surface-variant mb-4">
+                Launch the institutional setup wizard to deeply configure your school's structural identity, finance integrations, and core academic terms.
+              </p>
+              <Link
+                to="/head-teacher/setup"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-surface-container-high text-on-surface rounded-lg font-bold border border-outline-variant hover:border-primary transition-all text-sm"
+              >
+                <span className="material-symbols-outlined text-[18px]">rocket_launch</span>
+                Launch Setup Wizard
+              </Link>
             </div>
 
             {/* Actions Panel */}

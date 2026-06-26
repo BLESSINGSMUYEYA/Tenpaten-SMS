@@ -55,6 +55,9 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   bursar: 'Bursar',
   student: 'Student',
   parent: 'Parent',
+  it_coordinator: 'IT Coordinator',
+  school_director: 'School Director',
+  director: 'Director',
 };
 
 // ---- Role Permissions ----
@@ -83,6 +86,17 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
   parent: [
     'timetable.view.child', 'attendance.view.child', 'grades.view.child',
     'fees.view.child', 'communication.view',
+  ],
+  it_coordinator: [
+    'users.manage', 'infrastructure.view', 'security.view', 'system.settings',
+  ],
+  school_director: [
+    'school.*', 'users.view', 'staff.view', 'finance.view',
+    'reports.*', 'setup.*', 'academic.view',
+  ],
+  director: [
+    'school.*', 'users.view', 'staff.view', 'finance.view',
+    'reports.*', 'setup.*', 'academic.view',
   ],
 };
 

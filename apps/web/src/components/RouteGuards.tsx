@@ -21,6 +21,10 @@ export function getRoleHomePath(role: UserRole): string {
       return '/student/dashboard';
     case 'parent':
       return '/parent/dashboard';
+    case 'it_coordinator':
+      return '/it-coordinator';
+    case 'director':
+      return '/dashboard';
     default:
       return '/login';
   }

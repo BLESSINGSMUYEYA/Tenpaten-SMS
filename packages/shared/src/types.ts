@@ -14,7 +14,10 @@ export type UserRole =
   | 'teacher'
   | 'bursar'
   | 'student'
-  | 'parent';
+  | 'parent'
+  | 'it_coordinator'
+  | 'school_director'
+  | 'director';
 
 export type DayOfWeek = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri';
 

@@ -11,12 +11,78 @@ import {
   createSubjectSchema,
   assignSubjectSchema,
   createGradingScaleSchema,
+  updateTimetableConfigSchema,
 } from '@myklasi/shared';
 
 const router = Router();
 
 // Apply auth to all routes in this router
 router.use(authenticate);
+
+// ---- School Profile / Settings ----
+router.get(
+  '/my-school',
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const school = await prisma.school.findUnique({
+      where: { id: schoolId },
+    });
+    if (!school) throw new Error('School not found');
+    sendSuccess(res, school, 'School profile retrieved successfully');
+  })
+);
+
+router.put(
+  '/my-school',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const {
+      name,
+      schoolCode,
+      type,
+      motto,
+      address,
+      district,
+      phone,
+      email,
+    } = req.body;
+
+    const updated = await prisma.school.update({
+      where: { id: schoolId },
+      data: {
+        name,
+        schoolCode,
+        type,
+        motto,
+        address,
+        district,
+        phone,
+        email,
+        setupComplete: true
+      },
+    });
+
+    sendSuccess(res, updated, 'Institutional details updated successfully');
+  })
+);
+
+router.patch(
+  '/my-school/timetable-config',
+  requireHeadOrDeputy(),
+  validateBody(updateTimetableConfigSchema),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { timetableConfig } = req.body;
+
+    const updated = await prisma.school.update({
+      where: { id: schoolId },
+      data: { timetableConfig },
+    });
+
+    sendSuccess(res, updated, 'Timetable configuration updated successfully');
+  })
+);
 
 // ---- Academic Years ----
 router.get(
@@ -58,6 +124,51 @@ router.post(
     });
 
     sendSuccess(res, academicYear, 'Academic year created successfully', 201);
+  })
+);
+
+router.patch(
+  '/academic-years/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { id } = req.params;
+    const { name, startDate, endDate, isCurrent } = req.body;
+
+    if (isCurrent) {
+      // Unset previous current academic year
+      await prisma.academicYear.updateMany({
+        where: { schoolId, isCurrent: true },
+        data: { isCurrent: false },
+      });
+    }
+
+    const updated = await prisma.academicYear.update({
+      where: { id },
+      data: {
+        name,
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined,
+        isCurrent,
+      },
+    });
+
+    sendSuccess(res, updated, 'Academic year updated successfully');
+  })
+);
+
+router.delete(
+  '/academic-years/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const updated = await prisma.academicYear.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+
+    sendSuccess(res, updated, 'Academic year deleted successfully');
   })
 );
 
@@ -106,6 +217,52 @@ router.post(
   })
 );
 
+router.patch(
+  '/terms/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { id } = req.params;
+    const { academicYearId, name, startDate, endDate, isCurrent } = req.body;
+
+    if (isCurrent) {
+      // Unset previous current term
+      await prisma.term.updateMany({
+        where: { schoolId, isCurrent: true },
+        data: { isCurrent: false },
+      });
+    }
+
+    const updated = await prisma.term.update({
+      where: { id },
+      data: {
+        academicYearId,
+        name,
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined,
+        isCurrent,
+      },
+    });
+
+    sendSuccess(res, updated, 'Term updated successfully');
+  })
+);
+
+router.delete(
+  '/terms/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const updated = await prisma.term.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+
+    sendSuccess(res, updated, 'Term deleted successfully');
+  })
+);
+
 // ---- Classes ----
 router.get(
   '/classes',
@@ -149,6 +306,21 @@ router.post(
   })
 );
 
+router.delete(
+  '/classes/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const updated = await prisma.class.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+
+    sendSuccess(res, updated, 'Class deleted successfully');
+  })
+);
+
 // ---- Subjects ----
 router.get(
   '/subjects',
@@ -186,6 +358,21 @@ router.post(
   })
 );
 
+router.delete(
+  '/subjects/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const updated = await prisma.subject.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+
+    sendSuccess(res, updated, 'Subject deleted successfully');
+  })
+);
+
 // ---- Class Subjects (Assignments) ----
 router.get(
   '/class-subjects',
@@ -195,6 +382,7 @@ router.get(
 
     const whereClause: any = {
       class: { schoolId, isDeleted: false },
+      subject: { isDeleted: false },
       isDeleted: false,
     };
 
@@ -254,6 +442,21 @@ router.post(
     });
 
     sendSuccess(res, assignment, 'Subject assigned to class successfully', 201);
+  })
+);
+
+router.delete(
+  '/class-subjects/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const updated = await prisma.classSubject.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+
+    sendSuccess(res, updated, 'Class subject assignment deleted successfully');
   })
 );
 

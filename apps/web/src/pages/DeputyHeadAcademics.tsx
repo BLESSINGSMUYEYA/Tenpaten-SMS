@@ -4,6 +4,9 @@ import { Sidebar } from '../components/DeputyHeadDashboard/Sidebar';
 import { BottomNav } from '../components/DeputyHeadDashboard/BottomNav';
 import { useQuery } from '../hooks/useApi';
 import { api } from '../services/api';
+import { ClassesManagement } from '../components/academics/ClassesManagement';
+import { SubjectsManagement } from '../components/academics/SubjectsManagement';
+import { ConfigurationsManagement } from '../components/academics/ConfigurationsManagement';
 
 interface GradingRule {
   id: string;
@@ -24,7 +27,7 @@ export const DeputyHeadAcademics = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const [searchTerm, setSearchTerm] = useState('');
-  const [view, setView] = useState<'performance' | 'scales'>('performance');
+  const [view, setView] = useState<'performance' | 'scales' | 'classes' | 'subjects' | 'configs'>('performance');
 
   const { data: scales, refetch: refetchScales } = useQuery<GradingScale[]>('/schools/grading-scales', view === 'scales');
 
@@ -138,8 +141,8 @@ export const DeputyHeadAcademics = () => {
           )}
         </div>
 
-        <div className="flex gap-2 mb-6 border-b border-outline-variant">
-          {(['performance', 'scales'] as const).map(v => (
+        <div className="flex flex-wrap gap-2 mb-6 border-b border-outline-variant">
+          {(['performance', 'scales', 'classes', 'subjects', 'configs'] as const).map(v => (
             <button
               key={v}
               onClick={() => { setView(v); }}
@@ -147,7 +150,15 @@ export const DeputyHeadAcademics = () => {
                 view === v ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              {v === 'performance' ? '📊 Performance Metrics' : '⚙️ Grading Scales'}
+              {v === 'performance'
+                ? '📊 Performance Metrics'
+                : v === 'scales'
+                ? '⚙️ Grading Scales'
+                : v === 'classes'
+                ? '🏫 Manage Classes'
+                : v === 'subjects'
+                ? '📚 Manage Subjects'
+                : '⚙️ Configurations'}
             </button>
           ))}
         </div>
@@ -322,6 +333,12 @@ export const DeputyHeadAcademics = () => {
             )}
           </div>
         )}
+
+        {view === 'classes' && <ClassesManagement />}
+
+        {view === 'subjects' && <SubjectsManagement />}
+
+        {view === 'configs' && <ConfigurationsManagement />}
 
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">

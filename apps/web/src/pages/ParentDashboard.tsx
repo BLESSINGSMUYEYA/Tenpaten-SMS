@@ -74,11 +74,37 @@ export const ParentDashboard: React.FC = () => {
         <div className="px-4 mb-6 flex flex-col items-center text-center">
           <Logo height="48px" className="mb-1" />
         </div>
-        <nav className="flex-1 space-y-xs font-bold text-on-surface-variant font-label-md text-label-md">
+        <nav className="flex-1 space-y-2 p-4">
           <a className="flex items-center space-x-md bg-secondary-container text-on-secondary-container rounded-full px-md py-sm" href="#" onClick={e => e.preventDefault()}>
             <span className="material-symbols-outlined">dashboard</span>
             <span className="font-label-md">Dashboard</span>
           </a>
+          
+          <div className="pt-4 pb-2 px-2 text-[10px] font-bold text-outline uppercase tracking-wider">
+            Coming Soon
+          </div>
+          
+          <div className="flex items-center justify-between px-md py-sm text-on-surface-variant opacity-60 cursor-not-allowed rounded-full">
+            <div className="flex items-center space-x-md">
+              <span className="material-symbols-outlined">face</span>
+              <span className="font-label-md">Child Profiles</span>
+            </div>
+            <span className="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[9px] font-bold rounded-full uppercase tracking-wider">Soon</span>
+          </div>
+          <div className="flex items-center justify-between px-md py-sm text-on-surface-variant opacity-60 cursor-not-allowed rounded-full">
+            <div className="flex items-center space-x-md">
+              <span className="material-symbols-outlined">calendar_month</span>
+              <span className="font-label-md">Timetables</span>
+            </div>
+            <span className="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[9px] font-bold rounded-full uppercase tracking-wider">Soon</span>
+          </div>
+          <div className="flex items-center justify-between px-md py-sm text-on-surface-variant opacity-60 cursor-not-allowed rounded-full">
+            <div className="flex items-center space-x-md">
+              <span className="material-symbols-outlined">assignment</span>
+              <span className="font-label-md">Assignments</span>
+            </div>
+            <span className="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[9px] font-bold rounded-full uppercase tracking-wider">Soon</span>
+          </div>
         </nav>
         <div className="pt-lg border-t border-outline-variant space-y-xs">
           <button className="flex items-center space-x-md text-error hover:bg-surface-container-high rounded-full transition-all w-full text-left font-label-md text-label-md" onClick={logout}>

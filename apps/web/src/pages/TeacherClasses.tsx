@@ -215,14 +215,14 @@ export const TeacherClasses = () => {
 
                   <div className="flex flex-wrap gap-2 pt-2 border-t border-surface-border dark:border-outline-variant">
                     <Link
-                      to={`/teacher/attendance`}
+                      to={`/teacher/attendance?classId=${assignment.class.id}`}
                       className="flex-1 min-w-[120px] flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all text-xs"
                     >
                       <span className="material-symbols-outlined text-[16px]">fact_check</span>
                       <span>Attendance</span>
                     </Link>
                     <Link
-                      to={`/teacher/grades`}
+                      to={`/teacher/grades?classId=${assignment.class.id}`}
                       className="flex-1 min-w-[120px] flex items-center justify-center gap-1.5 px-4 py-2.5 border border-primary text-primary font-bold rounded-lg hover:bg-surface-container-low active:scale-95 transition-all text-xs"
                     >
                       <span className="material-symbols-outlined text-[16px]">grading</span>
