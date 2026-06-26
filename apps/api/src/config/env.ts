@@ -78,7 +78,12 @@ const result = envSchema.safeParse(process.env);
 if (!result.success) {
   console.error('❌ Invalid environment variables:');
   console.error(result.error.flatten().fieldErrors);
-  process.exit(1);
+  // Do NOT call process.exit(1) in serverless — it terminates the entire function runtime.
+  // Throw instead so the caller can return a proper 500 response.
+  throw new Error(
+    'Missing or invalid environment variables: ' +
+      JSON.stringify(result.error.flatten().fieldErrors),
+  );
 }
 
 export const env = result.data;
