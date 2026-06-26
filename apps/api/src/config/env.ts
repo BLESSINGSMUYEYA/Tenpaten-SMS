@@ -18,6 +18,10 @@ const envSchema = z.object({
   PORT: z.string().default('4000').transform(Number),
   FRONTEND_URL: z.string().default('http://localhost:5173'),
 
+  // Auth
+  // The school code used by super_admin logins — store in env, never in source code
+  SUPER_ADMIN_SCHOOL_CODE: z.string().default('TPTN-ADMIN-0000'),
+
   // Email
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default('noreply@myklasi.online'),

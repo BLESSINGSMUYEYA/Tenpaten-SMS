@@ -35,14 +35,25 @@ export async function createUniqueSchoolCode(
 
 export function generateTempPassword(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  let password = '';
-  // Ensure at least one uppercase, one number
-  password += 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)];
-  password += '23456789'[Math.floor(Math.random() * 8)];
-  for (let i = 0; i < 8; i++) {
-    password += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return password.split('').sort(() => 0.5 - Math.random()).join('');
+  // Use crypto.randomBytes — cryptographically secure (Math.random is NOT safe for passwords)
+  const bytes = crypto.randomBytes(12);
+  let password = Array.from(bytes)
+    .map((b) => chars[b % chars.length])
+    .join('');
+
+  // Guarantee at least one uppercase and one digit for policy compliance
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits = '23456789';
+  const upperChar = upper[crypto.randomBytes(1)[0] % upper.length];
+  const digitChar = digits[crypto.randomBytes(1)[0] % digits.length];
+
+  // Splice them in at random positions (secure)
+  const pos1 = crypto.randomBytes(1)[0] % password.length;
+  const pos2 = crypto.randomBytes(1)[0] % password.length;
+  const arr = password.split('');
+  arr[pos1] = upperChar;
+  arr[pos2] = digitChar;
+  return arr.join('');
 }
 
 // ---- Admission Number Generation ----

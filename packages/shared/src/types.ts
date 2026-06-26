@@ -350,10 +350,13 @@ export interface LoginResponse {
 }
 
 export interface JwtPayload {
+  jti: string;           // Unique token ID — used to revoke individual tokens
   userId: string;
   schoolId?: string;
   role: UserRole;
   email?: string | null;
+  tokenVersion?: number; // Checked at refresh time; increment to invalidate all sessions
+  family?: string;       // Refresh token rotation chain ID (refresh tokens only)
   iat?: number;
   exp?: number;
 }

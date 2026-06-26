@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 import { env } from '../config/env';
-import { prisma } from '../config/database';
 import { UnauthorizedError } from '../utils/errors';
 import type { JwtPayload, UserRole } from '@myklasi/shared';
 
@@ -21,6 +21,16 @@ declare global {
 
 // ---- JWT Authentication Middleware ----
 
+/**
+ * Verifies the Bearer access token from the Authorization header.
+ *
+ * PERFORMANCE NOTE: We intentionally do NOT hit the database on every request.
+ * Instead we trust the cryptographically-signed JWT payload.
+ * - Access tokens are short-lived (15m) — revocation delay is acceptable.
+ * - Session validity (deactivated accounts, password changes) is enforced
+ *   at REFRESH time via tokenVersion + RefreshToken DB records.
+ * - This keeps authenticated routes to a single JWT verify call (< 1ms).
+ */
 export async function authenticate(
   req: Request,
   _res: Response,
@@ -42,31 +52,11 @@ export async function authenticate(
       throw new UnauthorizedError('Invalid or expired access token');
     }
 
-    // Verify the user still exists and is active
-    const user = await prisma.user.findFirst({
-      where: {
-        id: payload.userId,
-        isDeleted: false,
-        isActive: true,
-      },
-      select: {
-        id: true,
-        schoolId: true,
-        role: true,
-        email: true,
-        isActive: true,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedError('User account not found or inactive');
-    }
-
     req.user = {
-      userId: user.id,
-      schoolId: user.schoolId ?? undefined,
-      role: user.role as UserRole,
-      email: user.email ?? '',
+      userId: payload.userId,
+      schoolId: payload.schoolId,
+      role: payload.role,
+      email: payload.email ?? '',
     };
 
     next();
@@ -106,16 +96,24 @@ export async function optionalAuth(
 
 // ---- Token Generation ----
 
-export function generateAccessToken(payload: Omit<JwtPayload, 'iat' | 'exp'>): string {
-  return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
-    expiresIn: env.JWT_ACCESS_EXPIRES_IN,
-  } as jwt.SignOptions);
+export function generateAccessToken(
+  payload: Omit<JwtPayload, 'iat' | 'exp'>
+): string {
+  return jwt.sign(
+    { ...payload, jti: payload.jti ?? uuidv4() },
+    env.JWT_ACCESS_SECRET,
+    { expiresIn: env.JWT_ACCESS_EXPIRES_IN } as jwt.SignOptions
+  );
 }
 
-export function generateRefreshToken(payload: Omit<JwtPayload, 'iat' | 'exp'>): string {
-  return jwt.sign(payload, env.JWT_REFRESH_SECRET, {
-    expiresIn: env.JWT_REFRESH_EXPIRES_IN,
-  } as jwt.SignOptions);
+export function generateRefreshToken(
+  payload: Omit<JwtPayload, 'iat' | 'exp'>
+): string {
+  return jwt.sign(
+    { ...payload, jti: payload.jti ?? uuidv4() },
+    env.JWT_REFRESH_SECRET,
+    { expiresIn: env.JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions
+  );
 }
 
 export function verifyRefreshToken(token: string): JwtPayload {

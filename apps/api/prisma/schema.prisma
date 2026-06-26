@@ -64,6 +64,11 @@ model User {
   updatedAt               DateTime             @updatedAt
   isDeleted               Boolean              @default(false)
   username                String?
+  // ---- Account lockout ----
+  failedLoginAttempts     Int                  @default(0)
+  lockedUntil             DateTime?            // Null = not locked
+  // ---- Session management ----
+  tokenVersion            Int                  @default(0) // Increment to invalidate ALL refresh tokens
   attendanceMarked        Attendance[]         @relation("AttendanceMarker")
   attendanceOverridden    AttendanceOverride[]
   classSubjectAssignments ClassSubject[]
@@ -73,6 +78,8 @@ model User {
   parentRelations         ParentStudent[]      @relation("ParentRelation")
   studentRelations        ParentStudent[]      @relation("StudentRelation")
   passwordResetTokens     PasswordResetToken[]
+  refreshTokens           RefreshToken[]
+  auditLogs               AuditLog[]
   studentProfile          StudentProfile?
   taughtSlots             TimetableSlot[]
   school                  School?              @relation(fields: [schoolId], references: [id])
@@ -95,7 +102,44 @@ model PasswordResetToken {
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id])
 
+  @@index([userId, expiresAt]) // Fast cleanup of expired tokens per user
   @@map("password_reset_tokens")
+}
+
+// Stores hashed refresh tokens so they can be individually revoked
+// and rotation attacks can be detected via the family chain
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique // Store SHA-256 hash, never the raw token
+  family    String    // Shared across the rotation chain — reuse = attack detected
+  expiresAt DateTime
+  revokedAt DateTime? // Null = still valid
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([family])
+  @@index([expiresAt]) // For cleanup jobs
+  @@map("refresh_tokens")
+}
+
+// Tamper-evident log of security-relevant events
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?  // Null for failed logins where user is unknown
+  schoolId  String?
+  event     String   // LOGIN_SUCCESS | LOGIN_FAILED | LOGOUT | PASSWORD_RESET | ACCOUNT_LOCKED | TOKEN_REVOKED
+  ipAddress String?
+  userAgent String?
+  metadata  Json?    // Extra context (e.g., role, schoolCode used)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([schoolId, createdAt])
+  @@index([event, createdAt])
+  @@map("audit_logs")
 }
 
 model AcademicYear {

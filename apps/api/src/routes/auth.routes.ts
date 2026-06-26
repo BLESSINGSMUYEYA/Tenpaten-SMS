@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { authService } from '../services/auth.service';
-import { loginRateLimiter } from '../middleware/rateLimiter.middleware';
+import { loginRateLimiter, passwordResetRateLimiter } from '../middleware/rateLimiter.middleware';
 import { validateBody } from './../middleware/validate.middleware';
 import { authenticate } from '../middleware/auth.middleware';
-import { asyncHandler, sendSuccess } from '../utils/errors';
+import { asyncHandler, sendSuccess, NotFoundError } from '../utils/errors';
 import {
   loginSchema,
   forgotPasswordSchema,
@@ -11,14 +11,16 @@ import {
   changePasswordSchema,
 } from '@myklasi/shared';
 import { env } from '../config/env';
+import { prisma } from '../config/database';
 
 const router = Router();
 
 // Cookie configuration for refresh token
+// sameSite: 'strict' prevents the cookie being sent on cross-site navigations (CSRF protection)
 const cookieOptions = {
   httpOnly: true,
   secure: env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
+  sameSite: 'strict' as const,
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days matching JWT expiration
 };
 
@@ -32,7 +34,8 @@ router.post(
   loginRateLimiter,
   validateBody(loginSchema),
   asyncHandler(async (req, res) => {
-    const result = await authService.login(req.body);
+    // Pass req so the service can record IP + user-agent in the audit log
+    const result = await authService.login(req.body, req);
     
     // Set refresh token in httpOnly cookie
     res.cookie('refreshToken', result.refreshToken, cookieOptions);
@@ -52,11 +55,16 @@ router.post(
  */
 router.post(
   '/logout',
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
+    // Revoke the specific refresh token in DB so it can't be reused
+    const refreshToken = req.cookies?.refreshToken;
+    const userId = req.user?.userId; // may be undefined if not authenticated
+    await authService.logout(refreshToken, userId);
+
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
     });
     sendSuccess(res, null, 'Logout successful');
   })
@@ -96,6 +104,7 @@ router.post(
  */
 router.post(
   '/forgot-password',
+  passwordResetRateLimiter,
   validateBody(forgotPasswordSchema),
   asyncHandler(async (req, res) => {
     await authService.forgotPassword(req.body);
@@ -142,9 +151,23 @@ router.get(
   '/me',
   authenticate,
   asyncHandler(async (req, res) => {
-    // Hydrate the full user from database
-    const user = await authService.refresh(req.cookies?.refreshToken || '');
-    sendSuccess(res, { user: user.user }, 'Current user retrieved');
+    // req.user is already verified by authenticate middleware
+    // Do a fresh DB lookup to return the full user profile
+    const user = await prisma.user.findFirst({
+      where: {
+        id: req.user!.userId,
+        isDeleted: false,
+        isActive: true,
+      },
+      include: { school: true },
+    });
+
+    if (!user) {
+      throw new NotFoundError('User');
+    }
+
+    const { passwordHash: _, ...safeUser } = user;
+    sendSuccess(res, { user: safeUser }, 'Current user retrieved');
   })
 );
 
