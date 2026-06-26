@@ -456,4 +456,144 @@ router.post(
   })
 );
 
+/**
+ * @route   DELETE /api/admin/schools/:id
+ * @desc    Delete a school and all associated data
+ * @access  Super Admin
+ */
+router.delete(
+  '/schools/:id',
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const school = await prisma.school.findFirst({
+      where: { id },
+    });
+
+    if (!school) {
+      throw new NotFoundError('School');
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete AttendanceOverride where attendance.schoolId = id
+      await tx.attendanceOverride.deleteMany({
+        where: {
+          attendance: {
+            schoolId: id,
+          },
+        },
+      });
+
+      // 2. Delete Attendance where schoolId = id
+      await tx.attendance.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 3. Delete Grade where schoolId = id
+      await tx.grade.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 4. Delete FeePayment where schoolId = id
+      await tx.feePayment.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 5. Delete Invoice where schoolId = id
+      await tx.invoice.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 6. Delete FeeStructure where schoolId = id
+      await tx.feeStructure.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 7. Delete TimetableSlot where schoolId = id
+      await tx.timetableSlot.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 8. Delete ClassSubject where class.schoolId = id
+      await tx.classSubject.deleteMany({
+        where: {
+          class: {
+            schoolId: id,
+          },
+        },
+      });
+
+      // 9. Delete StudentProfile where schoolId = id
+      await tx.studentProfile.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 10. Delete ParentStudent where parent or student belongs to this school
+      await tx.parentStudent.deleteMany({
+        where: {
+          OR: [
+            { parent: { schoolId: id } },
+            { student: { schoolId: id } },
+          ],
+        },
+      });
+
+      // 11. Delete PasswordResetToken where user.schoolId = id
+      await tx.passwordResetToken.deleteMany({
+        where: {
+          user: {
+            schoolId: id,
+          },
+        },
+      });
+
+      // 12. Delete User where schoolId = id
+      await tx.user.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 13. Delete Class where schoolId = id
+      await tx.class.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 14. Delete Term where schoolId = id
+      await tx.term.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 15. Delete Subject where schoolId = id
+      await tx.subject.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 16. Delete GradingRule where scale.schoolId = id
+      await tx.gradingRule.deleteMany({
+        where: {
+          scale: {
+            schoolId: id,
+          },
+        },
+      });
+
+      // 17. Delete GradingScale where schoolId = id
+      await tx.gradingScale.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 18. Delete AcademicYear where schoolId = id
+      await tx.academicYear.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // 19. Delete School where id = id
+      await tx.school.delete({
+        where: { id },
+      });
+    });
+
+    sendSuccess(res, null, 'School and all its associated data deleted successfully');
+  })
+);
+
 export default router;

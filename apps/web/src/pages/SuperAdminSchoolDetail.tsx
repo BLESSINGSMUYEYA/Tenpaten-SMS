@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Header } from '../components/SuperAdminDashboard/Header';
 import { Sidebar } from '../components/SuperAdminDashboard/Sidebar';
 import { useQuery, useMutation } from '../hooks/useApi';
@@ -62,12 +62,16 @@ const mockBilling = [
 
 export const SuperAdminSchoolDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'billing' | 'support'>('overview');
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   const { data: school, loading } = useQuery<SchoolDetail>(`/admin/schools/${id}`);
   const { mutate: toggleActive } = useMutation(`/admin/schools/${id}`, 'patch');
+  const { mutate: deleteSchool, loading: deleting } = useMutation(`/admin/schools/${id}`, 'delete');
 
   const health = school ? computeHealthScore(school) : 0;
   const hColor = healthColor(health);
@@ -160,6 +164,16 @@ export const SuperAdminSchoolDetail: React.FC = () => {
                 >
                   <span className="material-symbols-outlined text-[16px]">{school?.isActive ? 'block' : 'check_circle'}</span>
                   {school?.isActive ? 'Suspend' : 'Reactivate'}
+                </button>
+                <button
+                  onClick={() => {
+                    setDeleteConfirmText('');
+                    setShowDeleteConfirm(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-error/10 border border-error/20 text-error hover:bg-error/30 rounded-lg font-label-sm font-semibold transition-all text-sm"
+                >
+                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                  Delete School
                 </button>
               </div>
             </div>
@@ -431,6 +445,76 @@ export const SuperAdminSchoolDetail: React.FC = () => {
                 className="flex-1 py-2.5 bg-error text-on-error rounded-xl font-label-md font-semibold hover:opacity-90 transition-all"
               >
                 Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirm modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 max-w-md w-full shadow-2xl animate-scale-in">
+            <div className="w-12 h-12 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-4 text-error">
+              <span className="material-symbols-outlined text-[28px]">warning</span>
+            </div>
+            <h2 className="font-title-lg font-semibold text-on-surface text-center mb-2">
+              Delete School Permanently?
+            </h2>
+            <p className="font-body-sm text-on-surface-variant text-center mb-4 leading-relaxed">
+              This action <strong className="text-error">cannot be undone</strong>. This will permanently delete the school <strong>{school?.name}</strong> and all of its associated data, including:
+            </p>
+            <ul className="text-left font-body-sm text-on-surface-variant mb-6 space-y-1 bg-surface-container-low p-3 rounded-lg border border-outline-variant list-disc list-inside">
+              <li>All user and administrator accounts ({school?._count?.users ?? 0})</li>
+              <li>All student profiles ({school?._count?.students ?? 0})</li>
+              <li>All classes, subjects, and timetables</li>
+              <li>All academic grades and attendance records</li>
+              <li>All fee structures, invoices, and payments</li>
+            </ul>
+            <div className="mb-6">
+              <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">
+                Type the school code <span className="font-mono text-primary font-black select-all bg-surface px-1.5 py-0.5 rounded border border-primary/20">{school?.schoolCode}</span> to confirm:
+              </label>
+              <input
+                type="text"
+                placeholder={school?.schoolCode}
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                className="w-full px-4 py-2.5 bg-surface border border-outline-variant text-on-surface text-sm font-mono font-bold outline-none focus:border-error rounded-lg uppercase tracking-widest text-center"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                disabled={deleting}
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-2.5 border border-outline-variant rounded-xl font-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={deleting || deleteConfirmText.trim().toUpperCase() !== school?.schoolCode}
+                onClick={async () => {
+                  try {
+                    await deleteSchool();
+                    setShowDeleteConfirm(false);
+                    navigate('/super-admin/schools');
+                  } catch (err) {
+                    console.error('Failed to delete school:', err);
+                  }
+                }}
+                className="flex-1 py-2.5 bg-error text-on-error rounded-xl font-label-md font-semibold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+              >
+                {deleting ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] animate-spin">refresh</span>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[16px]">delete_forever</span>
+                    Delete Permanently
+                  </>
+                )}
               </button>
             </div>
           </div>
