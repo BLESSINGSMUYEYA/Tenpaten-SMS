@@ -1,20 +1,94 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { MemoryStore, Store } from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { redis } from '../config/redis';
 import type { ApiResponse } from '@myklasi/shared';
 
 /**
- * Creates a Redis-backed rate limiter store.
- * Shared across all serverless instances so limits are enforced globally.
- * Falls back gracefully if Redis is unavailable (in-memory per instance).
+ * A wrapper store that delegates to RedisStore if Redis is connected/available.
+ * If Redis is unavailable or fails during operation/init, it falls back to the in-memory MemoryStore.
+ */
+class GracefulRedisStore implements Store {
+  private redisStore: RedisStore;
+  private memoryStore: MemoryStore;
+  private useMemory = false;
+
+  constructor(prefix: string) {
+    this.memoryStore = new MemoryStore();
+    
+    this.redisStore = new RedisStore({
+      prefix,
+      sendCommand: async (command: string, ...args: string[]): Promise<any> => {
+        if (this.useMemory) {
+          return 0;
+        }
+        try {
+          return await redis.call(command, ...args);
+        } catch (err: any) {
+          console.error(`[RedisStore] Command "${command}" failed, falling back to MemoryStore:`, err.message);
+          this.useMemory = true;
+          return 0; // Return dummy value so constructor/init does not throw
+        }
+      },
+    });
+  }
+
+  init(options: any) {
+    this.memoryStore.init(options);
+    if (this.redisStore.init) {
+      try {
+        this.redisStore.init(options);
+      } catch (err: any) {
+        console.error('[RedisStore] Init failed, falling back to MemoryStore:', err.message);
+        this.useMemory = true;
+      }
+    }
+  }
+
+  async increment(key: string) {
+    if (this.useMemory) {
+      return this.memoryStore.increment(key);
+    }
+    try {
+      return await this.redisStore.increment(key);
+    } catch (err: any) {
+      console.error('[RedisStore] Increment failed, falling back to MemoryStore:', err.message);
+      this.useMemory = true;
+      return this.memoryStore.increment(key);
+    }
+  }
+
+  async decrement(key: string) {
+    if (this.useMemory) {
+      return this.memoryStore.decrement(key);
+    }
+    try {
+      await this.redisStore.decrement(key);
+    } catch (err: any) {
+      console.error('[RedisStore] Decrement failed, falling back to MemoryStore:', err.message);
+      this.useMemory = true;
+      await this.memoryStore.decrement(key);
+    }
+  }
+
+  async resetKey(key: string) {
+    if (this.useMemory) {
+      return this.memoryStore.resetKey(key);
+    }
+    try {
+      await this.redisStore.resetKey(key);
+    } catch (err: any) {
+      console.error('[RedisStore] ResetKey failed, falling back to MemoryStore:', err.message);
+      this.useMemory = true;
+      await this.memoryStore.resetKey(key);
+    }
+  }
+}
+
+/**
+ * Creates a rate limiter store that falls back gracefully if Redis is unavailable.
  */
 function createRedisStore(prefix: string) {
-  return new RedisStore({
-    prefix,
-    // rate-limit-redis v4 uses sendCommand
-    sendCommand: (command: string, ...args: string[]) =>
-      redis.call(command, ...args) as Promise<number>,
-  });
+  return new GracefulRedisStore(prefix);
 }
 
 // ---- Login Rate Limiter ----
