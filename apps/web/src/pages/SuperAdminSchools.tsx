@@ -101,6 +101,12 @@ export const SuperAdminSchools: React.FC = () => {
   const [contactPhone, setContactPhone]       = useState('');
   const [contactAddress, setContactAddress]   = useState('');
 
+  // Feature Flags
+  const [featuresAttendance, setFeaturesAttendance] = useState(true);
+  const [featuresGrades, setFeaturesGrades] = useState(true);
+  const [featuresFees, setFeaturesFees] = useState(true);
+  const [featuresCommunication, setFeaturesCommunication] = useState(true);
+
   // Section 2 — School Director (required)
   const [director, setDirector] = useState<PersonFields>(emptyPerson());
 
@@ -142,6 +148,7 @@ export const SuperAdminSchools: React.FC = () => {
     setSubscriptionPlan('basic'); setContactEmail(''); setContactPhone(''); setContactAddress('');
     setDirector(emptyPerson()); setAddHT(false); setHeadTeacher(emptyPerson());
     setUseCustomInitials(false); setCustomInitials(''); setPreviewCode(''); setCodeStatus('idle');
+    setFeaturesAttendance(true); setFeaturesGrades(true); setFeaturesFees(true); setFeaturesCommunication(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -152,6 +159,10 @@ export const SuperAdminSchools: React.FC = () => {
     const payload: Record<string, unknown> = {
       name: schoolName, type: schoolType, district: schoolDistrict, country: 'Malawi',
       subscriptionPlan,
+      featuresAttendance,
+      featuresGrades,
+      featuresFees,
+      featuresCommunication,
       ...(contactEmail && { email: contactEmail }),
       ...(contactPhone && { phone: contactPhone }),
       ...(contactAddress && { address: contactAddress }),
@@ -401,6 +412,44 @@ export const SuperAdminSchools: React.FC = () => {
                         <span className="text-[9px] text-on-surface-variant mt-0.5 leading-tight">{plan.desc}</span>
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* Feature Gating Checklist */}
+                <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4 space-y-3">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Granted Feature Modules</span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border border-outline-variant hover:border-primary/50 transition-all cursor-pointer ${featuresAttendance ? 'bg-primary-container/20 border-primary/30' : 'bg-surface-container-lowest'}`}>
+                      <input type="checkbox" checked={featuresAttendance} onChange={e => setFeaturesAttendance(e.target.checked)} className="mt-0.5" />
+                      <div>
+                        <span className="block text-xs font-bold text-on-surface flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-primary">event_available</span> Attendance</span>
+                        <span className="block text-[9px] text-on-surface-variant leading-tight mt-0.5">Track check-ins, registers & analytics</span>
+                      </div>
+                    </label>
+
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border border-outline-variant hover:border-primary/50 transition-all cursor-pointer ${featuresGrades ? 'bg-primary-container/20 border-primary/30' : 'bg-surface-container-lowest'}`}>
+                      <input type="checkbox" checked={featuresGrades} onChange={e => setFeaturesGrades(e.target.checked)} className="mt-0.5" />
+                      <div>
+                        <span className="block text-xs font-bold text-on-surface flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-primary">school</span> Grades & Academics</span>
+                        <span className="block text-[9px] text-on-surface-variant leading-tight mt-0.5">Subject sheets, marks & report cards</span>
+                      </div>
+                    </label>
+
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border border-outline-variant hover:border-primary/50 transition-all cursor-pointer ${featuresFees ? 'bg-primary-container/20 border-primary/30' : 'bg-surface-container-lowest'}`}>
+                      <input type="checkbox" checked={featuresFees} onChange={e => setFeaturesFees(e.target.checked)} className="mt-0.5" />
+                      <div>
+                        <span className="block text-xs font-bold text-on-surface flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-primary">payments</span> Finance & Fees</span>
+                        <span className="block text-[9px] text-on-surface-variant leading-tight mt-0.5">Billing, invoices & payment logs</span>
+                      </div>
+                    </label>
+
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border border-outline-variant hover:border-primary/50 transition-all cursor-pointer ${featuresCommunication ? 'bg-primary-container/20 border-primary/30' : 'bg-surface-container-lowest'}`}>
+                      <input type="checkbox" checked={featuresCommunication} onChange={e => setFeaturesCommunication(e.target.checked)} className="mt-0.5" />
+                      <div>
+                        <span className="block text-xs font-bold text-on-surface flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-primary">campaign</span> Communication</span>
+                        <span className="block text-[9px] text-on-surface-variant leading-tight mt-0.5">Broadcasts, alerts & SMS integration</span>
+                      </div>
+                    </label>
                   </div>
                 </div>
 

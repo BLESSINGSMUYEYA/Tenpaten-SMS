@@ -11,8 +11,9 @@ export const Sidebar = ({
   closeSidebar: () => void;
   zenMode?: boolean;
 }) => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
+  const school = user?.school;
 
   const getLinkClass = (path: string) => {
     const isActive = location.pathname === path;
@@ -44,18 +45,24 @@ export const Sidebar = ({
             <span className="material-symbols-outlined" data-icon="dashboard">dashboard</span>
             Dashboard
           </Link>
-          <Link to="/deputy-head/timetable" className={getLinkClass('/deputy-head/timetable')} onClick={closeSidebar}>
-            <span className="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
-            Timetables
-          </Link>
-          <Link to="/deputy-head/academics" className={getLinkClass('/deputy-head/academics')} onClick={closeSidebar}>
-            <span className="material-symbols-outlined" data-icon="school">school</span>
-            Academic Records
-          </Link>
-          <Link to="/deputy-head/attendance" className={getLinkClass('/deputy-head/attendance')} onClick={closeSidebar}>
-            <span className="material-symbols-outlined" data-icon="how_to_reg">how_to_reg</span>
-            Attendance
-          </Link>
+          {school?.featuresAttendance !== false && (
+            <Link to="/deputy-head/timetable" className={getLinkClass('/deputy-head/timetable')} onClick={closeSidebar}>
+              <span className="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+              Timetables
+            </Link>
+          )}
+          {school?.featuresGrades !== false && (
+            <Link to="/deputy-head/academics" className={getLinkClass('/deputy-head/academics')} onClick={closeSidebar}>
+              <span className="material-symbols-outlined" data-icon="school">school</span>
+              Academic Records
+            </Link>
+          )}
+          {school?.featuresAttendance !== false && (
+            <Link to="/deputy-head/attendance" className={getLinkClass('/deputy-head/attendance')} onClick={closeSidebar}>
+              <span className="material-symbols-outlined" data-icon="how_to_reg">how_to_reg</span>
+              Attendance
+            </Link>
+          )}
 
           <Link to="/deputy-head/students" className={getLinkClass('/deputy-head/students')} onClick={closeSidebar}>
             <span className="material-symbols-outlined" data-icon="group">group</span>

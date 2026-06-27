@@ -69,6 +69,20 @@ function writeAuditLog(data: {
     });
 }
 
+/**
+ * Verifies if a given school code corresponds to the super admin role.
+ * Accepts TPTN-ADMIN-0000, TPTN-2026-0000, ADMIN-2026-0000, and the configured env.SUPER_ADMIN_SCHOOL_CODE.
+ */
+function isSuperAdminSchoolCode(code: string): boolean {
+  const upperCode = code.toUpperCase().trim();
+  return (
+    upperCode === 'TPTN-ADMIN-0000' ||
+    upperCode === 'TPTN-2026-0000' ||
+    upperCode === 'ADMIN-2026-0000' ||
+    upperCode === env.SUPER_ADMIN_SCHOOL_CODE.toUpperCase().trim()
+  );
+}
+
 // ---- Auth Service ----
 
 class AuthService {
@@ -84,7 +98,7 @@ class AuthService {
     const ip = req?.ip ?? undefined;
     const ua = (req?.headers?.['user-agent'] as string) ?? undefined;
 
-    const isSuperAdminCode = schoolCode === env.SUPER_ADMIN_SCHOOL_CODE;
+    const isSuperAdminCode = isSuperAdminSchoolCode(schoolCode);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let user: any;
@@ -334,7 +348,7 @@ class AuthService {
   public async forgotPassword(input: ForgotPasswordInput) {
     const { email, schoolCode } = input;
 
-    const isSuperAdminCode = schoolCode === env.SUPER_ADMIN_SCHOOL_CODE;
+    const isSuperAdminCode = isSuperAdminSchoolCode(schoolCode);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let user: any;
 

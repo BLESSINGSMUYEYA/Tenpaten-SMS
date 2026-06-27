@@ -294,6 +294,8 @@ export const TeacherDashboard: React.FC = () => {
     [currentSlot?.class.id]
   );
 
+  const school = user?.school;
+
   // Grade submission stats
   const pendingGrades = useMemo(() => {
     return (grades || []).filter(g => g.submissionStatus === 'draft').length;
@@ -330,6 +332,47 @@ export const TeacherDashboard: React.FC = () => {
     return new Set((timetableSlots || []).map(s => s.class.id)).size;
   }, [timetableSlots]);
 
+  const dashboardStats = useMemo(() => {
+    return [
+      ...(school?.featuresAttendance !== false ? [
+        {
+          label: 'Classes Today',
+          value: todaySlots.length,
+          icon: 'today',
+          color: 'text-primary',
+          bg: 'bg-primary-container',
+          link: '/teacher/schedule',
+        },
+        {
+          label: 'Classes Assigned',
+          value: uniqueClassCount,
+          icon: 'groups',
+          color: 'text-secondary',
+          bg: 'bg-secondary-container',
+          link: '/teacher/classes',
+        }
+      ] : []),
+      ...(school?.featuresGrades !== false ? [
+        {
+          label: 'Pending Submissions',
+          value: pendingGrades,
+          icon: 'pending_actions',
+          color: pendingGrades > 0 ? 'text-error' : 'text-secondary',
+          bg: pendingGrades > 0 ? 'bg-error-container' : 'bg-secondary-container',
+          link: '/teacher/grades',
+        },
+        {
+          label: 'Submitted Grades',
+          value: submittedGrades,
+          icon: 'grading',
+          color: 'text-tertiary',
+          bg: 'bg-tertiary-container',
+          link: '/teacher/grades',
+        }
+      ] : []),
+    ];
+  }, [school, todaySlots.length, uniqueClassCount, pendingGrades, submittedGrades]);
+
   return (
     <>
       <Header onMenuClick={toggleSidebar} />
@@ -360,7 +403,7 @@ export const TeacherDashboard: React.FC = () => {
 
           <div className="grid grid-cols-12 gap-md">
             {/* Today's Timetable */}
-            <section className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+            <section className={`col-span-12 ${school?.featuresAttendance !== false ? 'lg:col-span-8' : ''} bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden`}>
               <div className="px-md py-sm bg-surface-container-low flex justify-between items-center border-b border-outline-variant">
                 <h3 className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Today's Timetable</h3>
                 <Link to="/teacher/schedule" className="text-primary font-label-md hover:underline">Full Schedule</Link>
@@ -415,193 +458,168 @@ export const TeacherDashboard: React.FC = () => {
             </section>
 
             {/* Quick Attendance */}
-            <section className="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col shadow-sm">
-              <div className="px-md py-sm bg-secondary-container text-on-secondary-container flex justify-between items-center rounded-t-xl">
-                <div className="flex items-center gap-sm">
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>how_to_reg</span>
-                  <h3 className="font-label-md text-label-md uppercase tracking-wider">Quick Attendance</h3>
-                </div>
-                <span className="font-label-sm font-bold">Now</span>
-              </div>
-              <div className="p-md flex-1 flex flex-col">
-                {currentSlot ? (
-                  <>
-                    <p className="font-body-sm text-on-surface-variant mb-md text-center">
-                      Mark register for <span className="font-bold text-on-surface">{currentSlot.class.displayName}</span>
-                    </p>
-                    <p className="font-body-sm text-on-surface-variant mb-md text-center">
-                      {currentSlot.subject.name} — {getPeriodTimeFromConfig(timetableConfig, currentSlot.periodNumber).label}
-                    </p>
-                    <div className="grid grid-cols-2 gap-sm">
-                      <button
-                        onClick={() => {
-                          if (currentClassStudents && currentClassStudents.length > 0 && currentTerm) {
-                            // Mark all present immediately
-                          }
-                          setQuickAttendanceOpen(true);
-                        }}
-                        className="flex flex-col items-center justify-center p-md bg-secondary text-white rounded-lg transition-transform active:scale-[0.98]"
-                      >
-                        <span className="material-symbols-outlined text-[32px] mb-xs">check_circle</span>
-                        <span className="font-label-md">All Present</span>
-                      </button>
-                      <button
-                        onClick={() => setQuickAttendanceOpen(true)}
-                        className="flex flex-col items-center justify-center p-md border border-outline-variant hover:bg-surface-container-low rounded-lg transition-transform active:scale-[0.98]"
-                      >
-                        <span className="material-symbols-outlined text-[32px] mb-xs">edit_square</span>
-                        <span className="font-label-md">Manual Entry</span>
-                      </button>
-                    </div>
-                    <div className="mt-md pt-md border-t border-outline-variant">
-                      <div className="flex justify-between items-center text-on-surface-variant font-label-sm">
-                        <span>{currentClassStudents?.length ?? '—'} students in class</span>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
-                    <span className="material-symbols-outlined text-3xl text-outline mb-2">event_busy</span>
-                    <p className="font-body-sm text-on-surface-variant">No current class to mark.</p>
-                    <Link to="/teacher/attendance" className="text-primary font-label-sm hover:underline mt-2">
-                      Go to Attendance
-                    </Link>
+            {school?.featuresAttendance !== false && (
+              <section className="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col shadow-sm">
+                <div className="px-md py-sm bg-secondary-container text-on-secondary-container flex justify-between items-center rounded-t-xl">
+                  <div className="flex items-center gap-sm">
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>how_to_reg</span>
+                    <h3 className="font-label-md text-label-md uppercase tracking-wider">Quick Attendance</h3>
                   </div>
-                )}
-              </div>
-            </section>
+                  <span className="font-label-sm font-bold">Now</span>
+                </div>
+                <div className="p-md flex-1 flex flex-col">
+                  {currentSlot ? (
+                    <>
+                      <p className="font-body-sm text-on-surface-variant mb-md text-center">
+                        Mark register for <span className="font-bold text-on-surface">{currentSlot.class.displayName}</span>
+                      </p>
+                      <p className="font-body-sm text-on-surface-variant mb-md text-center">
+                        {currentSlot.subject.name} — {getPeriodTimeFromConfig(timetableConfig, currentSlot.periodNumber).label}
+                      </p>
+                      <div className="grid grid-cols-2 gap-sm">
+                        <button
+                          onClick={() => {
+                            if (currentClassStudents && currentClassStudents.length > 0 && currentTerm) {
+                              // Mark all present immediately
+                            }
+                            setQuickAttendanceOpen(true);
+                          }}
+                          className="flex flex-col items-center justify-center p-md bg-secondary text-white rounded-lg transition-transform active:scale-[0.98]"
+                        >
+                          <span className="material-symbols-outlined text-[32px] mb-xs">check_circle</span>
+                          <span className="font-label-md">All Present</span>
+                        </button>
+                        <button
+                          onClick={() => setQuickAttendanceOpen(true)}
+                          className="flex flex-col items-center justify-center p-md border border-outline-variant hover:bg-surface-container-low rounded-lg transition-transform active:scale-[0.98]"
+                        >
+                          <span className="material-symbols-outlined text-[32px] mb-xs">edit_square</span>
+                          <span className="font-label-md">Manual Entry</span>
+                        </button>
+                      </div>
+                      <div className="mt-md pt-md border-t border-outline-variant">
+                        <div className="flex justify-between items-center text-on-surface-variant font-label-sm">
+                          <span>{currentClassStudents?.length ?? '—'} students in class</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
+                      <span className="material-symbols-outlined text-3xl text-outline mb-2">event_busy</span>
+                      <p className="font-body-sm text-on-surface-variant">No current class to mark.</p>
+                      <Link to="/teacher/attendance" className="text-primary font-label-sm hover:underline mt-2">
+                        Go to Attendance
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
 
             {/* Grading Status */}
-            <section className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
-              <div className="px-md py-sm border-b border-outline-variant flex justify-between items-center">
-                <h3 className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Grading Status</h3>
-                <div className="flex gap-sm">
-                  <span className="flex items-center gap-xs font-label-sm text-secondary">
-                    <span className="w-2 h-2 rounded-full bg-secondary"></span> Submitted
-                  </span>
-                  <span className="flex items-center gap-xs font-label-sm text-outline">
-                    <span className="w-2 h-2 rounded-full bg-outline"></span> Draft
-                  </span>
-                </div>
-              </div>
-              <div className="p-md">
-                {grades === null ? (
-                  <p className="text-on-surface-variant font-body-md py-4 text-center">Loading grade data...</p>
-                ) : (grades || []).length === 0 ? (
-                  <p className="text-on-surface-variant font-body-md py-4 text-center">No grades entered yet.</p>
-                ) : gradeGroups.length > 0 ? (
-                  <div className="space-y-lg">
-                    {gradeGroups.map(item => {
-                      const pct = item.total > 0 ? Math.round((item.graded / item.total) * 100) : 0;
-                      return (
-                        <div key={item.label}>
-                          <div className="flex justify-between items-center mb-xs">
-                            <span className="font-label-md text-label-md">{item.label}</span>
-                            <span className="font-label-sm text-on-surface-variant">{item.graded} / {item.total} Entered</span>
-                          </div>
-                          <div className="w-full h-3 bg-surface-container-high rounded-full overflow-hidden flex">
-                            <div className="h-full bg-secondary" style={{ width: `${pct}%` }}></div>
-                            <div className="h-full bg-outline-variant" style={{ width: `${100 - pct}%` }}></div>
-                          </div>
-                        </div>
-                      );
-                    })}
+            {school?.featuresGrades !== false && (
+              <section className={`col-span-12 ${school?.featuresCommunication !== false ? 'lg:col-span-8' : ''} bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden`}>
+                <div className="px-md py-sm border-b border-outline-variant flex justify-between items-center">
+                  <h3 className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Grading Status</h3>
+                  <div className="flex gap-sm">
+                    <span className="flex items-center gap-xs font-label-sm text-secondary">
+                      <span className="w-2 h-2 rounded-full bg-secondary"></span> Submitted
+                    </span>
+                    <span className="flex items-center gap-xs font-label-sm text-outline">
+                      <span className="w-2 h-2 rounded-full bg-outline"></span> Draft
+                    </span>
                   </div>
-                ) : null}
-                <div className="mt-lg p-md bg-surface-container-low rounded-lg flex items-center justify-between">
-                  <div className="flex items-center gap-md">
-                    {pendingGrades > 0 ? (
-                      <>
-                        <span className="material-symbols-outlined text-tertiary">warning</span>
-                        <p className="font-body-sm">
-                          <span className="font-bold">{pendingGrades}</span> grade{pendingGrades !== 1 ? 's' : ''} in draft — not yet submitted.
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <span className="material-symbols-outlined text-secondary">check_circle</span>
-                        <p className="font-body-sm">All grades submitted. Good work!</p>
-                      </>
-                    )}
-                  </div>
-                  <Link to="/teacher/grades" className="bg-primary text-white font-label-md px-md py-sm rounded-lg hover:brightness-110 transition-all">
-                    Go to Gradebook
-                  </Link>
                 </div>
-              </div>
-            </section>
+                <div className="p-md">
+                  {grades === null ? (
+                    <p className="text-on-surface-variant font-body-md py-4 text-center">Loading grade data...</p>
+                  ) : (grades || []).length === 0 ? (
+                    <p className="text-on-surface-variant font-body-md py-4 text-center">No grades entered yet.</p>
+                  ) : gradeGroups.length > 0 ? (
+                    <div className="space-y-lg">
+                      {gradeGroups.map(item => {
+                        const pct = item.total > 0 ? Math.round((item.graded / item.total) * 100) : 0;
+                        return (
+                          <div key={item.label}>
+                            <div className="flex justify-between items-center mb-xs">
+                              <span className="font-label-md text-label-md">{item.label}</span>
+                              <span className="font-label-sm text-on-surface-variant">{item.graded} / {item.total} Entered</span>
+                            </div>
+                            <div className="w-full h-3 bg-surface-container-high rounded-full overflow-hidden flex">
+                              <div className="h-full bg-secondary" style={{ width: `${pct}%` }}></div>
+                              <div className="h-full bg-outline-variant" style={{ width: `${100 - pct}%` }}></div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                  <div className="mt-lg p-md bg-surface-container-low rounded-lg flex items-center justify-between">
+                    <div className="flex items-center gap-md">
+                      {pendingGrades > 0 ? (
+                        <>
+                          <span className="material-symbols-outlined text-tertiary">warning</span>
+                          <p className="font-body-sm">
+                            <span className="font-bold">{pendingGrades}</span> grade{pendingGrades !== 1 ? 's' : ''} in draft — not yet submitted.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-secondary">check_circle</span>
+                          <p className="font-body-sm">All grades submitted. Good work!</p>
+                        </>
+                      )}
+                    </div>
+                    <Link to="/teacher/grades" className="bg-primary text-white font-label-md px-md py-sm rounded-lg hover:brightness-110 transition-all">
+                      Go to Gradebook
+                    </Link>
+                  </div>
+                </div>
+              </section>
+            )}
 
             {/* Recent Messages */}
-            <section className="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col">
-              <div className="px-md py-sm border-b border-outline-variant flex justify-between items-center">
-                <h3 className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant flex items-center gap-2">
-                  Recent Messages
-                  <span className="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[9px] font-bold rounded-full uppercase tracking-wider">Coming Soon</span>
-                </h3>
-              </div>
-              <div className="overflow-y-auto max-h-[360px] flex-1">
-                <div className="py-10 text-center h-full flex flex-col items-center justify-center">
-                  <span className="material-symbols-outlined text-4xl text-tertiary/50 block mb-2">construction</span>
-                  <p className="font-body-md text-on-surface">Internal Messaging</p>
-                  <p className="font-body-sm text-on-surface-variant max-w-[200px] mt-1">This feature is currently in development and will be available soon.</p>
+            {school?.featuresCommunication !== false && (
+              <section className="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col">
+                <div className="px-md py-sm border-b border-outline-variant flex justify-between items-center">
+                  <h3 className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant flex items-center gap-2">
+                    Recent Messages
+                    <span className="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[9px] font-bold rounded-full uppercase tracking-wider">Coming Soon</span>
+                  </h3>
                 </div>
-              </div>
-              <div className="mt-auto p-md border-t border-outline-variant text-center">
-                <span className="font-label-md text-on-surface-variant opacity-50 cursor-not-allowed">View All Messages</span>
-              </div>
-            </section>
+                <div className="overflow-y-auto max-h-[360px] flex-1">
+                  <div className="py-10 text-center h-full flex flex-col items-center justify-center">
+                    <span className="material-symbols-outlined text-4xl text-tertiary/50 block mb-2">construction</span>
+                    <p className="font-body-md text-on-surface">Internal Messaging</p>
+                    <p className="font-body-sm text-on-surface-variant max-w-[200px] mt-1">This feature is currently in development and will be available soon.</p>
+                  </div>
+                </div>
+                <div className="mt-auto p-md border-t border-outline-variant text-center">
+                  <span className="font-label-md text-on-surface-variant opacity-50 cursor-not-allowed">View All Messages</span>
+                </div>
+              </section>
+            )}
 
             {/* Quick Stats Row */}
-            <section className="col-span-12 grid grid-cols-2 md:grid-cols-4 gap-md">
-              {[
-                {
-                  label: 'Classes Today',
-                  value: todaySlots.length,
-                  icon: 'today',
-                  color: 'text-primary',
-                  bg: 'bg-primary-container',
-                  link: '/teacher/schedule',
-                },
-                {
-                  label: 'Classes Assigned',
-                  value: uniqueClassCount,
-                  icon: 'groups',
-                  color: 'text-secondary',
-                  bg: 'bg-secondary-container',
-                  link: '/teacher/classes',
-                },
-                {
-                  label: 'Pending Submissions',
-                  value: pendingGrades,
-                  icon: 'pending_actions',
-                  color: pendingGrades > 0 ? 'text-error' : 'text-secondary',
-                  bg: pendingGrades > 0 ? 'bg-error-container' : 'bg-secondary-container',
-                  link: '/teacher/grades',
-                },
-                {
-                  label: 'Submitted Grades',
-                  value: submittedGrades,
-                  icon: 'grading',
-                  color: 'text-tertiary',
-                  bg: 'bg-tertiary-container',
-                  link: '/teacher/grades',
-                },
-              ].map(stat => (
-                <Link
-                  key={stat.label}
-                  to={stat.link}
-                  className="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex items-center gap-md hover:border-primary transition-all group"
-                >
-                  <div className={`w-10 h-10 rounded-full ${stat.bg} flex items-center justify-center`}>
-                    <span className={`material-symbols-outlined text-[20px] ${stat.color}`}>{stat.icon}</span>
-                  </div>
-                  <div>
-                    <p className="font-label-sm text-on-surface-variant">{stat.label}</p>
-                    <p className={`font-title-lg font-bold ${stat.color}`}>{stat.value}</p>
-                  </div>
-                </Link>
-              ))}
-            </section>
+            {dashboardStats.length > 0 && (
+              <section className={`col-span-12 grid grid-cols-2 ${dashboardStats.length === 4 ? 'md:grid-cols-4' : 'md:grid-cols-2'} gap-md`}>
+                {dashboardStats.map(stat => (
+                  <Link
+                    key={stat.label}
+                    to={stat.link}
+                    className="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex items-center gap-md hover:border-primary transition-all group"
+                  >
+                    <div className={`w-10 h-10 rounded-full ${stat.bg} flex items-center justify-center`}>
+                      <span className={`material-symbols-outlined text-[20px] ${stat.color}`}>{stat.icon}</span>
+                    </div>
+                    <div>
+                      <p className="font-label-sm text-on-surface-variant">{stat.label}</p>
+                      <p className={`font-title-lg font-bold ${stat.color}`}>{stat.value}</p>
+                    </div>
+                  </Link>
+                ))}
+              </section>
+            )}
           </div>
         </div>
       </main>

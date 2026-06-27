@@ -18,13 +18,22 @@ const navItems = [
 ];
 
 export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
+  const school = user?.school;
 
   const isActive = (to: string) =>
     to === '/dashboard'
       ? location.pathname === '/dashboard'
       : location.pathname.startsWith(to);
+
+  const filteredNavItems = navItems.filter(item => {
+    if (item.label === 'Academic' && school?.featuresGrades === false) return false;
+    if (item.label === 'Timetables' && school?.featuresAttendance === false) return false;
+    if (item.label === 'Attendance' && school?.featuresAttendance === false) return false;
+    if (item.label === 'Finance & Billing' && school?.featuresFees === false) return false;
+    return true;
+  });
 
   return (
     <>
@@ -43,7 +52,7 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
           <Logo height="80px" />
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-          {navItems.map(item => (
+          {filteredNavItems.map(item => (
             <Link
               key={item.label}
               to={item.to}

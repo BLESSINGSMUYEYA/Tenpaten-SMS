@@ -28,6 +28,11 @@ model School {
   updatedAt         DateTime         @updatedAt
   isDeleted         Boolean          @default(false)
   timetableConfig   Json?
+  
+  featuresAttendance      Boolean          @default(true) @map("features_attendance")
+  featuresGrades          Boolean          @default(true) @map("features_grades")
+  featuresFees            Boolean          @default(true) @map("features_fees")
+  featuresCommunication   Boolean          @default(true) @map("features_communication")
   academicYears     AcademicYear[]
   attendance        Attendance[]
   classes           Class[]

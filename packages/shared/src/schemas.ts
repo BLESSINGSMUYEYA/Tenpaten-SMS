@@ -12,7 +12,13 @@ export const loginSchema = z.object({
   schoolCode: z
     .string()
     .min(1, 'School code is required')
-    .regex(/^[a-zA-Z]{2,5}-\d{4}-\d{4}$/, 'Invalid school code format (e.g. SJP-2025-4821)')
+    .refine(
+      (val) => {
+        const u = val.toUpperCase();
+        return u === 'TPTN-ADMIN-0000' || u === 'TPTN-2026-0000' || u === 'ADMIN-2026-0000' || /^[a-zA-Z]{2,5}-\d{4}-\d{4}$/.test(val);
+      },
+      { message: 'Invalid school code format (e.g. SJP-2025-4821)' }
+    )
     .transform((val) => val.toUpperCase()),
   email: z.string().min(1, 'Email or Username/ID is required').transform((val) => val.toLowerCase().trim()),
   password: z.string().min(1, 'Password is required'),
@@ -23,7 +29,13 @@ export const forgotPasswordSchema = z.object({
   schoolCode: z
     .string()
     .min(1, 'School code is required')
-    .regex(/^[a-zA-Z]{2,5}-\d{4}-\d{4}$/, 'Invalid school code format (e.g. SJP-2025-4821)')
+    .refine(
+      (val) => {
+        const u = val.toUpperCase();
+        return u === 'TPTN-ADMIN-0000' || u === 'TPTN-2026-0000' || u === 'ADMIN-2026-0000' || /^[a-zA-Z]{2,5}-\d{4}-\d{4}$/.test(val);
+      },
+      { message: 'Invalid school code format (e.g. SJP-2025-4821)' }
+    )
     .transform((val) => val.toUpperCase()),
 });
 
@@ -92,6 +104,12 @@ export const createSchoolSchema = z.object({
 
   // Super Admin override for school code initials
   customInitials: z.string().max(5).optional(),
+
+  // Feature Gating
+  featuresAttendance: z.boolean().default(true),
+  featuresGrades: z.boolean().default(true),
+  featuresFees: z.boolean().default(true),
+  featuresCommunication: z.boolean().default(true),
 });
 
 export const updateSchoolProfileSchema = z.object({
@@ -102,6 +120,12 @@ export const updateSchoolProfileSchema = z.object({
   phone: z.string().optional(),
   email: z.string().email().optional(),
   logoUrl: z.string().url().optional(),
+
+  // Feature Gating (allows Super Admin to configure)
+  featuresAttendance: z.boolean().optional(),
+  featuresGrades: z.boolean().optional(),
+  featuresFees: z.boolean().optional(),
+  featuresCommunication: z.boolean().optional(),
 });
 
 // ---- Academic Year & Terms ----

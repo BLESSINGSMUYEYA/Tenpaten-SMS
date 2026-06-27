@@ -62,6 +62,10 @@ router.get(
         isActive: true,
         setupComplete: true,
         createdAt: true,
+        featuresAttendance: true,
+        featuresGrades: true,
+        featuresFees: true,
+        featuresCommunication: true,
         _count: {
           select: {
             users: {
@@ -80,6 +84,63 @@ router.get(
 );
 
 /**
+ * @route   GET /api/admin/schools/:id
+ * @desc    Get a school's details
+ * @access  Super Admin
+ */
+router.get(
+  '/schools/:id',
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const school = await prisma.school.findFirst({
+      where: { id, isDeleted: false },
+      select: {
+        id: true,
+        name: true,
+        schoolCode: true,
+        subscriptionPlan: true,
+        type: true,
+        district: true,
+        country: true,
+        isActive: true,
+        setupComplete: true,
+        createdAt: true,
+        email: true,
+        phone: true,
+        address: true,
+        motto: true,
+        featuresAttendance: true,
+        featuresGrades: true,
+        featuresFees: true,
+        featuresCommunication: true,
+        _count: {
+          select: {
+            users: { where: { isDeleted: false } },
+            studentProfiles: { where: { isDeleted: false } },
+          },
+        },
+      },
+    });
+
+    if (!school) {
+      throw new NotFoundError('School');
+    }
+
+    // Map studentProfiles count to students for frontend compatibility
+    const mappedSchool = {
+      ...school,
+      _count: {
+        users: school._count.users,
+        students: school._count.studentProfiles,
+      },
+    };
+
+    sendSuccess(res, mappedSchool, 'School details retrieved successfully');
+  })
+);
+
+/**
  * @route   POST /api/admin/schools
  * @desc    Create a new school and its first Head Teacher user
  * @access  Super Admin
@@ -93,6 +154,10 @@ router.post(
       subscriptionPlan, email: schoolEmail, phone: schoolPhone, address: schoolAddress,
       schoolDirector, headTeacher,
       customInitials,
+      featuresAttendance,
+      featuresGrades,
+      featuresFees,
+      featuresCommunication,
     } = req.body;
 
     // ── Uniqueness checks ──────────────────────────────────────────────────
@@ -146,6 +211,10 @@ router.post(
           address: schoolAddress,
           isActive: true,
           setupComplete: false,
+          featuresAttendance: featuresAttendance !== undefined ? featuresAttendance : true,
+          featuresGrades: featuresGrades !== undefined ? featuresGrades : true,
+          featuresFees: featuresFees !== undefined ? featuresFees : true,
+          featuresCommunication: featuresCommunication !== undefined ? featuresCommunication : true,
         },
       });
 

@@ -1,7 +1,9 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const BottomNav = () => {
+  const { user } = useAuth();
   const location = useLocation();
+  const school = user?.school;
 
   const getLinkClass = (path: string) => {
     const isActive = location.pathname === path;
@@ -26,10 +28,12 @@ export const BottomNav = () => {
         <span className="material-symbols-outlined text-xl" data-icon="group">group</span>
         <span className="font-label-sm-mobile mt-1">Students</span>
       </Link>
-      <Link className={getLinkClass('/deputy-head/attendance')} to="/deputy-head/attendance">
-        <span className="material-symbols-outlined text-xl" data-icon="how_to_reg">how_to_reg</span>
-        <span className="font-label-sm-mobile mt-1">Attendance</span>
-      </Link>
+      {school?.featuresAttendance !== false && (
+        <Link className={getLinkClass('/deputy-head/attendance')} to="/deputy-head/attendance">
+          <span className="material-symbols-outlined text-xl" data-icon="how_to_reg">how_to_reg</span>
+          <span className="font-label-sm-mobile mt-1">Attendance</span>
+        </Link>
+      )}
       <Link className={getLinkClass('/deputy-head/settings')} to="/deputy-head/settings">
         <span className="material-symbols-outlined text-xl" data-icon="settings">settings</span>
         <span className="font-label-sm-mobile mt-1">Settings</span>

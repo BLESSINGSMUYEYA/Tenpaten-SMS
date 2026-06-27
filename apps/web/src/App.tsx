@@ -274,7 +274,7 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/academic"
                 element={
-                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'head_teacher']} requiredFeature="featuresGrades">
                     <HeadTeacherAcademic />
                   </PrivateRoute>
                 }
@@ -282,7 +282,7 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/timetable"
                 element={
-                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'head_teacher']} requiredFeature="featuresAttendance">
                     <HeadTeacherTimetable />
                   </PrivateRoute>
                 }
@@ -290,7 +290,7 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/attendance"
                 element={
-                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'head_teacher']} requiredFeature="featuresAttendance">
                     <HeadTeacherAttendance />
                   </PrivateRoute>
                 }
@@ -333,7 +333,7 @@ const App: React.FC = () => {
               <Route
                 path="/teacher/assignments"
                 element={
-                  <PrivateRoute allowedRoles={['teacher']}>
+                  <PrivateRoute allowedRoles={['teacher']} requiredFeature="featuresGrades">
                     <TeacherAssignments />
                   </PrivateRoute>
                 }
@@ -341,7 +341,7 @@ const App: React.FC = () => {
               <Route
                 path="/teacher/grades"
                 element={
-                  <PrivateRoute allowedRoles={['teacher']}>
+                  <PrivateRoute allowedRoles={['teacher']} requiredFeature="featuresGrades">
                     <TeacherGrades />
                   </PrivateRoute>
                 }
@@ -349,7 +349,7 @@ const App: React.FC = () => {
               <Route
                 path="/teacher/schedule"
                 element={
-                  <PrivateRoute allowedRoles={['teacher']}>
+                  <PrivateRoute allowedRoles={['teacher']} requiredFeature="featuresAttendance">
                     <TeacherSchedule />
                   </PrivateRoute>
                 }
@@ -357,7 +357,7 @@ const App: React.FC = () => {
               <Route
                 path="/teacher/attendance"
                 element={
-                  <PrivateRoute allowedRoles={['teacher']}>
+                  <PrivateRoute allowedRoles={['teacher']} requiredFeature="featuresAttendance">
                     <TeacherAttendance />
                   </PrivateRoute>
                 }
@@ -384,7 +384,7 @@ const App: React.FC = () => {
               <Route
                 path="/deputy-head/academics"
                 element={
-                  <PrivateRoute allowedRoles={['deputy_head']}>
+                  <PrivateRoute allowedRoles={['deputy_head']} requiredFeature="featuresGrades">
                     <DeputyHeadAcademics />
                   </PrivateRoute>
                 }
@@ -400,7 +400,7 @@ const App: React.FC = () => {
               <Route
                 path="/deputy-head/timetable"
                 element={
-                  <PrivateRoute allowedRoles={['deputy_head']}>
+                  <PrivateRoute allowedRoles={['deputy_head']} requiredFeature="featuresAttendance">
                     <DeputyHeadTimetable />
                   </PrivateRoute>
                 }
@@ -408,7 +408,7 @@ const App: React.FC = () => {
               <Route
                 path="/deputy-head/attendance"
                 element={
-                  <PrivateRoute allowedRoles={['deputy_head']}>
+                  <PrivateRoute allowedRoles={['deputy_head']} requiredFeature="featuresAttendance">
                     <DeputyHeadAttendance />
                   </PrivateRoute>
                 }
@@ -461,7 +461,7 @@ const App: React.FC = () => {
               <Route
                 path="/bursar/fees"
                 element={
-                  <PrivateRoute allowedRoles={['bursar']}>
+                  <PrivateRoute allowedRoles={['bursar']} requiredFeature="featuresFees">
                     <BursarFees />
                   </PrivateRoute>
                 }
@@ -469,7 +469,7 @@ const App: React.FC = () => {
               <Route
                 path="/bursar/payments"
                 element={
-                  <PrivateRoute allowedRoles={['bursar']}>
+                  <PrivateRoute allowedRoles={['bursar']} requiredFeature="featuresFees">
                     <BursarPayments />
                   </PrivateRoute>
                 }
@@ -477,7 +477,7 @@ const App: React.FC = () => {
               <Route
                 path="/bursar/students"
                 element={
-                  <PrivateRoute allowedRoles={['bursar']}>
+                  <PrivateRoute allowedRoles={['bursar']} requiredFeature="featuresFees">
                     <BursarStudents />
                   </PrivateRoute>
                 }

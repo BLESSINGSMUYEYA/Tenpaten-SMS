@@ -20,6 +20,10 @@ interface SchoolDetail {
   motto?: string;
   country?: string;
   _count?: { users: number; students: number };
+  featuresAttendance?: boolean;
+  featuresGrades?: boolean;
+  featuresFees?: boolean;
+  featuresCommunication?: boolean;
 }
 
 // Mock health score computation
@@ -69,9 +73,10 @@ export const SuperAdminSchoolDetail: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
-  const { data: school, loading } = useQuery<SchoolDetail>(`/admin/schools/${id}`);
+  const { data: school, loading, refetch } = useQuery<SchoolDetail>(`/admin/schools/${id}`);
   const { mutate: toggleActive } = useMutation(`/admin/schools/${id}`, 'patch');
   const { mutate: deleteSchool, loading: deleting } = useMutation(`/admin/schools/${id}`, 'delete');
+  const { mutate: updateSchool } = useMutation(`/admin/schools/${id}`, 'put');
 
   const health = school ? computeHealthScore(school) : 0;
   const hColor = healthColor(health);
@@ -284,6 +289,76 @@ export const SuperAdminSchoolDetail: React.FC = () => {
                     <div key={item.label} className="flex justify-between gap-4 py-1.5 border-b border-outline-variant/40 last:border-b-0">
                       <span className="font-label-sm text-on-surface-variant min-w-[90px]">{item.label}</span>
                       <span className="font-label-sm text-on-surface font-medium text-right break-words">{item.value ?? '—'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Feature Access Control */}
+              <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col lg:col-span-2">
+                <div className="p-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+                  <h2 className="font-title-md font-semibold text-on-surface">Feature Access Control</h2>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Super Admin Only</span>
+                </div>
+                <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    {
+                      key: 'featuresAttendance',
+                      label: 'Attendance Tracking',
+                      desc: 'Student registers, check-ins, and statistics.',
+                      val: school?.featuresAttendance ?? true,
+                      icon: 'event_available',
+                    },
+                    {
+                      key: 'featuresGrades',
+                      label: 'Academics & Grades',
+                      desc: 'Grading scales, subject registers, and report cards.',
+                      val: school?.featuresGrades ?? true,
+                      icon: 'school',
+                    },
+                    {
+                      key: 'featuresFees',
+                      label: 'Finance & Billing',
+                      desc: 'Invoices, payments logging, and bursar dashboard.',
+                      val: school?.featuresFees ?? true,
+                      icon: 'payments',
+                    },
+                    {
+                      key: 'featuresCommunication',
+                      label: 'Communication / SMS',
+                      desc: 'Broadcasting messages and parent SMS notifications.',
+                      val: school?.featuresCommunication ?? true,
+                      icon: 'campaign',
+                    },
+                  ].map(feat => (
+                    <div key={feat.key} className="flex items-center justify-between gap-4 p-4 bg-surface-container-low/40 border border-outline-variant/60 rounded-xl hover:border-primary/20 transition-colors">
+                      <div className="flex gap-3 items-start">
+                        <span className="material-symbols-outlined text-primary text-[20px] mt-0.5">{feat.icon}</span>
+                        <div>
+                          <p className="font-label-md text-on-surface font-bold">{feat.label}</p>
+                          <p className="text-[10px] text-on-surface-variant leading-tight mt-0.5">{feat.desc}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            await updateSchool({ [feat.key]: !feat.val });
+                            refetch();
+                          } catch (err) {
+                            console.error('Failed to toggle feature:', err);
+                          }
+                        }}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                          feat.val ? 'bg-primary' : 'bg-outline-variant'
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                            feat.val ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
                     </div>
                   ))}
                 </div>

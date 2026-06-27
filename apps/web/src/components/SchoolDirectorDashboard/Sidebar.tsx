@@ -31,6 +31,14 @@ const SidebarContent: React.FC<{ onLinkClick?: () => void }> = ({ onLinkClick })
     ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
     : 'SD';
 
+  const school = user?.school;
+
+  const filteredNavItems = navItems.filter(item => {
+    if (item.label === 'Academic Overview' && school?.featuresGrades === false) return false;
+    if (item.label === 'Finance' && school?.featuresFees === false) return false;
+    return true;
+  });
+
   return (
     <>
       <div className="h-14 flex items-center px-6 border-b border-outline-variant w-full shrink-0">
@@ -55,7 +63,7 @@ const SidebarContent: React.FC<{ onLinkClick?: () => void }> = ({ onLinkClick })
 
       <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-xs">
         <p className="font-label-sm text-on-surface-variant uppercase tracking-widest px-2 pt-2 pb-1 opacity-60">Navigation</p>
-        {navItems.map(item => (
+        {filteredNavItems.map(item => (
           <Link
             key={item.label}
             to={item.to}

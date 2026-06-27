@@ -60,6 +60,29 @@ export const BursarDashboard: React.FC = () => {
     }
   };
 
+  const school = user?.school;
+
+  if (school?.featuresFees === false) {
+    return (
+      <>
+        <Header onMenuClick={() => setSidebarOpen(true)} />
+        <Sidebar isOpen={sidebarOpen} closeSidebar={() => setSidebarOpen(false)} />
+        <main className="lg:ml-72 pt-20 pb-24 lg:pb-8 px-md md:px-margin-desktop min-h-screen bg-surface text-on-surface flex flex-col items-center justify-center">
+          <div className="max-w-md w-full bg-surface-container-lowest border border-outline-variant rounded-3xl p-8 text-center relative z-10 shadow-lg">
+            <div className="w-16 h-16 rounded-full bg-error-container/20 flex items-center justify-center mx-auto mb-6">
+              <span className="material-symbols-outlined text-error text-[32px]">payments</span>
+            </div>
+            <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold mb-3">Finance Module Disabled</h2>
+            <p className="font-body-sm text-body-sm text-on-surface-variant mb-6 leading-relaxed">
+              The Finance &amp; Fees module is currently disabled for your school. Please contact your Super Admin to enable this module.
+            </p>
+          </div>
+        </main>
+        <BottomNav />
+      </>
+    );
+  }
+
   return (
     <>
       <Header onMenuClick={() => setSidebarOpen(true)} />

@@ -8,8 +8,9 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
+  const school = user?.school;
 
   const getLinkClass = (path: string) => {
     const isActive = location.pathname === path;
@@ -42,24 +43,28 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
             </span>
             Dashboard
           </Link>
-          <Link to="/bursar/fees" className={getLinkClass('/bursar/fees')} onClick={closeSidebar}>
-            <span className="material-symbols-outlined" data-icon="payments">
-              payments
-            </span>
-            Fee Structure
-          </Link>
-          <Link to="/bursar/payments" className={getLinkClass('/bursar/payments')} onClick={closeSidebar}>
-            <span className="material-symbols-outlined" data-icon="receipt_long">
-              receipt_long
-            </span>
-            Payments
-          </Link>
-          <Link to="/bursar/students" className={getLinkClass('/bursar/students')} onClick={closeSidebar}>
-            <span className="material-symbols-outlined" data-icon="account_balance_wallet">
-              account_balance_wallet
-            </span>
-            Student Balances
-          </Link>
+          {school?.featuresFees !== false && (
+            <>
+              <Link to="/bursar/fees" className={getLinkClass('/bursar/fees')} onClick={closeSidebar}>
+                <span className="material-symbols-outlined" data-icon="payments">
+                  payments
+                </span>
+                Fee Structure
+              </Link>
+              <Link to="/bursar/payments" className={getLinkClass('/bursar/payments')} onClick={closeSidebar}>
+                <span className="material-symbols-outlined" data-icon="receipt_long">
+                  receipt_long
+                </span>
+                Payments
+              </Link>
+              <Link to="/bursar/students" className={getLinkClass('/bursar/students')} onClick={closeSidebar}>
+                <span className="material-symbols-outlined" data-icon="account_balance_wallet">
+                  account_balance_wallet
+                </span>
+                Student Balances
+              </Link>
+            </>
+          )}
         </nav>
         <div className="mt-auto border-t border-surface-border dark:border-outline-variant pt-3 flex flex-col gap-1">
           <Link

@@ -1,13 +1,27 @@
 import { PrismaClient, SchoolType, UserRole, DayOfWeek, StudentStatus, AttendanceStatus, GradeStatus } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import readline from 'readline';
 
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log('🌱 Starting database seed...');
+function askQuestion(query: string): Promise<string> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
 
-  // Clean the database (soft delete or hard delete for seeding? Since we're re-initializing, let's clear existing data safely in reverse order of dependencies)
-  console.log('Cleaning old seed data...');
+  return new Promise((resolve) =>
+    rl.question(query, (ans) => {
+      rl.close();
+      resolve(ans);
+    })
+  );
+}
+
+async function cleanDatabase() {
+  await prisma.feePayment.deleteMany({});
+  await prisma.invoice.deleteMany({});
+  await prisma.feeStructure.deleteMany({});
   await prisma.grade.deleteMany({});
   await prisma.attendanceOverride.deleteMany({});
   await prisma.attendance.deleteMany({});
@@ -19,13 +33,61 @@ async function main() {
   await prisma.class.deleteMany({});
   await prisma.term.deleteMany({});
   await prisma.academicYear.deleteMany({});
+  await prisma.refreshToken.deleteMany({});
+  await prisma.auditLog.deleteMany({});
   await prisma.passwordResetToken.deleteMany({});
   await prisma.user.deleteMany({});
   await prisma.gradingRule.deleteMany({});
   await prisma.gradingScale.deleteMany({});
   await prisma.school.deleteMany({});
-
   console.log('Database cleaned.');
+}
+
+async function main() {
+  console.log('🌱 Starting database seed...');
+
+  // Flags to control database cleaning behavior
+  const forceClean = process.argv.includes('--force') || process.argv.includes('--clean') || process.env.CLEAN_DB === 'true';
+  const skipClean = process.argv.includes('--no-clean') || process.env.CLEAN_DB === 'false';
+
+  if (skipClean) {
+    console.log('⏭️ Skipping database cleaning step as requested.');
+  } else {
+    // Check if the database currently contains any schools or users
+    const schoolCount = await prisma.school.count();
+    const userCount = await prisma.user.count();
+
+    if (schoolCount > 0 || userCount > 0) {
+      if (forceClean) {
+        console.log('🧹 Force cleaning database...');
+        await cleanDatabase();
+      } else {
+        // If the shell is non-interactive, default to abort to prevent data loss
+        if (!process.stdout.isTTY || !process.stdin.isTTY) {
+          console.log('⚠️ Non-interactive environment detected. Skipping cleaning and aborting seed to prevent accidental data loss.');
+          console.log('To run in non-interactive mode, use the --clean flag or set CLEAN_DB=true.');
+          process.exit(0);
+        }
+
+        console.log(`\n⚠️  WARNING: Database contains existing records (${schoolCount} schools, ${userCount} users).`);
+        console.log('Seeding will completely wipe out all existing data in these tables.');
+        
+        const answer = await askQuestion('Are you sure you want to clean and re-seed the database? (yes/no): ');
+        const normalized = answer.trim().toLowerCase();
+        
+        if (normalized !== 'yes' && normalized !== 'y') {
+          console.log('❌ Seeding aborted. No data was deleted.');
+          process.exit(0);
+        }
+
+        console.log('🧹 Cleaning old seed data...');
+        await cleanDatabase();
+      }
+    } else {
+      console.log('Database is empty. Proceeding to clean and seed...');
+      await cleanDatabase();
+    }
+  }
 
   // ==========================================
   // ROLE-SPECIFIC DEFAULT PASSWORDS

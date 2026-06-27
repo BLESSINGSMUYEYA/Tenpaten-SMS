@@ -8,8 +8,9 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
+  const school = user?.school;
 
   const getLinkClass = (path: string) => {
     const isActive = location.pathname === path;
@@ -43,23 +44,31 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
             <span className="material-symbols-outlined" data-icon="groups">groups</span>
             My Classes
           </Link>
-          <Link to="/teacher/assignments" className={getLinkClass('/teacher/assignments')} onClick={closeSidebar}>
-            <span className="material-symbols-outlined" data-icon="assignment">assignment</span>
-            Assignments
-          </Link>
-          <Link to="/teacher/grades" className={getLinkClass('/teacher/grades')} onClick={closeSidebar}>
-            <span className="material-symbols-outlined" data-icon="grading">grading</span>
-            Grades
-          </Link>
+          {school?.featuresGrades !== false && (
+            <Link to="/teacher/assignments" className={getLinkClass('/teacher/assignments')} onClick={closeSidebar}>
+              <span className="material-symbols-outlined" data-icon="assignment">assignment</span>
+              Assignments
+            </Link>
+          )}
+          {school?.featuresGrades !== false && (
+            <Link to="/teacher/grades" className={getLinkClass('/teacher/grades')} onClick={closeSidebar}>
+              <span className="material-symbols-outlined" data-icon="grading">grading</span>
+              Grades
+            </Link>
+          )}
 
-          <Link to="/teacher/schedule" className={getLinkClass('/teacher/schedule')} onClick={closeSidebar}>
-            <span className="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
-            Schedule
-          </Link>
-          <Link to="/teacher/attendance" className={getLinkClass('/teacher/attendance')} onClick={closeSidebar}>
-            <span className="material-symbols-outlined" data-icon="fact_check">fact_check</span>
-            Attendance
-          </Link>
+          {school?.featuresAttendance !== false && (
+            <Link to="/teacher/schedule" className={getLinkClass('/teacher/schedule')} onClick={closeSidebar}>
+              <span className="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+              Schedule
+            </Link>
+          )}
+          {school?.featuresAttendance !== false && (
+            <Link to="/teacher/attendance" className={getLinkClass('/teacher/attendance')} onClick={closeSidebar}>
+              <span className="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+              Attendance
+            </Link>
+          )}
 
         </nav>
         <div className="mt-auto border-t border-surface-border dark:border-outline-variant pt-3 flex flex-col gap-1">

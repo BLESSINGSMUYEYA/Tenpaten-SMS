@@ -3,7 +3,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Logo } from '../Logo';
 
 export const Sidebar = ({ isOpen, closeSidebar }: { isOpen: boolean; closeSidebar: () => void }) => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const school = user?.school;
   return (
     <>
       {isOpen && (
@@ -29,10 +30,12 @@ export const Sidebar = ({ isOpen, closeSidebar }: { isOpen: boolean; closeSideba
             My Children
           </Link>
 
-          <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
-            <span className="material-symbols-outlined" data-icon="analytics">analytics</span>
-            Academic Reports
-          </Link>
+          {school?.featuresGrades !== false && (
+            <Link to="#" className="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-lg font-medium font-label-md text-label-md transition-colors">
+              <span className="material-symbols-outlined" data-icon="analytics">analytics</span>
+              Academic Reports
+            </Link>
+          )}
 
         </nav>
         <div className="mt-auto border-t border-surface-border dark:border-outline-variant pt-4 flex flex-col gap-2">

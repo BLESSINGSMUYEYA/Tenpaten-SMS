@@ -1,7 +1,9 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const BottomNav = () => {
+  const { user } = useAuth();
   const location = useLocation();
+  const school = user?.school;
 
   const getLinkClass = (path: string) => {
     const isActive = location.pathname === path;
@@ -21,24 +23,27 @@ export const BottomNav = () => {
         </span>
         <span className="font-label-sm-mobile text-[10px] mt-1">Home</span>
       </Link>
-      <Link className={getLinkClass('/bursar/fees')} to="/bursar/fees">
-        <span className="material-symbols-outlined text-xl" data-icon="payments">
-          payments
-        </span>
-        <span className="font-label-sm-mobile text-[10px] mt-1">Fees</span>
-      </Link>
-      <Link className={getLinkClass('/bursar/payments')} to="/bursar/payments">
-        <span className="material-symbols-outlined text-xl" data-icon="receipt_long">
-          receipt_long
-        </span>
-        <span className="font-label-sm-mobile text-[10px] mt-1">Payments</span>
-      </Link>
-      <Link className={getLinkClass('/bursar/students')} to="/bursar/students">
-        <span className="material-symbols-outlined text-xl" data-icon="account_balance_wallet">
-          account_balance_wallet
-        </span>
-        <span className="font-label-sm-mobile text-[10px] mt-1">Balances</span>
-      </Link>
+      {school?.featuresFees !== false && (
+        <>
+          <Link className={getLinkClass('/bursar/fees')} to="/bursar/fees">
+            <span className="material-symbols-outlined text-xl" data-icon="payments">
+              payments
+            </span>
+            <span className="font-label-sm-mobile text-[10px] mt-1">Fees</span>
+          </Link>
+          <Link className={getLinkClass('/bursar/payments')} to="/bursar/payments">
+            <span className="material-symbols-outlined text-xl" data-icon="receipt_long">
+              receipt_long
+            </span>
+            <span className="font-label-sm-mobile text-[10px] mt-1">Payments</span>
+          </Link>
+          <Link className={getLinkClass('/bursar/students')} to="/bursar/students">
+            <span className="material-symbols-outlined text-xl" data-icon="account_balance_wallet">
+              account_balance_wallet
+            </span>
+            <span className="font-label-sm-mobile text-[10px] mt-1">Balances</span>
+          </Link>
+      )}
     </nav>
   );
 };

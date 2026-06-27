@@ -36,7 +36,8 @@ export function getRoleHomePath(role: UserRole): string {
 export const PrivateRoute: React.FC<{
   children: React.ReactNode;
   allowedRoles?: UserRole[];
-}> = ({ children, allowedRoles }) => {
+  requiredFeature?: 'featuresAttendance' | 'featuresGrades' | 'featuresFees' | 'featuresCommunication';
+}> = ({ children, allowedRoles, requiredFeature }) => {
   const { user, isAuthenticated, isLoading, mustChangePassword } = useAuth();
   const location = useLocation();
 
@@ -65,6 +66,11 @@ export const PrivateRoute: React.FC<{
 
   // RBAC permission check
   if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  // Feature gating check
+  if (requiredFeature && user.school && (user.school as any)[requiredFeature] === false) {
     return <Navigate to="/unauthorized" replace />;
   }
 

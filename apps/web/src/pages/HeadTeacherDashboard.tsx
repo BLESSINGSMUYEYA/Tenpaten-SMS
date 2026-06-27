@@ -40,6 +40,34 @@ export const HeadTeacherDashboard: React.FC = () => {
 
   const formattedRevenue = `MK ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+  const school = user?.school;
+
+  // Key Stats
+  const statCards = [
+    { label: 'Total Students', value: loadingStudents ? '...' : totalStudents, icon: 'groups', badge: 'Active scholars', badgeColor: 'text-on-surface-variant', to: '/head-teacher/people' },
+    { label: 'Active Staff', value: loadingStaff ? '...' : activeStaff, icon: 'badge', badge: 'Optimal capacity', badgeColor: 'text-on-surface-variant', to: '/head-teacher/people' },
+    ...(school?.featuresAttendance !== false ? [
+      { label: 'Attendance Today', value: attendanceRate, icon: 'how_to_reg', badge: 'Daily check-in', badgeColor: 'text-on-surface-variant', to: '/head-teacher/attendance' }
+    ] : []),
+    ...(school?.featuresFees !== false ? [
+      { label: 'Revenue Collected', value: loadingInvoices ? '...' : formattedRevenue, icon: 'account_balance_wallet', badge: 'Term 2 fees', badgeColor: 'text-on-surface-variant', to: '/head-teacher/finance' }
+    ] : []),
+  ];
+
+  // Quick Actions
+  const quickActions = [
+    { icon: 'person_add', label: 'Enroll Student', to: '/head-teacher/people' },
+    { icon: 'badge', label: 'Add Staff', to: '/head-teacher/people' },
+    ...(school?.featuresCommunication !== false ? [
+      { icon: 'campaign', label: 'Send Broadcast', to: '/head-teacher/announcements/new' }
+    ] : []),
+    ...(school?.featuresGrades !== false ? [
+      { icon: 'summarize', label: 'Generate Report', to: '/head-teacher/academic' }
+    ] : []),
+  ];
+
+  const alertCount = school?.featuresFees !== false ? '2 Active' : '1 Active';
+
   return (
     <>
       <Header onMenuClick={() => setSidebarOpen(true)} />
@@ -56,12 +84,7 @@ export const HeadTeacherDashboard: React.FC = () => {
 
           {/* Key Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-lg">
-            {[
-              { label: 'Total Students', value: loadingStudents ? '...' : totalStudents, icon: 'groups', badge: 'Active scholars', badgeColor: 'text-on-surface-variant', to: '/head-teacher/people' },
-              { label: 'Active Staff', value: loadingStaff ? '...' : activeStaff, icon: 'badge', badge: 'Optimal capacity', badgeColor: 'text-on-surface-variant', to: '/head-teacher/people' },
-              { label: 'Attendance Today', value: attendanceRate, icon: 'how_to_reg', badge: 'Daily check-in', badgeColor: 'text-on-surface-variant', to: '/head-teacher/attendance' },
-              { label: 'Revenue Collected', value: loadingInvoices ? '...' : formattedRevenue, icon: 'account_balance_wallet', badge: 'Term 2 fees', badgeColor: 'text-on-surface-variant', to: '/head-teacher/finance' },
-            ].map(card => (
+            {statCards.map(card => (
               <Link key={card.label} to={card.to} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-md hover:border-primary transition-all">
                 <div className="flex justify-between items-start">
                   <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">{card.label}</span>
@@ -99,7 +122,7 @@ export const HeadTeacherDashboard: React.FC = () => {
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col">
               <div className="flex justify-between items-center mb-lg">
                 <h3 className="font-title-lg text-title-lg font-semibold text-on-background">System Alerts</h3>
-                <span className="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-medium">1 Active</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-medium">{alertCount}</span>
               </div>
               <div className="flex flex-col gap-4 overflow-y-auto max-h-[240px]">
                 <div className="p-4 bg-surface-container-highest border border-outline-variant rounded-lg flex gap-3 items-start">
@@ -109,13 +132,15 @@ export const HeadTeacherDashboard: React.FC = () => {
                     <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Class schedules and billing are live for Term 2 session.</p>
                   </div>
                 </div>
-                <div className="p-4 bg-tertiary-container/20 border border-tertiary-container/30 rounded-lg flex gap-3 items-start">
-                  <span className="material-symbols-outlined text-tertiary text-[20px] shrink-0">warning</span>
-                  <div>
-                    <h4 className="font-label-md text-label-md font-semibold text-on-background">Fee Invoices Initialized</h4>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Billing invoices generated automatically for all enrolled students.</p>
+                {school?.featuresFees !== false && (
+                  <div className="p-4 bg-tertiary-container/20 border border-tertiary-container/30 rounded-lg flex gap-3 items-start">
+                    <span className="material-symbols-outlined text-tertiary text-[20px] shrink-0">warning</span>
+                    <div>
+                      <h4 className="font-label-md text-label-md font-semibold text-on-background">Fee Invoices Initialized</h4>
+                      <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Billing invoices generated automatically for all enrolled students.</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -124,12 +149,7 @@ export const HeadTeacherDashboard: React.FC = () => {
           <div>
             <h3 className="font-title-lg text-title-lg font-semibold text-on-background mb-md">Quick Actions</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-lg cards-stagger">
-              {[
-                { icon: 'person_add', label: 'Enroll Student', to: '/head-teacher/people' },
-                { icon: 'badge', label: 'Add Staff', to: '/head-teacher/people' },
-                { icon: 'campaign', label: 'Send Broadcast', to: '/head-teacher/announcements/new' },
-                { icon: 'summarize', label: 'Generate Report', to: '/head-teacher/academic' },
-              ].map(action => (
+              {quickActions.map(action => (
                 <Link key={action.label} to={action.to} className="flex flex-col items-center justify-center gap-sm p-lg bg-surface-container-lowest border border-outline-variant rounded-xl hover:border-primary hover:shadow-sm transition-all group">
                   <div className="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center group-hover:bg-primary-container transition-colors">
                     <span className="material-symbols-outlined text-primary group-hover:text-on-primary-container">{action.icon}</span>

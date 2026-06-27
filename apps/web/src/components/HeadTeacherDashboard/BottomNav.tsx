@@ -1,24 +1,31 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const bottomNavItems = [
   { icon: 'dashboard', label: 'Home', to: '/head-teacher' },
   { icon: 'group', label: 'People', to: '/head-teacher/people' },
   { icon: 'school', label: 'Academic', to: '/head-teacher/academic' },
   { icon: 'event_available', label: 'Attendance', to: '/head-teacher/attendance' },
-
 ];
 
 export const BottomNav = () => {
+  const { user } = useAuth();
   const location = useLocation();
+  const school = user?.school;
 
   const isActive = (to: string) =>
     to === '/head-teacher'
       ? location.pathname === '/head-teacher'
       : location.pathname.startsWith(to);
 
+  const filteredItems = bottomNavItems.filter(item => {
+    if (item.label === 'Academic' && school?.featuresGrades === false) return false;
+    if (item.label === 'Attendance' && school?.featuresAttendance === false) return false;
+    return true;
+  });
+
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center bg-surface dark:bg-surface-dim px-2 pb-safe h-16 border-t border-surface-border dark:border-outline-variant">
-      {bottomNavItems.map(item => (
+      {filteredItems.map(item => (
         <Link
           key={item.label}
           to={item.to}
