@@ -1,106 +1,64 @@
-import rateLimit, { MemoryStore, Store } from 'express-rate-limit';
+import rateLimit, { MemoryStore, Options, RateLimitRequestHandler } from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { redis } from '../config/redis';
 import type { ApiResponse } from '@myklasi/shared';
+import type { Request, Response, NextFunction } from 'express';
 
 /**
- * A wrapper store that delegates to RedisStore if Redis is connected/available.
- * If Redis is unavailable or fails during operation/init, it falls back to the in-memory MemoryStore.
+ * Creates a rate-limit middleware that lazily initialises its store on the
+ * first incoming request — NOT at module load time.
+ *
+ * This avoids the crash caused by `rate-limit-redis` calling `SCRIPT LOAD`
+ * in the `RedisStore` constructor before the Redis connection is ready
+ * (and before `enableOfflineQueue: false` allows any commands through).
+ *
+ * Strategy:
+ *  - On the first request, check whether Redis is in the `'ready'` state.
+ *  - If yes → build a `RedisStore`-backed `rateLimit` handler.
+ *  - If no  → build a `MemoryStore`-backed `rateLimit` handler and warn once.
+ *  - All subsequent requests reuse the same handler.
  */
-class GracefulRedisStore implements Store {
-  private redisStore: RedisStore;
-  private memoryStore: MemoryStore;
-  private useMemory = false;
+function createLazyRateLimiter(
+  prefix: string,
+  options: Omit<Partial<Options>, 'store'>
+): (req: Request, res: Response, next: NextFunction) => void {
+  let handler: RateLimitRequestHandler | null = null;
 
-  constructor(prefix: string) {
-    this.memoryStore = new MemoryStore();
-    
-    this.redisStore = new RedisStore({
-      prefix,
-      sendCommand: async (command: string, ...args: string[]): Promise<any> => {
-        if (this.useMemory) {
-          return 0;
-        }
-        try {
-          return await redis.call(command, ...args);
-        } catch (err: any) {
-          console.error(`[RedisStore] Command "${command}" failed, falling back to MemoryStore:`, err.message);
-          this.useMemory = true;
-          return 0; // Return dummy value so constructor/init does not throw
-        }
-      },
-    });
-  }
-
-  init(options: any) {
-    this.memoryStore.init(options);
-    if (this.redisStore.init) {
-      try {
-        this.redisStore.init(options);
-      } catch (err: any) {
-        console.error('[RedisStore] Init failed, falling back to MemoryStore:', err.message);
-        this.useMemory = true;
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!handler) {
+      if (redis.status === 'ready') {
+        // Redis is up — use the distributed store
+        handler = rateLimit({
+          ...options,
+          store: new RedisStore({
+            prefix,
+            sendCommand: (...args: string[]) =>
+              redis.call(args[0], ...args.slice(1)) as Promise<any>,
+          }),
+        });
+        console.log(`[RateLimit] Using RedisStore for prefix "${prefix}"`);
+      } else {
+        // Redis is not ready — fall back to per-instance memory store
+        console.warn(
+          `[RateLimit] Redis not ready (status: "${redis.status}"), using MemoryStore for prefix "${prefix}"`
+        );
+        handler = rateLimit({ ...options, store: new MemoryStore() });
       }
     }
-  }
 
-  async increment(key: string) {
-    if (this.useMemory) {
-      return this.memoryStore.increment(key);
-    }
-    try {
-      return await this.redisStore.increment(key);
-    } catch (err: any) {
-      console.error('[RedisStore] Increment failed, falling back to MemoryStore:', err.message);
-      this.useMemory = true;
-      return this.memoryStore.increment(key);
-    }
-  }
-
-  async decrement(key: string) {
-    if (this.useMemory) {
-      return this.memoryStore.decrement(key);
-    }
-    try {
-      await this.redisStore.decrement(key);
-    } catch (err: any) {
-      console.error('[RedisStore] Decrement failed, falling back to MemoryStore:', err.message);
-      this.useMemory = true;
-      await this.memoryStore.decrement(key);
-    }
-  }
-
-  async resetKey(key: string) {
-    if (this.useMemory) {
-      return this.memoryStore.resetKey(key);
-    }
-    try {
-      await this.redisStore.resetKey(key);
-    } catch (err: any) {
-      console.error('[RedisStore] ResetKey failed, falling back to MemoryStore:', err.message);
-      this.useMemory = true;
-      await this.memoryStore.resetKey(key);
-    }
-  }
-}
-
-/**
- * Creates a rate limiter store that falls back gracefully if Redis is unavailable.
- */
-function createRedisStore(prefix: string) {
-  return new GracefulRedisStore(prefix);
+    handler(req, res, next);
+  };
 }
 
 // ---- Login Rate Limiter ----
-// 10 attempts per IP per 15 minutes (only failed requests count)
-export const loginRateLimiter = rateLimit({
+// 10 failed attempts per IP per 15 minutes
+export const loginRateLimiter = createLazyRateLimiter('rl:login:', {
   windowMs: 15 * 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
-  store: createRedisStore('rl:login:'),
-  handler: (_req, res) => {
+  handler: (_req, res: Response) => {
     const response: ApiResponse = {
       success: false,
       message: 'Too many login attempts from this IP. Please try again in 15 minutes.',
@@ -112,13 +70,12 @@ export const loginRateLimiter = rateLimit({
 
 // ---- Password Reset Rate Limiter ----
 // 5 requests per IP per hour
-export const passwordResetRateLimiter = rateLimit({
+export const passwordResetRateLimiter = createLazyRateLimiter('rl:pwd-reset:', {
   windowMs: 60 * 60 * 1000,
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
-  store: createRedisStore('rl:pwd-reset:'),
-  handler: (_req, res) => {
+  handler: (_req, res: Response) => {
     const response: ApiResponse = {
       success: false,
       message: 'Too many password reset attempts. Please try again in an hour.',
@@ -129,13 +86,12 @@ export const passwordResetRateLimiter = rateLimit({
 
 // ---- General API Rate Limiter ----
 // 200 requests per IP per minute
-export const apiRateLimiter = rateLimit({
+export const apiRateLimiter = createLazyRateLimiter('rl:api:', {
   windowMs: 60 * 1000,
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
-  store: createRedisStore('rl:api:'),
-  handler: (_req, res) => {
+  handler: (_req, res: Response) => {
     const response: ApiResponse = {
       success: false,
       message: 'Too many requests. Please slow down.',
