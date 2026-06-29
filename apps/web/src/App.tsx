@@ -250,7 +250,7 @@ const App: React.FC = () => {
               <Route
                 path="/dashboard"
                 element={
-                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'school_director', 'head_teacher']}>
                     <HeadTeacherDashboard />
                   </PrivateRoute>
                 }
@@ -258,7 +258,7 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher"
                 element={
-                  <PrivateRoute allowedRoles={['head_teacher']}>
+                  <PrivateRoute allowedRoles={['school_director', 'head_teacher']}>
                     <HeadTeacherDashboard />
                   </PrivateRoute>
                 }
@@ -266,7 +266,7 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/people"
                 element={
-                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'school_director', 'head_teacher']}>
                     <HeadTeacherPeople />
                   </PrivateRoute>
                 }
@@ -274,7 +274,7 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/academic"
                 element={
-                  <PrivateRoute allowedRoles={['director', 'head_teacher']} requiredFeature="featuresGrades">
+                  <PrivateRoute allowedRoles={['director', 'school_director', 'head_teacher']} requiredFeature="featuresGrades">
                     <HeadTeacherAcademic />
                   </PrivateRoute>
                 }
@@ -282,7 +282,7 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/timetable"
                 element={
-                  <PrivateRoute allowedRoles={['director', 'head_teacher']} requiredFeature="featuresAttendance">
+                  <PrivateRoute allowedRoles={['director', 'school_director', 'head_teacher']} requiredFeature="featuresAttendance">
                     <HeadTeacherTimetable />
                   </PrivateRoute>
                 }
@@ -290,7 +290,7 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/attendance"
                 element={
-                  <PrivateRoute allowedRoles={['director', 'head_teacher']} requiredFeature="featuresAttendance">
+                  <PrivateRoute allowedRoles={['director', 'school_director', 'head_teacher']} requiredFeature="featuresAttendance">
                     <HeadTeacherAttendance />
                   </PrivateRoute>
                 }
@@ -298,7 +298,7 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/settings"
                 element={
-                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'school_director', 'head_teacher']}>
                     <HeadTeacherSettings />
                   </PrivateRoute>
                 }
@@ -306,7 +306,7 @@ const App: React.FC = () => {
               <Route
                 path="/head-teacher/setup"
                 element={
-                  <PrivateRoute allowedRoles={['director', 'head_teacher']}>
+                  <PrivateRoute allowedRoles={['director', 'school_director', 'head_teacher']}>
                     <SchoolSetupWizard />
                   </PrivateRoute>
                 }
@@ -453,7 +453,7 @@ const App: React.FC = () => {
               <Route
                 path="/bursar/dashboard"
                 element={
-                  <PrivateRoute allowedRoles={['bursar']}>
+                  <PrivateRoute allowedRoles={['bursar', 'director', 'school_director']}>
                     <BursarDashboard />
                   </PrivateRoute>
                 }
@@ -461,7 +461,7 @@ const App: React.FC = () => {
               <Route
                 path="/bursar/fees"
                 element={
-                  <PrivateRoute allowedRoles={['bursar']} requiredFeature="featuresFees">
+                  <PrivateRoute allowedRoles={['bursar', 'director', 'school_director']} requiredFeature="featuresFees">
                     <BursarFees />
                   </PrivateRoute>
                 }
@@ -469,7 +469,7 @@ const App: React.FC = () => {
               <Route
                 path="/bursar/payments"
                 element={
-                  <PrivateRoute allowedRoles={['bursar']} requiredFeature="featuresFees">
+                  <PrivateRoute allowedRoles={['bursar', 'director', 'school_director']} requiredFeature="featuresFees">
                     <BursarPayments />
                   </PrivateRoute>
                 }
@@ -477,7 +477,7 @@ const App: React.FC = () => {
               <Route
                 path="/bursar/students"
                 element={
-                  <PrivateRoute allowedRoles={['bursar']} requiredFeature="featuresFees">
+                  <PrivateRoute allowedRoles={['bursar', 'director', 'school_director']} requiredFeature="featuresFees">
                     <BursarStudents />
                   </PrivateRoute>
                 }
@@ -485,7 +485,7 @@ const App: React.FC = () => {
               <Route
                 path="/bursar/settings"
                 element={
-                  <PrivateRoute allowedRoles={['bursar']}>
+                  <PrivateRoute allowedRoles={['bursar', 'director', 'school_director']}>
                     <BursarSettings />
                   </PrivateRoute>
                 }
@@ -557,6 +557,18 @@ const App: React.FC = () => {
                     <SchoolSetupWizard />
                   </PrivateRoute>
                 }
+              />
+              <Route
+                path="/school-director/academic"
+                element={<Navigate to="/head-teacher/academic" replace />}
+              />
+              <Route
+                path="/school-director/staff"
+                element={<Navigate to="/head-teacher/people" replace />}
+              />
+              <Route
+                path="/school-director/finance"
+                element={<Navigate to="/bursar/fees" replace />}
               />
 
               {/* Navigation Fallbacks */}

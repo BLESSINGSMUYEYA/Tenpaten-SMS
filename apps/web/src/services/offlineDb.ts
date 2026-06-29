@@ -83,6 +83,10 @@ function getDb(): Promise<IDBPDatabase<MyKlasiDB>> {
           db.createObjectStore('cachedStudents', { keyPath: 'key' });
         }
       },
+    }).catch(err => {
+      console.warn('[offlineDb] Failed to open IndexedDB, resetting promise:', err);
+      dbPromise = null;
+      throw err;
     });
   }
   return dbPromise;

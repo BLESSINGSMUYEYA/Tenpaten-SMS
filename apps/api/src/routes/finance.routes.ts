@@ -14,7 +14,7 @@ router.use(authenticate);
 // Retrieve summary of institutional finances
 router.get(
   '/stats',
-  requireRoles('head_teacher', 'bursar'),
+  requireRoles('head_teacher', 'bursar', 'school_director', 'director'),
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
 
@@ -68,7 +68,7 @@ router.get(
 // Retrieve defined class fee structures
 router.get(
   '/structures',
-  requireRoles('head_teacher', 'bursar'),
+  requireRoles('director', 'school_director', 'head_teacher', 'bursar'),
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
     const structures = await prisma.feeStructure.findMany({
@@ -103,7 +103,7 @@ router.get(
 // Create or update class fee structure
 router.post(
   '/structures',
-  requireRoles('head_teacher', 'bursar'),
+  requireRoles('director', 'school_director', 'head_teacher', 'bursar'),
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
     const { classId, termId, tuitionFee, boardingFee, otherFee } = req.body;
@@ -259,7 +259,7 @@ router.get(
 // Generate bulk billing invoices for a class and active term
 router.post(
   '/invoices/generate',
-  requireRoles('head_teacher', 'bursar'),
+  requireRoles('director', 'school_director', 'head_teacher', 'bursar'),
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
     const { classId, termId } = req.body;
@@ -329,7 +329,7 @@ router.post(
 // Fetch recent payment transactions
 router.get(
   '/payments',
-  requireRoles('head_teacher', 'bursar'),
+  requireRoles('director', 'school_director', 'head_teacher', 'bursar'),
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
     const { invoiceId } = req.query;
@@ -382,7 +382,7 @@ router.get(
 // Record a fee payment receipt and dispatch parent SMS
 router.post(
   '/payments',
-  requireRoles('head_teacher', 'bursar'),
+  requireRoles('director', 'school_director', 'head_teacher', 'bursar'),
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
     const recordedBy = req.user!.userId;
@@ -496,7 +496,7 @@ router.post(
 // Trigger a manual SMS reminder to the parent for outstanding balances
 router.post(
   '/invoices/:id/reminder',
-  requireRoles('head_teacher', 'bursar'),
+  requireRoles('director', 'school_director', 'head_teacher', 'bursar'),
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
     const invoiceId = req.params.id;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sidebar } from '../components/HeadTeacherDashboard/Sidebar';
 import { DashboardHeader } from '../components/DashboardHeader';
 import { useQuery, useMutation } from '../hooks/useApi';
+import { api } from '../services/api';
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
 const STEPS = [
@@ -30,6 +31,7 @@ interface SetupData {
   grades: string[];
   subjects: string;
   yearStart: string;
+  streams: string;
   // Step 3
   currencyCode: string;
   feeFrequency: string;
@@ -48,6 +50,7 @@ const initialData: SetupData = {
   grades: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'],
   subjects: 'Mathematics, English, Science, Social Studies, Chichewa',
   yearStart: '2026-01-01',
+  streams: 'A, B',
   currencyCode: 'MWK', feeFrequency: 'termly',
   primaryFee: '', secondaryFee: '', latePenalty: '5',
   paymentMethods: ['cash'],
@@ -99,6 +102,15 @@ const StepProgress: React.FC<{ current: number; completedSteps: Set<number> }> =
     </div>
   </div>
 );
+
+const DISTRICTS = [
+  'Balaka', 'Blantyre', 'Chikwawa', 'Chiradzulu', 'Chitipa',
+  'Dedza', 'Dowa', 'Karonga', 'Kasungu', 'Likoma',
+  'Lilongwe', 'Machinga', 'Mangochi', 'Mchinji', 'Mulanje',
+  'Mwanza', 'Mzimba', 'Neno', 'Nkhata Bay', 'Nkhotakota',
+  'Nsanje', 'Ntcheu', 'Ntchisi', 'Phalombe', 'Rumphi',
+  'Salima', 'Thyolo', 'Zomba',
+];
 
 // ─── Step 1: Institutional Details ────────────────────────────────────────────
 const Step1: React.FC<{ data: SetupData; setData: React.Dispatch<React.SetStateAction<SetupData>> }> = ({ data, setData }) => {
@@ -180,12 +192,16 @@ const Step1: React.FC<{ data: SetupData; setData: React.Dispatch<React.SetStateA
         {/* District */}
         <div>
           <label className="font-label-md text-on-surface font-semibold block mb-1.5">District</label>
-          <input
-            className="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary/40 transition placeholder:text-on-surface-variant/50"
-            placeholder="e.g. Lilongwe"
+          <select
+            className="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
             value={data.district}
             onChange={set('district')}
-          />
+          >
+            <option value="">Select District...</option>
+            {DISTRICTS.map(d => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
         </div>
 
         {/* Phone */}
@@ -302,10 +318,52 @@ const Step2: React.FC<{ data: SetupData; setData: React.Dispatch<React.SetStateA
           </div>
         </div>
 
+        {/* Streams/Divisions */}
+        <div>
+          <label className="font-label-md text-on-surface font-semibold block mb-1.5">
+            Streams / Divisions (optional)
+          </label>
+          <input
+            className="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary/40 transition placeholder:text-on-surface-variant/50"
+            placeholder="e.g. A, B or North, East (leave blank if no streams)"
+            value={data.streams}
+            onChange={set('streams')}
+          />
+          <p className="font-body-sm text-on-surface-variant mt-1">
+            If specified, each class/grade will be split into these streams (e.g. Form 1 A, Form 1 B).
+          </p>
+        </div>
+
         {/* Subjects */}
         <div>
           <label className="font-label-md text-on-surface font-semibold block mb-1.5">Subjects Offered</label>
-          <p className="font-body-sm text-on-surface-variant mb-2">Enter subject names separated by commas.</p>
+          <p className="font-body-sm text-on-surface-variant mb-2">Select standard subjects to add or remove them, and type custom ones in the field below.</p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {['Mathematics', 'English', 'Science', 'Social Studies', 'Chichewa', 'Biology', 'Chemistry', 'Physics', 'History', 'Geography', 'Agriculture', 'Computer Studies', 'Business Studies', 'Religious Education', 'Life Skills'].map(sub => {
+              const selectedList = data.subjects.split(',').map(s => s.trim()).filter(Boolean);
+              const isSelected = selectedList.includes(sub);
+              return (
+                <button
+                  key={sub}
+                  type="button"
+                  onClick={() => {
+                    const list = data.subjects.split(',').map(s => s.trim()).filter(Boolean);
+                    const hasSub = list.includes(sub);
+                    const newList = hasSub ? list.filter(s => s !== sub) : [...list, sub];
+                    setData(prev => ({ ...prev, subjects: newList.join(', ') }));
+                  }}
+                  className={`px-3 py-1.5 rounded-full font-label-sm text-label-sm border transition-all ${
+                    isSelected
+                      ? 'bg-primary-container text-on-primary-container border-primary/30 font-bold shadow-sm'
+                      : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-primary/30'
+                  }`}
+                >
+                  {isSelected && <span className="material-symbols-outlined text-[12px] mr-1">check</span>}
+                  {sub}
+                </button>
+              );
+            })}
+          </div>
           <textarea
             rows={3}
             className="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface text-on-surface font-body-md focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none placeholder:text-on-surface-variant/50"
@@ -596,6 +654,7 @@ const Step5: React.FC<{ data: SetupData; onActivate: () => void; isSaving: boole
       items: [
         { label: 'System',   value: data.academicSystem },
         { label: 'Grades',   value: data.grades.join(', ') || '—' },
+        { label: 'Streams',  value: data.streams || 'None' },
         { label: 'Subjects', value: data.subjects || '—' },
         { label: 'Year Start', value: data.yearStart },
       ],
@@ -694,10 +753,11 @@ export const SchoolSetupWizard: React.FC = () => {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [data, setData] = useState<SetupData>(initialData);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
 
   // Fetch existing school data
-  const { data: schoolData } = useQuery<any>('/school/my-school');
-  const { mutate: updateSchool, loading: isSaving } = useMutation('/school/my-school', 'put');
+  const { data: schoolData } = useQuery<any>('/schools/my-school');
+  const { mutate: updateSchool, loading: isSaving } = useMutation('/schools/my-school', 'put');
 
   useEffect(() => {
     if (schoolData) {
@@ -724,7 +784,9 @@ export const SchoolSetupWizard: React.FC = () => {
   const goBack = () => setCurrentStep(s => Math.max(s - 1, 1));
 
   const handleActivate = async () => {
+    setIsActivating(true);
     try {
+      // 1. Update school details
       await updateSchool({
         name: data.schoolName,
         schoolCode: data.schoolCode,
@@ -736,11 +798,157 @@ export const SchoolSetupWizard: React.FC = () => {
         email: data.email,
         website: data.website
       });
+
+      // 2. Create Academic Year
+      const yearStart = new Date(data.yearStart);
+      const startYear = yearStart.getFullYear();
+      const endYear = startYear + 1;
+      const yearName = `${startYear}/${endYear}`;
+      const yearEndDate = new Date(yearStart);
+      yearEndDate.setFullYear(yearEndDate.getFullYear() + 1);
+      yearEndDate.setDate(yearEndDate.getDate() - 1);
+
+      const yearRes = await api.post('/schools/academic-years', {
+        name: yearName,
+        startDate: yearStart.toISOString(),
+        endDate: yearEndDate.toISOString(),
+        isCurrent: true
+      });
+      
+      const academicYearId = yearRes.data?.data?.id;
+      if (!academicYearId) {
+        throw new Error('Failed to retrieve Academic Year ID from response');
+      }
+
+      // 3. Create Terms
+      const numTerms = parseInt(data.termsPerYear) || 3;
+      const termsCreated = [];
+      for (let i = 1; i <= numTerms; i++) {
+        const tStartDate = new Date(yearStart);
+        tStartDate.setMonth(tStartDate.getMonth() + Math.round((i - 1) * 12 / numTerms));
+        const tEndDate = new Date(yearStart);
+        tEndDate.setMonth(tEndDate.getMonth() + Math.round(i * 12 / numTerms));
+        tEndDate.setDate(tEndDate.getDate() - 1);
+
+        const termRes = await api.post('/schools/terms', {
+          academicYearId,
+          name: `Term ${i}`,
+          startDate: tStartDate.toISOString(),
+          endDate: tEndDate.toISOString(),
+          isCurrent: i === 1
+        });
+        if (termRes.data?.data) {
+          termsCreated.push(termRes.data.data);
+        }
+      }
+      const currentTermId = termsCreated[0]?.id;
+
+      // 4. Create Classes
+      const classIdMap: Record<string, string[]> = {};
+      const streamNames = data.streams.split(',').map(s => s.trim()).filter(Boolean);
+
+      for (const gradeName of data.grades) {
+        classIdMap[gradeName] = [];
+        if (streamNames.length > 0) {
+          for (const stream of streamNames) {
+            const classRes = await api.post('/schools/classes', {
+              name: gradeName,
+              stream,
+              academicYearId
+            });
+            if (classRes.data?.data?.id) {
+              classIdMap[gradeName].push(classRes.data.data.id);
+            }
+          }
+        } else {
+          const classRes = await api.post('/schools/classes', {
+            name: gradeName,
+            academicYearId
+          });
+          if (classRes.data?.data?.id) {
+            classIdMap[gradeName].push(classRes.data.data.id);
+          }
+        }
+      }
+
+      // 5. Create Subjects
+      const subjectNames = data.subjects.split(',').map(s => s.trim()).filter(Boolean);
+      const subjectIdMap: Record<string, string> = {};
+      for (const subName of subjectNames) {
+        const code = subName.slice(0, 3).toUpperCase();
+        const subRes = await api.post('/schools/subjects', {
+          name: subName,
+          code,
+          isCore: true,
+          caMax: 30,
+          examMax: 70
+        });
+        if (subRes.data?.data?.id) {
+          subjectIdMap[subName] = subRes.data.data.id;
+        }
+      }
+
+      // 6. Assign Subjects to Classes (ClassSubject)
+      for (const gradeName of data.grades) {
+        const classIds = classIdMap[gradeName] || [];
+        for (const classId of classIds) {
+          for (const subName of subjectNames) {
+            const subjectId = subjectIdMap[subName];
+            if (!subjectId) continue;
+            await api.post('/schools/class-subjects', {
+              classId,
+              subjectId
+            });
+          }
+        }
+      }
+
+      // 7. Create Fee Structures
+      const primaryFeeVal = parseFloat(data.primaryFee) || 0;
+      const secondaryFeeVal = parseFloat(data.secondaryFee) || 0;
+      if (currentTermId) {
+        for (const gradeName of data.grades) {
+          const classIds = classIdMap[gradeName] || [];
+          for (const classId of classIds) {
+            const isSecondary = gradeName.toLowerCase().includes('form') || gradeName.toLowerCase().includes('grade 9') || gradeName.toLowerCase().includes('grade 10') || gradeName.toLowerCase().includes('grade 11') || gradeName.toLowerCase().includes('grade 12');
+            const feeAmount = isSecondary ? secondaryFeeVal : primaryFeeVal;
+            
+            if (feeAmount > 0) {
+              await api.post('/finance/structures', {
+                classId,
+                termId: currentTermId,
+                tuitionFee: feeAmount,
+                boardingFee: 0,
+                otherFee: 0
+              });
+            }
+          }
+        }
+      }
+
+      // 8. Onboard Staff Accounts
+      for (const acc of data.accounts) {
+        if (!acc.name || !acc.email) continue;
+        const nameParts = acc.name.trim().split(/\s+/);
+        const firstName = nameParts[0] || 'Staff';
+        const lastName = nameParts.slice(1).join(' ') || 'Member';
+        
+        await api.post('/people/staff', {
+          firstName,
+          lastName,
+          email: acc.email,
+          role: acc.role
+        });
+      }
+
       setCompletedSteps(new Set([1, 2, 3, 4, 5]));
       setShowSuccess(true);
-    } catch (err) {
-      console.error('Failed to update school setup:', err);
-      alert('Failed to update school details. Please check console for errors.');
+    } catch (err: any) {
+      console.error('Failed to complete school setup:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Unknown activation error';
+      alert(`Failed to complete school setup: ${errMsg}`);
+    } finally {
+      setIsActivating(false);
     }
   };
 
@@ -750,7 +958,7 @@ export const SchoolSetupWizard: React.FC = () => {
       case 2: return <Step2 data={data} setData={setData} />;
       case 3: return <Step3 data={data} setData={setData} />;
       case 4: return <Step4 data={data} setData={setData} />;
-      case 5: return <Step5 data={data} onActivate={handleActivate} isSaving={isSaving} />;
+      case 5: return <Step5 data={data} onActivate={handleActivate} isSaving={isActivating || isSaving} />;
       default: return null;
     }
   };

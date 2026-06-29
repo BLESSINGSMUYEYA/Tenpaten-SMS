@@ -14,7 +14,7 @@ router.use(authenticate);
 // ---- GET Grade Stats ----
 router.get(
   '/stats',
-  requireRoles('head_teacher', 'deputy_head'),
+  requireRoles('head_teacher', 'deputy_head', 'school_director', 'director'),
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
 
@@ -131,7 +131,31 @@ router.get(
     const subjectPerformance = [];
     const barLabels = [];
     const subjectsSummary = [];
-    const examSchedule = [];
+    const dbExams = await prisma.examSchedule.findMany({
+      where: { schoolId, termId: currentTerm.id, isDeleted: false },
+      include: {
+        subject: { select: { name: true } },
+        class: { select: { displayName: true } },
+      },
+      orderBy: { date: 'asc' },
+    });
+
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const examSchedule = dbExams.map(e => {
+      const d = new Date(e.date);
+      const formattedDate = `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
+      return {
+        id: e.id,
+        subject: e.subject.name,
+        date: formattedDate,
+        time: e.time,
+        venue: e.venue,
+        form: e.class.displayName,
+        status: e.status,
+      };
+    });
 
     for (const sub of subjects) {
       const subGrades = grades.filter(g => g.subjectId === sub.id && g.totalMark !== null);
@@ -182,19 +206,6 @@ router.get(
         total: subTotal,
         trend,
       });
-
-      // Exam Schedule Generation
-      for (const cs of sub.classSubjects) {
-        const classDispName = cs.class.displayName;
-        examSchedule.push({
-          subject: `${sub.name} (MSCE)`,
-          date: 'Fri, 26 Jun',
-          time: '08:00 – 11:00',
-          venue: 'Main Hall',
-          form: classDispName,
-          status: 'Upcoming',
-        });
-      }
     }
 
     sendSuccess(res, {

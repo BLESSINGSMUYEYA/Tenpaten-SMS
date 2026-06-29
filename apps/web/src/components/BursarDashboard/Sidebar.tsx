@@ -36,6 +36,17 @@ export const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
         <div className="h-14 flex items-center px-6 border-b border-outline-variant w-full shrink-0">
           <Logo height="80px" />
         </div>
+        {user?.role === 'school_director' && (
+          <div className="px-4 pt-4 shrink-0">
+            <Link
+              to="/school-director"
+              className="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary py-2.5 rounded-lg font-bold transition-all text-sm w-full border border-primary/20"
+            >
+              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+              Director Portal
+            </Link>
+          </div>
+        )}
         <nav className="flex-1 space-y-1 overflow-y-auto p-4">
           <Link to="/bursar/dashboard" className={getLinkClass('/bursar/dashboard')} onClick={closeSidebar}>
             <span className="material-symbols-outlined" data-icon="dashboard">

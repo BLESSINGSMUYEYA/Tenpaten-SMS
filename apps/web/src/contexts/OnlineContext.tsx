@@ -42,8 +42,12 @@ export function OnlineContextProvider({ children }: { children: ReactNode }) {
 
   const triggerSync = useCallback(async () => {
     if (!navigator.onLine) return;
-    await syncPendingAttendance();
-    await refreshPendingCount();
+    try {
+      await syncPendingAttendance();
+      await refreshPendingCount();
+    } catch (err) {
+      console.warn('[OnlineContext] Sync failed:', err);
+    }
   }, [refreshPendingCount]);
 
   useEffect(() => {

@@ -61,7 +61,7 @@ router.post(
   validateBody(createTimetableSlotSchema),
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
-    const { classId, subjectId, teacherId, day, periodNumber, room, termId } = req.body;
+    const { classId, subjectId, teacherId, day, periodNumber, room, roomId, termId } = req.body;
 
     // Check if class already has a scheduled slot at this period
     const classConflict = await prisma.timetableSlot.findFirst({
@@ -97,6 +97,39 @@ router.post(
       });
     }
 
+    // Resolve room name and validate room availability to prevent double-booking
+    let resolvedRoomName = room;
+    if (roomId) {
+      const dbRoom = await prisma.room.findFirst({
+        where: { id: roomId, schoolId, isDeleted: false },
+      });
+      if (dbRoom) {
+        resolvedRoomName = dbRoom.name;
+      }
+    }
+
+    if (roomId || resolvedRoomName) {
+      const roomConflict = await prisma.timetableSlot.findFirst({
+        where: {
+          day: day as DayOfWeek,
+          periodNumber,
+          termId,
+          isDeleted: false,
+          OR: [
+            roomId ? { roomId } : null,
+            resolvedRoomName ? { room: resolvedRoomName } : null,
+          ].filter(Boolean) as any,
+        },
+        include: { class: true },
+      });
+
+      if (roomConflict) {
+        throw new ValidationError({
+          room: [`Room "${resolvedRoomName || room}" is already booked by ${roomConflict.class.displayName} on ${day} Period ${periodNumber}`],
+        });
+      }
+    }
+
     const slot = await prisma.timetableSlot.create({
       data: {
         schoolId,
@@ -105,7 +138,8 @@ router.post(
         teacherId,
         day: day as DayOfWeek,
         periodNumber,
-        room,
+        room: resolvedRoomName,
+        roomId: roomId || undefined,
         termId,
       },
     });
@@ -176,6 +210,31 @@ router.patch(
       });
     }
 
+    // 3.5 Room conflict check — is this room already busy at the TARGET cell?
+    //     Exclude the occupant (it will be swapped away) and the slot itself.
+    if (slot.roomId || slot.room) {
+      const roomConflict = await prisma.timetableSlot.findFirst({
+        where: {
+          day: day as DayOfWeek,
+          periodNumber,
+          termId: slot.termId,
+          isDeleted: false,
+          id: { notIn: [id, ...(occupant ? [occupant.id] : [])] },
+          OR: [
+            slot.roomId ? { roomId: slot.roomId } : null,
+            slot.room ? { room: slot.room } : null,
+          ].filter(Boolean) as any,
+        },
+        include: { class: true }
+      });
+
+      if (roomConflict) {
+        throw new ValidationError({
+          room: [`Room is already booked by ${roomConflict.class.displayName} on ${day} Period ${periodNumber}`],
+        });
+      }
+    }
+
     // 4. If swapping, also check the occupant's teacher isn't conflicted at the SOURCE cell
     if (occupant && occupant.teacherId !== slot.teacherId) {
       const reverseConflict = await prisma.timetableSlot.findFirst({
@@ -192,6 +251,30 @@ router.patch(
       if (reverseConflict) {
         throw new ValidationError({
           teacherId: [`Cannot swap — the other teacher is already scheduled on ${slot.day} Period ${slot.periodNumber}`],
+        });
+      }
+    }
+
+    // 4.5 If swapping, also check the occupant's room isn't conflicted at the SOURCE cell
+    if (occupant && (occupant.roomId || occupant.room) && (occupant.roomId !== slot.roomId || occupant.room !== slot.room)) {
+      const reverseRoomConflict = await prisma.timetableSlot.findFirst({
+        where: {
+          day: slot.day,
+          periodNumber: slot.periodNumber,
+          termId: slot.termId,
+          isDeleted: false,
+          id: { notIn: [occupant.id, id] },
+          OR: [
+            occupant.roomId ? { roomId: occupant.roomId } : null,
+            occupant.room ? { room: occupant.room } : null,
+          ].filter(Boolean) as any,
+        },
+        include: { class: true }
+      });
+
+      if (reverseRoomConflict) {
+        throw new ValidationError({
+          room: [`Cannot swap — the room of the swapped class is already booked at the source position by ${reverseRoomConflict.class.displayName}`],
         });
       }
     }

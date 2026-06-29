@@ -4,8 +4,10 @@ import { Header } from '../components/HeadTeacherDashboard/Header';
 import { Sidebar } from '../components/HeadTeacherDashboard/Sidebar';
 import { BottomNav } from '../components/HeadTeacherDashboard/BottomNav';
 import { useQuery } from '../hooks/useApi';
+import { api } from '../services/api';
 import { ClassesManagement } from '../components/academics/ClassesManagement';
 import { SubjectsManagement } from '../components/academics/SubjectsManagement';
+import { RoomsManagement } from '../components/academics/RoomsManagement';
 import { GradeApprovalsPanel } from '../components/academics/GradeApprovalsPanel';
 import { ConfigurationsManagement } from '../components/academics/ConfigurationsManagement';
 
@@ -13,10 +15,115 @@ export const HeadTeacherAcademic: React.FC = () => {
   const { user } = useAuth();
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Head Teacher';
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'results' | 'exams' | 'classes' | 'subjects' | 'approvals' | 'configs'>('results');
+  const [activeTab, setActiveTab] = useState<'results' | 'exams' | 'classes' | 'subjects' | 'rooms' | 'approvals' | 'configs'>('results');
 
   // Fetch real grade stats from backend
-  const { data: stats, loading, error } = useQuery<any>('/grades/stats');
+  const { data: stats, loading, error, refetch: refetchStats } = useQuery<any>('/grades/stats');
+
+  // Fetch real exams, classes, subjects, terms
+  const { data: exams, refetch: refetchExams } = useQuery<any[]>('/schools/exams');
+  const { data: classes } = useQuery<any[]>('/schools/classes');
+  const { data: subjectsList } = useQuery<any[]>('/schools/subjects');
+  const { data: terms } = useQuery<any[]>('/schools/terms');
+
+  const currentTerm = terms?.find((t: any) => t.isCurrent) || terms?.[0];
+
+  // Exam Form State
+  const [isExamModalOpen, setIsExamModalOpen] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [editingExamId, setEditingExamId] = useState<string | null>(null);
+  const [examSubjectId, setExamSubjectId] = useState('');
+  const [examClassId, setExamClassId] = useState('');
+  const [examDate, setExamDate] = useState('');
+  const [examTime, setExamTime] = useState('08:00 – 11:00');
+  const [examVenue, setExamVenue] = useState('Main Hall');
+  const [examStatus, setExamStatus] = useState('Upcoming');
+
+  const handleOpenAddModal = () => {
+    setEditingExamId(null);
+    setExamSubjectId(subjectsList?.[0]?.id || '');
+    setExamClassId(classes?.[0]?.id || '');
+    setExamDate('');
+    setExamTime('08:00 – 11:00');
+    setExamVenue('Main Hall');
+    setExamStatus('Upcoming');
+    setFormError(null);
+    setIsExamModalOpen(true);
+  };
+
+  const handleOpenEditModal = (exam: any) => {
+    setEditingExamId(exam.id);
+    setExamSubjectId(exam.subjectId || exam.subject?.id || '');
+    setExamClassId(exam.classId || exam.class?.id || '');
+    const d = new Date(exam.date);
+    const dateStr = !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : '';
+    setExamDate(dateStr);
+    setExamTime(exam.time);
+    setExamVenue(exam.venue);
+    setExamStatus(exam.status);
+    setFormError(null);
+    setIsExamModalOpen(true);
+  };
+
+  const handleSaveExam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!examSubjectId || !examClassId || !examDate || !examTime || !examVenue) {
+      setFormError('All fields are required');
+      return;
+    }
+
+    const termId = currentTerm?.id;
+    if (!termId) {
+      setFormError('No current term configured. Please configure an academic term first.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormError(null);
+
+    const payload = {
+      termId,
+      classId: examClassId,
+      subjectId: examSubjectId,
+      date: new Date(examDate).toISOString(),
+      time: examTime,
+      venue: examVenue,
+      status: examStatus,
+    };
+
+    try {
+      if (editingExamId) {
+        await api.patch(`/schools/exams/${editingExamId}`, payload);
+      } else {
+        await api.post('/schools/exams', payload);
+      }
+      setIsExamModalOpen(false);
+      refetchExams();
+      refetchStats();
+    } catch (err: any) {
+      console.error(err);
+      setFormError(err.response?.data?.message || 'Failed to save exam schedule. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteExam = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete the exam schedule for "${name}"?`)) {
+      return;
+    }
+
+    try {
+      await api.delete(`/schools/exams/${id}`);
+      refetchExams();
+      refetchStats();
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to delete exam schedule. Please try again.');
+    }
+  };
 
   const trendColor = (t: string) =>
     t.startsWith('+') ? 'text-secondary' : t.startsWith('-') ? 'text-error' : 'text-on-surface-variant';
@@ -28,7 +135,6 @@ export const HeadTeacherAcademic: React.FC = () => {
   const performanceBars = stats?.performanceBars || [];
   const barLabels = stats?.barLabels || [];
   const subjects = stats?.subjects || [];
-  const examSchedule = stats?.examSchedule || [];
 
   return (
     <>
@@ -106,7 +212,7 @@ export const HeadTeacherAcademic: React.FC = () => {
 
             {/* Tabs */}
             <div className="flex flex-wrap gap-1 bg-surface-container rounded-lg p-1 w-fit mb-4">
-              {(['results', 'exams', 'classes', 'subjects', 'approvals', 'configs'] as const).map(t => (
+              {(['results', 'exams', 'classes', 'subjects', 'rooms', 'approvals', 'configs'] as const).map(t => (
                 <button
                   key={t}
                   onClick={() => setActiveTab(t)}
@@ -122,6 +228,8 @@ export const HeadTeacherAcademic: React.FC = () => {
                     ? 'Classes'
                     : t === 'subjects'
                     ? 'Subjects'
+                    : t === 'rooms'
+                    ? 'Rooms'
                     : t === 'approvals'
                     ? 'Grade Approvals'
                     : 'Configurations'}
@@ -181,30 +289,59 @@ export const HeadTeacherAcademic: React.FC = () => {
               <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
                 <div className="px-6 py-4 bg-surface-container-low border-b border-outline-variant flex justify-between items-center">
                   <h3 className="font-bold text-on-background">End-of-Term Examination Schedule</h3>
-                  <button className="text-primary font-bold text-xs hover:underline flex items-center gap-1">
+                  <button
+                    onClick={handleOpenAddModal}
+                    className="text-primary font-bold text-xs hover:underline flex items-center gap-1"
+                  >
                     <span className="material-symbols-outlined text-[16px]">add</span> Add Exam
                   </button>
                 </div>
-                {examSchedule.length === 0 ? (
+                {!exams || exams.length === 0 ? (
                   <div className="text-center py-10 text-on-surface-variant">
                     <span className="material-symbols-outlined text-[48px] opacity-30 mb-2">event_busy</span>
                     <p className="font-medium">No examinations scheduled yet</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-outline-variant">
-                    {examSchedule.map((e: any, i: number) => (
-                      <div key={i} className="flex items-center gap-4 px-6 py-4 hover:bg-surface-container-low transition-colors">
-                        <div className="w-14 h-14 rounded-xl bg-primary-container text-primary flex flex-col items-center justify-center shrink-0">
-                          <span className="text-xs font-bold">{e.date.split(',')[0]}</span>
-                          <span className="text-xs">{e.date.split(' ').slice(1).join(' ')}</span>
+                    {exams.map((e: any) => {
+                      const d = new Date(e.date);
+                      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                      const formattedDay = days[d.getDay()] || 'Day';
+                      const formattedMonth = `${d.getDate()} ${months[d.getMonth()] || ''}`;
+
+                      return (
+                        <div key={e.id} className="flex items-center gap-4 px-6 py-4 hover:bg-surface-container-low transition-colors">
+                          <div className="w-14 h-14 rounded-xl bg-primary-container text-primary flex flex-col items-center justify-center shrink-0">
+                            <span className="text-xs font-bold">{formattedDay}</span>
+                            <span className="text-xs">{formattedMonth}</span>
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-bold text-on-surface text-sm">{e.subject?.name}</p>
+                            <p className="text-xs text-on-surface-variant mt-0.5">{e.time} · {e.venue} · {e.class?.displayName}</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-primary-container text-on-primary-container uppercase">{e.status}</span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleOpenEditModal(e)}
+                                className="text-primary hover:bg-primary-container/20 p-1.5 rounded transition-colors"
+                                title="Edit Exam"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">edit</span>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteExam(e.id, e.subject?.name)}
+                                className="text-error hover:bg-error-container/20 p-1.5 rounded transition-colors"
+                                title="Delete Exam"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <p className="font-bold text-on-surface text-sm">{e.subject}</p>
-                          <p className="text-xs text-on-surface-variant mt-0.5">{e.time} · {e.venue} · {e.form}</p>
-                        </div>
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-primary-container text-on-primary-container uppercase">{e.status}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -216,12 +353,147 @@ export const HeadTeacherAcademic: React.FC = () => {
             {/* Subjects Management */}
             {activeTab === 'subjects' && <SubjectsManagement />}
 
+            {/* Rooms Management */}
+            {activeTab === 'rooms' && <RoomsManagement />}
+
             {/* Grade Approvals */}
             {activeTab === 'approvals' && <GradeApprovalsPanel />}
 
             {/* School Configurations */}
             {activeTab === 'configs' && <ConfigurationsManagement />}
           </>
+        )}
+
+        {/* Exam Modal */}
+        {isExamModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-headline-sm text-primary font-bold">
+                  {editingExamId ? 'Edit Exam Schedule' : 'Schedule New Exam'}
+                </h3>
+                <button
+                  onClick={() => setIsExamModalOpen(false)}
+                  className="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              {formError && (
+                <div className="mb-4 p-3.5 bg-error-container text-on-error-container rounded-lg text-xs font-semibold border border-error/20 flex gap-2 items-center">
+                  <span className="material-symbols-outlined text-sm shrink-0">error</span>
+                  <span>{formError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveExam} className="space-y-5">
+                <div>
+                  <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Subject</label>
+                  <select
+                    required
+                    value={examSubjectId}
+                    onChange={(e) => setExamSubjectId(e.target.value)}
+                    className="w-full px-3 py-2.5 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                  >
+                    <option value="" disabled>Select Subject</option>
+                    {subjectsList?.map((s: any) => (
+                      <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Class / Grade</label>
+                  <select
+                    required
+                    value={examClassId}
+                    onChange={(e) => setExamClassId(e.target.value)}
+                    className="w-full px-3 py-2.5 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                  >
+                    <option value="" disabled>Select Class</option>
+                    {classes?.map((c: any) => (
+                      <option key={c.id} value={c.id}>{c.displayName}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Date</label>
+                    <input
+                      type="date"
+                      required
+                      value={examDate}
+                      onChange={(e) => setExamDate(e.target.value)}
+                      className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Time</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. 08:00 – 11:00"
+                      value={examTime}
+                      onChange={(e) => setExamTime(e.target.value)}
+                      className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Venue</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Main Hall, Room 4"
+                    value={examVenue}
+                    onChange={(e) => setExamVenue(e.target.value)}
+                    className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Status</label>
+                  <select
+                    value={examStatus}
+                    onChange={(e) => setExamStatus(e.target.value)}
+                    className="w-full px-3 py-2.5 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                  >
+                    <option value="Upcoming">Upcoming</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+                  <button
+                    type="button"
+                    onClick={() => setIsExamModalOpen(false)}
+                    className="px-5 py-2.5 border border-outline text-on-surface-variant font-bold rounded-lg hover:bg-surface-container transition-all text-xs"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-5 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all text-xs flex items-center gap-1.5"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 rounded-full border-2 border-on-primary border-t-transparent animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Exam'
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
 
         <footer className="mt-8 pt-6 pb-2 text-center border-t border-outline-variant">

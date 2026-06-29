@@ -135,6 +135,10 @@ export const TimetableScheduler: React.FC = () => {
   const [formSubjectId, setFormSubjectId] = useState('');
   const [formTeacherId, setFormTeacherId] = useState('');
   const [formRoom, setFormRoom] = useState('');
+  const [formRoomId, setFormRoomId] = useState('');
+
+  // Fetch rooms list
+  const { data: rooms } = useQuery<any[]>('/schools/rooms');
 
   const [editSlotOpen, setEditSlotOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<TimetableSlot | null>(null);
@@ -212,6 +216,7 @@ export const TimetableScheduler: React.FC = () => {
     setFormSubjectId('');
     setFormTeacherId('');
     setFormRoom('');
+    setFormRoomId('');
     resetCreateError();
     setAddSlotOpen(true);
   };
@@ -228,6 +233,7 @@ export const TimetableScheduler: React.FC = () => {
         day: targetDay,
         periodNumber: targetPeriod,
         room: formRoom || undefined,
+        roomId: formRoomId || undefined,
         termId: selectedTermId,
       });
       setAddSlotOpen(false);
@@ -566,13 +572,21 @@ export const TimetableScheduler: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">Room Location</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Room 201, Chemistry Lab"
-                  value={formRoom}
-                  onChange={e => setFormRoom(e.target.value)}
+                <select
+                  value={formRoomId}
+                  onChange={e => {
+                    const rId = e.target.value;
+                    setFormRoomId(rId);
+                    const matchingRoom = rooms?.find((r: any) => r.id === rId);
+                    setFormRoom(matchingRoom ? matchingRoom.name : '');
+                  }}
                   className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-transparent text-on-surface text-sm outline-none focus:border-primary"
-                />
+                >
+                  <option value="">No Room / Unspecified</option>
+                  {rooms?.map((r: any) => (
+                    <option key={r.id} value={r.id}>{r.name} ({r.type})</option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant mt-6">

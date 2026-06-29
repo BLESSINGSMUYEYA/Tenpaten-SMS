@@ -667,8 +667,9 @@ export const HeadTeacherPeople: React.FC = () => {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">Class *</label>
-                  <select value={stClassId} onChange={e => setStClassId(e.target.value)}
+                  <select value={stClassId} onChange={e => setStClassId(e.target.value)} required
                     className="w-full px-3 py-2 bg-surface-container-low border border-outline-variant text-on-surface text-sm outline-none focus:border-primary rounded-lg">
+                    <option value="">Select Class...</option>
                     {(classList || []).map(c => <option key={c.id} value={c.id}>{c.displayName}</option>)}
                   </select>
                 </div>

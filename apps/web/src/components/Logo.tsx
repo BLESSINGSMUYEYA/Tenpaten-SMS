@@ -25,13 +25,24 @@ export const Logo: React.FC<LogoProps> = ({
     src = logoIcon;
   }
 
+  // Scale the logo size up slightly (by 25%) as requested
+  let finalHeight = height;
+  if (typeof height === 'string' && height.endsWith('px')) {
+    const val = parseFloat(height);
+    if (!isNaN(val)) {
+      finalHeight = `${val * 1.25}px`;
+    }
+  } else if (typeof height === 'number') {
+    finalHeight = height * 1.25;
+  }
+
   return (
     <img
       src={src}
       alt="MyKlasi Logo"
       className={`object-contain inline-block select-none ${className}`}
       style={{
-        height,
+        height: finalHeight,
         width,
       }}
       draggable={false}

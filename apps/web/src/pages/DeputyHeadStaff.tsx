@@ -57,6 +57,7 @@ export const DeputyHeadStaff = () => {
   // ── Live data from the API ──
   const { data: staff, loading, error: fetchError, refetch } = useQuery<StaffMember[]>('/people/staff');
   const { mutate: onboardStaff, loading: onboarding, error: onboardError } = useMutation('/people/staff', 'post');
+  const { data: dbSubjects } = useQuery<any[]>('/schools/subjects');
 
   // ── Form state ──
   const [newFirstName, setNewFirstName] = useState('');
@@ -64,7 +65,11 @@ export const DeputyHeadStaff = () => {
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [newRole, setNewRole] = useState('teacher');
-  const [newSubject, setNewSubject] = useState('Mathematics');
+  const [newSubject, setNewSubject] = useState('');
+
+  const subjectsList = dbSubjects && dbSubjects.length > 0
+    ? dbSubjects.map((s: any) => s.name)
+    : SUBJECTS;
 
   const resetForm = () => {
     setNewFirstName('');
@@ -72,7 +77,7 @@ export const DeputyHeadStaff = () => {
     setNewEmail('');
     setNewPhone('');
     setNewRole('teacher');
-    setNewSubject('Mathematics');
+    setNewSubject('');
   };
 
   const handleOnboardTeacher = async (e: React.FormEvent) => {
@@ -366,11 +371,11 @@ export const DeputyHeadStaff = () => {
                 <div>
                   <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Primary Subject</label>
                   <select
-                    value={newSubject}
+                    value={newSubject || (subjectsList[0] ?? '')}
                     onChange={e => setNewSubject(e.target.value)}
                     className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-surface-container text-on-surface font-body-md transition-colors"
                   >
-                    {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                    {subjectsList.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
               </div>

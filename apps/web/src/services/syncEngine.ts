@@ -61,6 +61,8 @@ export async function syncPendingAttendance(): Promise<SyncResult> {
         }
       }
     }
+  } catch (err: any) {
+    console.error('[SyncEngine] Failed during offline database query or network sync:', err);
   } finally {
     isSyncing = false;
 

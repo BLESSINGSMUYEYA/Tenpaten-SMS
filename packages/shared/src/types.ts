@@ -69,6 +69,10 @@ export interface School extends BaseModel {
   subscriptionEnd?: string;
   isActive: boolean;
   setupComplete: boolean;
+  featuresAttendance?: boolean;
+  featuresGrades?: boolean;
+  featuresFees?: boolean;
+  featuresCommunication?: boolean;
 }
 
 // ---- User ----

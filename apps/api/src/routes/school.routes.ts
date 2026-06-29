@@ -12,6 +12,8 @@ import {
   assignSubjectSchema,
   createGradingScaleSchema,
   updateTimetableConfigSchema,
+  createExamScheduleSchema,
+  createRoomSchema,
 } from '@myklasi/shared';
 
 const router = Router();
@@ -272,6 +274,7 @@ router.get(
       where: { schoolId, isDeleted: false },
       include: {
         academicYear: true,
+        room: true,
         _count: {
           select: { studentProfiles: true },
         },
@@ -288,7 +291,7 @@ router.post(
   validateBody(createClassSchema),
   asyncHandler(async (req, res) => {
     const schoolId = req.user!.schoolId!;
-    const { name, stream, academicYearId } = req.body;
+    const { name, stream, academicYearId, roomId } = req.body;
 
     const displayName = stream ? `${name} ${stream}` : name;
 
@@ -299,10 +302,52 @@ router.post(
         stream,
         displayName,
         academicYearId,
+        roomId: roomId || undefined,
       },
+      include: {
+        academicYear: true,
+        room: true,
+      }
     });
 
     sendSuccess(res, newClass, 'Class created successfully', 201);
+  })
+);
+
+router.patch(
+  '/classes/:id',
+  requireHeadOrDeputy(),
+  validateBody(createClassSchema.partial()),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { id } = req.params;
+    const { name, stream, academicYearId, roomId } = req.body;
+
+    const existing = await prisma.class.findFirst({
+      where: { id, schoolId, isDeleted: false },
+    });
+    if (!existing) throw new Error('Class not found');
+
+    const updatedName = name !== undefined ? name.trim() : existing.name;
+    const updatedStream = stream !== undefined ? (stream === null || stream.trim() === '' ? null : stream.trim()) : existing.stream;
+    const displayName = updatedStream ? `${updatedName} ${updatedStream}` : updatedName;
+
+    const updated = await prisma.class.update({
+      where: { id },
+      data: {
+        name: updatedName,
+        stream: updatedStream,
+        displayName,
+        academicYearId: academicYearId || existing.academicYearId,
+        roomId: roomId !== undefined ? roomId : undefined,
+      },
+      include: {
+        academicYear: true,
+        room: true,
+      }
+    });
+
+    sendSuccess(res, updated, 'Class updated successfully');
   })
 );
 
@@ -551,6 +596,216 @@ router.delete(
     });
 
     sendSuccess(res, updated, 'Grading scale deleted successfully');
+  })
+);
+
+// ---- Exam Schedules ----
+router.get(
+  '/exams',
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { classId, termId } = req.query;
+
+    const whereClause: any = { schoolId, isDeleted: false };
+    if (classId) whereClause.classId = String(classId);
+    if (termId) whereClause.termId = String(termId);
+
+    const exams = await prisma.examSchedule.findMany({
+      where: whereClause,
+      include: {
+        term: true,
+        class: true,
+        subject: true,
+      },
+      orderBy: { date: 'asc' },
+    });
+
+    sendSuccess(res, exams, 'Exam schedules retrieved successfully');
+  })
+);
+
+router.post(
+  '/exams',
+  requireHeadOrDeputy(),
+  validateBody(createExamScheduleSchema),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { termId, classId, subjectId, date, time, venue, status } = req.body;
+
+    const exam = await prisma.examSchedule.create({
+      data: {
+        schoolId,
+        termId,
+        classId,
+        subjectId,
+        date: new Date(date),
+        time,
+        venue,
+        status: status || 'Upcoming',
+      },
+      include: {
+        term: true,
+        class: true,
+        subject: true,
+      },
+    });
+
+    sendSuccess(res, exam, 'Exam scheduled successfully', 201);
+  })
+);
+
+router.patch(
+  '/exams/:id',
+  requireHeadOrDeputy(),
+  validateBody(createExamScheduleSchema.partial()),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { id } = req.params;
+    const { termId, classId, subjectId, date, time, venue, status } = req.body;
+
+    const existing = await prisma.examSchedule.findFirst({
+      where: { id, schoolId, isDeleted: false },
+    });
+    if (!existing) throw new Error('Exam schedule not found');
+
+    const updated = await prisma.examSchedule.update({
+      where: { id },
+      data: {
+        termId: termId || undefined,
+        classId: classId || undefined,
+        subjectId: subjectId || undefined,
+        date: date ? new Date(date) : undefined,
+        time: time || undefined,
+        venue: venue || undefined,
+        status: status || undefined,
+      },
+      include: {
+        term: true,
+        class: true,
+        subject: true,
+      },
+    });
+
+    sendSuccess(res, updated, 'Exam schedule updated successfully');
+  })
+);
+
+router.delete(
+  '/exams/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { id } = req.params;
+
+    const existing = await prisma.examSchedule.findFirst({
+      where: { id, schoolId, isDeleted: false },
+    });
+    if (!existing) throw new Error('Exam schedule not found');
+
+    const updated = await prisma.examSchedule.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+
+    sendSuccess(res, updated, 'Exam schedule deleted successfully');
+  })
+);
+
+// ---- Rooms ----
+router.get(
+  '/rooms',
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const rooms = await prisma.room.findMany({
+      where: { schoolId, isDeleted: false },
+      orderBy: { name: 'asc' },
+    });
+    sendSuccess(res, rooms, 'Rooms retrieved successfully');
+  })
+);
+
+router.post(
+  '/rooms',
+  requireHeadOrDeputy(),
+  validateBody(createRoomSchema),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { name, capacity, type } = req.body;
+
+    const existing = await prisma.room.findFirst({
+      where: { schoolId, name, isDeleted: false },
+    });
+    if (existing) {
+      throw new Error(`A room with the name "${name}" already exists.`);
+    }
+
+    const room = await prisma.room.create({
+      data: {
+        schoolId,
+        name,
+        capacity: capacity ? Number(capacity) : null,
+        type,
+      },
+    });
+
+    sendSuccess(res, room, 'Room created successfully', 201);
+  })
+);
+
+router.patch(
+  '/rooms/:id',
+  requireHeadOrDeputy(),
+  validateBody(createRoomSchema.partial()),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { id } = req.params;
+    const { name, capacity, type } = req.body;
+
+    const existing = await prisma.room.findFirst({
+      where: { id, schoolId, isDeleted: false },
+    });
+    if (!existing) throw new Error('Room not found');
+
+    if (name && name !== existing.name) {
+      const duplicate = await prisma.room.findFirst({
+        where: { schoolId, name, isDeleted: false, NOT: { id } },
+      });
+      if (duplicate) {
+        throw new Error(`A room with the name "${name}" already exists.`);
+      }
+    }
+
+    const updated = await prisma.room.update({
+      where: { id },
+      data: {
+        name: name !== undefined ? name : undefined,
+        capacity: capacity !== undefined ? (capacity ? Number(capacity) : null) : undefined,
+        type: type !== undefined ? type : undefined,
+      },
+    });
+
+    sendSuccess(res, updated, 'Room updated successfully');
+  })
+);
+
+router.delete(
+  '/rooms/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { id } = req.params;
+
+    const existing = await prisma.room.findFirst({
+      where: { id, schoolId, isDeleted: false },
+    });
+    if (!existing) throw new Error('Room not found');
+
+    const updated = await prisma.room.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+
+    sendSuccess(res, updated, 'Room deleted successfully');
   })
 );
 

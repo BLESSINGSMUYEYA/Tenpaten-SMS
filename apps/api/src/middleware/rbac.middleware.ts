@@ -37,14 +37,14 @@ export function requireSuperAdmin() {
  * Requires the user to be any school staff (not student or parent).
  */
 export function requireStaff() {
-  return requireRoles('director', 'head_teacher', 'deputy_head', 'teacher', 'bursar');
+  return requireRoles('director', 'school_director', 'head_teacher', 'deputy_head', 'teacher', 'bursar');
 }
 
 /**
  * Requires the user to be head teacher or deputy.
  */
 export function requireHeadOrDeputy() {
-  return requireRoles('director', 'head_teacher', 'deputy_head');
+  return requireRoles('director', 'school_director', 'head_teacher', 'deputy_head');
 }
 
 /**
@@ -80,23 +80,23 @@ export function canAccessSchool(userSchoolId?: string, targetSchoolId?: string):
 }
 
 export function isSchoolStaff(role: UserRole): boolean {
-  return ['director', 'head_teacher', 'deputy_head', 'teacher', 'bursar'].includes(role);
+  return ['director', 'school_director', 'head_teacher', 'deputy_head', 'teacher', 'bursar'].includes(role);
 }
 
 export function canManageStudents(role: UserRole): boolean {
-  return ['director', 'head_teacher', 'deputy_head'].includes(role);
+  return ['director', 'school_director', 'head_teacher', 'deputy_head'].includes(role);
 }
 
 export function canManageStaff(role: UserRole): boolean {
-  return ['director', 'head_teacher'].includes(role);
+  return ['director', 'school_director', 'head_teacher'].includes(role);
 }
 
 export function canManageFees(role: UserRole): boolean {
-  return ['director', 'head_teacher', 'bursar'].includes(role);
+  return ['director', 'school_director', 'head_teacher', 'bursar'].includes(role);
 }
 
 export function canMarkAttendance(role: UserRole): boolean {
-  return ['director', 'head_teacher', 'deputy_head', 'teacher'].includes(role);
+  return ['director', 'school_director', 'head_teacher', 'deputy_head', 'teacher'].includes(role);
 }
 
 export function canEnterGrades(role: UserRole): boolean {

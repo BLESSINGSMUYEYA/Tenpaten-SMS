@@ -3,13 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Sidebar } from '../components/SchoolDirectorDashboard/Sidebar';
 import { DashboardHeader } from '../components/DashboardHeader';
-
-const kpiCards = [
-  { label: 'Total Students',    value: '1,248', change: '+24 this term', icon: 'groups',          positive: true  },
-  { label: 'Teaching Staff',    value: '84',    change: '4 vacancies',   icon: 'badge',           positive: false },
-  { label: 'Revenue Collected', value: 'MK 4.2M', change: '76% of target', icon: 'account_balance_wallet', positive: true },
-  { label: 'Avg. Pass Rate',    value: '87.3%', change: '+2.1% vs last term', icon: 'grade',      positive: true  },
-];
+import { useQuery } from '../hooks/useApi';
 
 const quickActions = [
   { icon: 'tune',           label: 'Institution Setup', to: '/school-director/setup',    color: 'text-primary',   bg: 'bg-primary-container/30' },
@@ -36,6 +30,59 @@ export const SchoolDirectorDashboard: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Director';
   const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Dynamic Queries
+  const { data: studentList, loading: loadingStudents } = useQuery<any[]>('/people/students');
+  const { data: staffList, loading: loadingStaff } = useQuery<any[]>('/people/staff');
+  const { data: financeStats, loading: loadingFinance } = useQuery<any>('/finance/stats');
+  const { data: gradeStats, loading: loadingGrades } = useQuery<any>('/grades/stats');
+  const { data: schoolData } = useQuery<any>('/schools/my-school');
+
+  // Derived Values
+  const setupProgress = schoolData?.setupComplete ? 100 : 0;
+  const isFinanceEnabled = user?.school?.featuresFees !== false;
+
+  const totalStudents = studentList ? studentList.length : 0;
+  const activeStaff = staffList ? staffList.length : 0;
+
+  // Format financial stats
+  const totalCollected = financeStats?.totalCollected ?? 0;
+  const formattedRevenue = `MK ${totalCollected.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  const collectionRate = financeStats?.collectionRate ?? 0;
+
+  // Format grade stats
+  const averagePass = gradeStats?.schoolAverage ? `${gradeStats.schoolAverage}%` : '0%';
+
+  const kpiCards = [
+    { 
+      label: 'Total Students', 
+      value: loadingStudents ? '...' : totalStudents, 
+      change: 'Active scholars', 
+      icon: 'groups', 
+      positive: true 
+    },
+    { 
+      label: 'Teaching Staff', 
+      value: loadingStaff ? '...' : activeStaff, 
+      change: 'Active staff members', 
+      icon: 'badge', 
+      positive: true 
+    },
+    { 
+      label: 'Revenue Collected', 
+      value: !isFinanceEnabled ? 'Disabled' : (loadingFinance ? '...' : formattedRevenue), 
+      change: !isFinanceEnabled ? 'Module off' : `${collectionRate.toFixed(0)}% of target`, 
+      icon: 'account_balance_wallet', 
+      positive: true 
+    },
+    { 
+      label: 'Avg. Pass Rate', 
+      value: loadingGrades ? '...' : averagePass, 
+      change: 'Term average performance', 
+      icon: 'grade', 
+      positive: true 
+    },
+  ];
 
   return (
     <div className="bg-background text-on-background min-h-screen flex font-sans">
@@ -141,15 +188,22 @@ export const SchoolDirectorDashboard: React.FC = () => {
                 <div className="p-3 bg-primary-container/20 rounded-xl border border-primary/20">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-label-sm text-on-surface font-semibold">Setup Progress</span>
-                    <span className="font-label-sm text-primary font-bold">0%</span>
+                    <span className="font-label-sm text-primary font-bold">{setupProgress}%</span>
                   </div>
                   <div className="w-full h-2 bg-surface-container rounded-full overflow-hidden mb-2">
-                    <div className="h-full bg-gradient-to-r from-primary to-secondary rounded-full" style={{ width: '0%' }} />
+                    <div className="h-full bg-gradient-to-r from-primary to-secondary rounded-full" style={{ width: `${setupProgress}%` }} />
                   </div>
-                  <Link to="/school-director/setup" className="font-label-sm text-primary hover:underline font-medium flex items-center gap-1">
-                    Complete Institution Setup
-                    <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                  </Link>
+                  {setupProgress < 100 ? (
+                    <Link to="/school-director/setup" className="font-label-sm text-primary hover:underline font-medium flex items-center gap-1">
+                      Complete Institution Setup
+                      <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                    </Link>
+                  ) : (
+                    <span className="font-label-sm text-primary font-bold flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                      Setup Completed
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

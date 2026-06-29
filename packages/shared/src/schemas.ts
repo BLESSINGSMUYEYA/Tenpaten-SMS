@@ -151,6 +151,7 @@ export const createClassSchema = z.object({
   name: z.string().min(1, 'Class name is required'),
   stream: z.string().optional(),
   academicYearId: z.string().uuid(),
+  roomId: z.string().uuid().optional().nullable(),
 });
 
 // ---- Subjects ----
@@ -193,7 +194,7 @@ export const createUserSchema = z.object({
   lastName: z.string().min(2, 'Last name required'),
   email: z.string().email('Invalid email').optional().or(z.literal('')).nullable(),
   phone: z.string().optional(),
-  role: z.enum(['director', 'head_teacher', 'deputy_head', 'teacher', 'bursar']),
+  role: z.enum(['director', 'school_director', 'it_coordinator', 'head_teacher', 'deputy_head', 'teacher', 'bursar']),
   photoUrl: z.string().url().optional(),
 });
 
@@ -225,6 +226,7 @@ export const createTimetableSlotSchema = z.object({
   day: z.enum(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']),
   periodNumber: z.number().int().min(1),
   room: z.string().optional(),
+  roomId: z.string().uuid().optional().nullable(),
   termId: z.string().uuid(),
 });
 
@@ -322,9 +324,31 @@ export const replyMessageSchema = z.object({
   body: z.string().min(1, 'Reply cannot be empty'),
 });
 
+// ---- Exam Schedules ----
+
+export const createExamScheduleSchema = z.object({
+  termId: z.string().uuid(),
+  classId: z.string().uuid(),
+  subjectId: z.string().uuid(),
+  date: z.string().datetime(),
+  time: z.string().min(1, 'Time is required'),
+  venue: z.string().min(1, 'Venue is required').default('Main Hall'),
+  status: z.string().default('Upcoming'),
+});
+
+// ---- Rooms ----
+
+export const createRoomSchema = z.object({
+  name: z.string().min(1, 'Room name is required'),
+  capacity: z.number().int().positive().nullable().optional(),
+  type: z.string().default('Classroom'),
+});
+
 // ---- Type Exports ----
 
 export type LoginInput = z.infer<typeof loginSchema>;
+export type CreateRoomInput = z.infer<typeof createRoomSchema>;
+export type CreateExamScheduleInput = z.infer<typeof createExamScheduleSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
