@@ -32,7 +32,7 @@ const allowedOrigins = [
   'http://localhost:4000',
 ].filter(Boolean) as string[];
 
-app.use(
+app.use((req, res, next) => {
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, or postman)
@@ -45,7 +45,18 @@ app.use(
         return normalizedAllowed === normalizedOrigin;
       });
 
-      if (hasMatch) {
+      // Check same-origin or vercel.app
+      let isSameOrigin = false;
+      try {
+        const originUrl = new URL(origin);
+        const host = req.headers.host;
+        const forwardedHost = req.headers['x-forwarded-host'] as string;
+        isSameOrigin = (host && originUrl.host === host) || (forwardedHost && originUrl.host === forwardedHost);
+      } catch (e) {}
+
+      const isVercel = origin.endsWith('.vercel.app') || origin.includes('.vercel.app/');
+
+      if (hasMatch || isSameOrigin || isVercel) {
         callback(null, true);
       } else {
         callback(new Error(`Not allowed by CORS: ${origin}`));
@@ -54,8 +65,8 @@ app.use(
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-  })
-);
+  })(req, res, next);
+});
 
 // Logging
 if (env.NODE_ENV === 'development') {

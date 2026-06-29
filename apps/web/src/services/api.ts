@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Base URL points to our Express API port
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+// Base URL points to our Express API port (relative path in production/deployment)
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:4000/api' : '/api');
 
 export const api = axios.create({
   baseURL: API_URL,
