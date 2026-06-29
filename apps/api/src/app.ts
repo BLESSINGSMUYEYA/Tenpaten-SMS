@@ -51,7 +51,7 @@ app.use((req, res, next) => {
         const originUrl = new URL(origin);
         const host = req.headers.host;
         const forwardedHost = req.headers['x-forwarded-host'] as string;
-        isSameOrigin = (host && originUrl.host === host) || (forwardedHost && originUrl.host === forwardedHost);
+        isSameOrigin = (!!host && originUrl.host === host) || (!!forwardedHost && originUrl.host === forwardedHost);
       } catch (e) {}
 
       const isVercel = origin.endsWith('.vercel.app') || origin.includes('.vercel.app/');
