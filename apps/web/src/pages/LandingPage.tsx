@@ -3,6 +3,52 @@ import { Link } from 'react-router-dom';
 import { Logo } from '../components/Logo';
 
 export const LandingPage: React.FC = () => {
+  const [deferredPrompt, setDeferredPrompt] = React.useState<any>(null);
+  const [showInstructions, setShowInstructions] = React.useState(false);
+  const [platform, setPlatform] = React.useState<'ios' | 'android' | 'desktop'>('desktop');
+
+  React.useEffect(() => {
+    // Detect platform
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+      setPlatform('ios');
+    } else if (/android/i.test(userAgent)) {
+      setPlatform('android');
+    } else {
+      setPlatform('desktop');
+    }
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      console.log('MyKlasi PWA was installed successfully');
+    };
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else {
+      setShowInstructions(true);
+    }
+  };
+
   return (
     <div className="bg-surface text-on-background min-h-screen flex flex-col font-sans transition-colors duration-300">
 
@@ -503,12 +549,22 @@ export const LandingPage: React.FC = () => {
       <footer className="w-full py-xl bg-surface-container-low border-t border-outline-variant mt-auto">
         <div className="flex flex-col md:flex-row justify-between items-center px-margin-desktop max-w-[1440px] mx-auto gap-md">
           <Logo height="52px" />
-          <div className="flex flex-wrap justify-center gap-md">
+          <div className="flex flex-wrap justify-center gap-md items-center">
             {['Privacy Policy', 'Terms of Service', 'Help Center', 'Accessibility'].map(link => (
               <a key={link} className="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">
                 {link}
               </a>
             ))}
+            
+            {/* PWA Download Button */}
+            <button
+              onClick={handleInstallClick}
+              className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary font-label-sm text-label-sm px-4 py-1.5 rounded-full transition-all active:scale-95 border border-primary/20 cursor-pointer shadow-sm md:ml-4"
+              title="Install MyKlasi App on your device"
+            >
+              <span className="material-symbols-outlined text-[16px]">install_mobile</span>
+              <span>Download App</span>
+            </button>
           </div>
           <div className="font-label-sm text-label-sm text-on-surface-variant text-center md:text-right">
             © {new Date().getFullYear()} MyKlasi School Management System. All rights reserved.
@@ -516,11 +572,102 @@ export const LandingPage: React.FC = () => {
         </div>
       </footer>
 
+      {/* ─── PWA Installation Instructions Modal ─── */}
+      {showInstructions && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          style={{ animation: 'tpFadeIn 0.2s ease-out forwards' }}
+        >
+          <div 
+            className="bg-surface-container-high dark:bg-surface-container-highest rounded-3xl p-6 md:p-8 max-w-md w-full border border-outline-variant shadow-2xl relative"
+            style={{ animation: 'tpScaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' }}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowInstructions(false)}
+              className="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-lowest rounded-full p-2 transition-all cursor-pointer flex items-center justify-center"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-primary/20">
+                <span className="material-symbols-outlined text-primary text-[36px]">install_mobile</span>
+              </div>
+              <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold">Install MyKlasi App</h3>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mt-2 leading-relaxed">
+                Add MyKlasi to your home screen for quick offline access, full-screen mode, and automatic background sync.
+              </p>
+            </div>
+
+            <div className="space-y-4 text-left">
+              {platform === 'ios' && (
+                <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant space-y-3">
+                  <p className="font-semibold text-primary text-sm flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[18px]">phone_iphone</span>
+                    <span>Safari on iPhone / iPad:</span>
+                  </p>
+                  <ol className="list-decimal list-inside space-y-2 text-on-surface-variant text-xs leading-relaxed">
+                    <li>Open <strong>Safari</strong> browser.</li>
+                    <li>Tap the <strong>Share</strong> button <span className="inline-flex items-center align-middle material-symbols-outlined text-[16px] text-primary">share</span> in the bottom toolbar.</li>
+                    <li>Scroll down and tap <strong>Add to Home Screen</strong> <span className="inline-flex items-center align-middle material-symbols-outlined text-[16px] text-primary">add_box</span>.</li>
+                    <li>Tap <strong>Add</strong> in the top right to complete installation.</li>
+                  </ol>
+                </div>
+              )}
+
+              {platform === 'android' && (
+                <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant space-y-3">
+                  <p className="font-semibold text-primary text-sm flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[18px]">phone_android</span>
+                    <span>Chrome on Android:</span>
+                  </p>
+                  <ol className="list-decimal list-inside space-y-2 text-on-surface-variant text-xs leading-relaxed">
+                    <li>Tap Chrome's menu button <span className="inline-flex items-center align-middle material-symbols-outlined text-[16px] text-primary">more_vert</span> (top right).</li>
+                    <li>Select <strong>Add to Home screen</strong> or <strong>Install app</strong>.</li>
+                    <li>Confirm the dialog prompt to install.</li>
+                  </ol>
+                </div>
+              )}
+
+              {platform === 'desktop' && (
+                <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant space-y-3">
+                  <p className="font-semibold text-primary text-sm flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[18px]">desktop_windows</span>
+                    <span>Desktop Browser (Chrome/Edge):</span>
+                  </p>
+                  <ol className="list-decimal list-inside space-y-2 text-on-surface-variant text-xs leading-relaxed">
+                    <li>Look at your browser's address bar.</li>
+                    <li>Click the <strong>Install</strong> icon <span className="inline-flex items-center align-middle material-symbols-outlined text-[16px] text-primary">install_desktop</span> next to the bookmarks star.</li>
+                    <li>Confirm the popup to install MyKlasi.</li>
+                  </ol>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowInstructions(false)}
+              className="mt-6 w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-3 rounded-xl transition-all cursor-pointer active:scale-[0.98] text-center font-bold"
+            >
+              Got it, thanks!
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Scoped keyframes — staggered hero entrance */}
       <style>{`
         @keyframes tpFadeUp {
           from { opacity: 0; transform: translateY(22px); }
           to   { opacity: 1; transform: translateY(0);    }
+        }
+        @keyframes tpFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes tpScaleIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to   { opacity: 1; transform: scale(1); }
         }
       `}</style>
 

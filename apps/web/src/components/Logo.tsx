@@ -25,15 +25,15 @@ export const Logo: React.FC<LogoProps> = ({
     src = logoIcon;
   }
 
-  // Scale the logo size up slightly (by 25%) as requested
+  // Scale the logo size up further (by 50%) as requested
   let finalHeight = height;
   if (typeof height === 'string' && height.endsWith('px')) {
     const val = parseFloat(height);
     if (!isNaN(val)) {
-      finalHeight = `${val * 1.25}px`;
+      finalHeight = `${val * 1.5}px`;
     }
   } else if (typeof height === 'number') {
-    finalHeight = height * 1.25;
+    finalHeight = height * 1.5;
   }
 
   return (
