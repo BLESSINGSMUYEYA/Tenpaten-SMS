@@ -178,7 +178,16 @@ export const DeputyHeadStudents: React.FC = () => {
       refetch();
     } catch (err: any) {
       console.error('Failed to update student:', err);
-      setUpdateError(err.response?.data?.message || 'Failed to update student details.');
+      let errMsg = err.response?.data?.message || 'Failed to update student details.';
+      if (err.response?.data?.errors) {
+        const details = Object.entries(err.response.data.errors)
+          .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(', ')}`)
+          .join('; ');
+        if (details) {
+          errMsg = `${errMsg} (${details})`;
+        }
+      }
+      setUpdateError(errMsg);
     } finally {
       setUpdatingStudent(false);
     }

@@ -94,7 +94,17 @@ export function useQuery<T>(url: string, enabled = true, deps: any[] = []) {
           return; // No error set — we have data from cache
         }
       }
-      setError(err.response?.data?.message || err.message || 'An error occurred');
+      let errMsg = err.response?.data?.message || err.message || 'An error occurred';
+      if (err.response?.data?.errors) {
+        const fieldErrors = err.response.data.errors;
+        const details = Object.entries(fieldErrors)
+          .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(', ')}`)
+          .join('; ');
+        if (details) {
+          errMsg = `${errMsg} (${details})`;
+        }
+      }
+      setError(errMsg);
     } finally {
       setLoading(false);
     }
@@ -159,7 +169,16 @@ export function useMutation<TVariables = any, TData = any>(
           return { _offline: true } as TData & { _offline?: boolean };
         }
 
-        const errMsg = err.response?.data?.message || err.message || 'An error occurred';
+        let errMsg = err.response?.data?.message || err.message || 'An error occurred';
+        if (err.response?.data?.errors) {
+          const fieldErrors = err.response.data.errors;
+          const details = Object.entries(fieldErrors)
+            .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(', ')}`)
+            .join('; ');
+          if (details) {
+            errMsg = `${errMsg} (${details})`;
+          }
+        }
         setError(errMsg);
         throw err;
       } finally {
