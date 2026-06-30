@@ -171,4 +171,33 @@ router.get(
   })
 );
 
+/**
+ * @route   GET /api/auth/public-stats
+ * @desc    Get public stats (schools, students count) for landing page
+ * @access  Public
+ */
+router.get(
+  '/public-stats',
+  asyncHandler(async (req, res) => {
+    const schoolCount = await prisma.school.count({
+      where: {
+        isDeleted: false,
+        isActive: true,
+      },
+    });
+
+    const studentCount = await prisma.studentProfile.count({
+      where: {
+        isDeleted: false,
+      },
+    });
+
+    sendSuccess(res, {
+      schools: schoolCount,
+      students: studentCount,
+      uptime: '99.9%',
+    }, 'Public stats retrieved successfully');
+  })
+);
+
 export default router;

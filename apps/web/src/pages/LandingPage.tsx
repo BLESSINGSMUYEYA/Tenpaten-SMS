@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Logo } from '../components/Logo';
+import { useQuery } from '../hooks/useApi';
 
 export const LandingPage: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = React.useState<any>(null);
@@ -8,6 +9,13 @@ export const LandingPage: React.FC = () => {
   const [platform, setPlatform] = React.useState<'ios' | 'android' | 'desktop'>('desktop');
   const [isStandalone, setIsStandalone] = React.useState(false);
   const [showMobilePrompt, setShowMobilePrompt] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+  const { data: publicStats } = useQuery<{ schools: number; students: number; uptime: string }>('/auth/public-stats');
+
+  const schoolsValue = publicStats ? `${publicStats.schools}` : '50+';
+  const studentsValue = publicStats ? (publicStats.students >= 1000 ? `${Math.round(publicStats.students / 1000)}K+` : `${publicStats.students}`) : '12K+';
+  const uptimeValue = publicStats ? publicStats.uptime : '99.9%';
 
   React.useEffect(() => {
     // Detect standalone mode
@@ -104,7 +112,7 @@ export const LandingPage: React.FC = () => {
             <Logo height="100px" />
           </div>
           <nav className="hidden md:flex gap-lg">
-            {['Features', 'About', 'Contact'].map(item => (
+            {['Features', 'About', 'Pricing', 'Contact'].map(item => (
               <a
                 key={item}
                 href={`#${item.toLowerCase()}`}
@@ -124,9 +132,45 @@ export const LandingPage: React.FC = () => {
             <button className="bg-primary text-on-primary font-label-md text-label-md px-md py-sm rounded-lg hover:opacity-90 active:scale-95 transition-all shadow-sm">
               Request Demo
             </button>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden text-on-surface hover:bg-surface-container-high rounded-full p-2 transition-all cursor-pointer flex items-center justify-center"
+              aria-label="Toggle menu"
+            >
+              <span className="material-symbols-outlined text-[24px]">
+                {mobileMenuOpen ? 'close' : 'menu'}
+              </span>
+            </button>
           </div>
         </div>
       </header>
+
+      {/* ─── Mobile Menu Drawer ─── */}
+      {mobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-x-0 top-16 bg-surface border-b border-outline-variant z-40 flex flex-col p-lg gap-md shadow-lg"
+          style={{ animation: 'tpFadeIn 0.2s ease-out forwards' }}
+        >
+          {['Features', 'About', 'Pricing', 'Contact'].map(item => (
+            <a
+              key={item}
+              href={`#${item.toLowerCase()}`}
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors cursor-pointer py-xs"
+            >
+              {item}
+            </a>
+          ))}
+          <hr className="border-outline-variant" />
+          <Link
+            to="/login"
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-full text-center bg-primary text-on-primary font-label-md text-label-md py-sm rounded-xl hover:opacity-90 active:scale-[0.98] transition-all"
+          >
+            Login to Portal
+          </Link>
+        </div>
+      )}
 
       <main className="flex-grow flex flex-col">
 
@@ -403,9 +447,9 @@ export const LandingPage: React.FC = () => {
                 {/* Stats Bar */}
                 <div className="bg-primary rounded-2xl p-lg grid grid-cols-3 gap-md text-center shadow-md">
                   {[
-                    { value: '50+', label: 'Schools Onboarded' },
-                    { value: '12K+', label: 'Students Managed' },
-                    { value: '99.9%', label: 'Uptime SLA' },
+                    { value: schoolsValue, label: 'Schools Onboarded' },
+                    { value: studentsValue, label: 'Students Managed' },
+                    { value: uptimeValue, label: 'Uptime SLA' },
                   ].map(({ value, label }) => (
                     <div key={label} className="flex flex-col gap-xs">
                       <p className="font-headline-md text-headline-md text-on-primary font-bold">{value}</p>
@@ -414,6 +458,182 @@ export const LandingPage: React.FC = () => {
                   ))}
                 </div>
 
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Pricing Section ─── */}
+        <section id="pricing" className="py-20 lg:py-28 px-margin-desktop bg-surface-container-low relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-[0.06] pointer-events-none"
+              style={{ background: 'radial-gradient(circle, var(--md-sys-color-primary, #0e7a3f) 0%, transparent 70%)' }}
+            />
+          </div>
+
+          <div className="max-w-[1440px] mx-auto relative z-10 flex flex-col gap-xl">
+            {/* Section Header */}
+            <div className="text-center max-w-2xl mx-auto flex flex-col gap-sm">
+              <span className="inline-flex items-center gap-xs w-fit mx-auto px-md py-xs rounded-full border border-primary/30 bg-primary/10 text-primary font-bold" style={{ fontSize: '11px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>payments</span>
+                Simple & Transparent Pricing
+              </span>
+              <h2 className="font-headline-md text-headline-md text-on-surface">
+                Flexible Plans for Every School
+              </h2>
+              <p className="font-body-md text-body-md text-on-surface-variant">
+                Digitize your classroom operations, track student attendance, and collect fees with transparent, predictable pricing tiers billed per term.
+              </p>
+            </div>
+
+            {/* Pricing Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg items-stretch">
+              
+              {/* Free Plan */}
+              <div className="group bg-surface border border-outline-variant rounded-3xl p-lg flex flex-col justify-between hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+                <div className="flex flex-col gap-md">
+                  <div>
+                    <h3 className="font-headline-sm text-headline-sm text-on-surface mb-xs">Free</h3>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant min-h-[40px]">
+                      Get started with basic digitization tools. Perfect for small primary schools.
+                    </p>
+                  </div>
+                  <div className="flex items-baseline gap-xs my-sm">
+                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface">MK 0</span>
+                    <span className="text-on-surface-variant font-medium text-body-sm">/ term</span>
+                  </div>
+                  <hr className="border-outline-variant" />
+                  <ul className="flex flex-col gap-sm">
+                    {[
+                      'Up to 100 students',
+                      'Basic student profile records',
+                      'Morning attendance marking',
+                      'Standard reports (CA only)',
+                      '1 physical classroom support',
+                    ].map(feat => (
+                      <li key={feat} className="flex items-start gap-xs text-body-sm text-on-surface-variant">
+                        <span className="material-symbols-outlined text-primary shrink-0 text-[18px]">check_circle</span>
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <button className="mt-lg w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-md text-label-md py-sm rounded-xl transition-all cursor-pointer border border-outline-variant">
+                  Get Started
+                </button>
+              </div>
+
+              {/* Basic Plan */}
+              <div className="group bg-surface border border-outline-variant rounded-3xl p-lg flex flex-col justify-between hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+                <div className="flex flex-col gap-md">
+                  <div>
+                    <h3 className="font-headline-sm text-headline-sm text-on-surface mb-xs">Basic</h3>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant min-h-[40px]">
+                      Essential management features for standard primary or secondary schools.
+                    </p>
+                  </div>
+                  <div className="flex items-baseline gap-xs my-sm">
+                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface">MK 15,000</span>
+                    <span className="text-on-surface-variant font-medium text-body-sm">/ term</span>
+                  </div>
+                  <hr className="border-outline-variant" />
+                  <ul className="flex flex-col gap-sm">
+                    {[
+                      'Up to 500 students',
+                      'Student & parent profiles',
+                      'Morning & period attendance',
+                      'Timetable schedules',
+                      'Standard bursar invoicing',
+                      'Cash fee payment entries',
+                    ].map(feat => (
+                      <li key={feat} className="flex items-start gap-xs text-body-sm text-on-surface-variant">
+                        <span className="material-symbols-outlined text-primary shrink-0 text-[18px]">check_circle</span>
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <button className="mt-lg w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-md text-label-md py-sm rounded-xl transition-all cursor-pointer border border-outline-variant">
+                  Select Basic
+                </button>
+              </div>
+
+              {/* Premium Plan */}
+              <div className="group bg-surface border-2 border-primary rounded-3xl p-lg flex flex-col justify-between hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-primary text-on-primary font-label-sm text-[10px] uppercase font-bold tracking-wider px-md py-1 rounded-bl-xl">
+                  Popular
+                </div>
+                <div className="flex flex-col gap-md">
+                  <div>
+                    <h3 className="font-headline-sm text-headline-sm text-on-surface mb-xs">Premium</h3>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant min-h-[40px]">
+                      Complete operational control with automated reporting, invoicing and offline sync.
+                    </p>
+                  </div>
+                  <div className="flex items-baseline gap-xs my-sm">
+                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface">MK 35,000</span>
+                    <span className="text-on-surface-variant font-medium text-body-sm">/ term</span>
+                  </div>
+                  <hr className="border-outline-variant" />
+                  <ul className="flex flex-col gap-sm">
+                    {[
+                      'Unlimited students',
+                      'Multi-method payments & receipts',
+                      'Grading scale configurations',
+                      'Teacher marks approval flow',
+                      'Discipline & override tracking',
+                      'Offline-first PWA sync',
+                      'Broadcast notifications',
+                    ].map(feat => (
+                      <li key={feat} className="flex items-start gap-xs text-body-sm text-on-surface">
+                        <span className="material-symbols-outlined text-primary shrink-0 text-[18px]">check_circle</span>
+                        <span className="font-medium">{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <button className="mt-lg w-full bg-primary text-on-primary font-label-md text-label-md py-sm rounded-xl hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-md">
+                  Choose Premium
+                </button>
+              </div>
+
+              {/* Enterprise Plan */}
+              <div className="group bg-surface border border-outline-variant rounded-3xl p-lg flex flex-col justify-between hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+                <div className="flex flex-col gap-md">
+                  <div>
+                    <h3 className="font-headline-sm text-headline-sm text-on-surface mb-xs">Enterprise</h3>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant min-h-[40px]">
+                      For multi-school networks, franchises, or large academic complexes.
+                    </p>
+                  </div>
+                  <div className="flex items-baseline gap-xs my-sm">
+                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface">MK 75,000</span>
+                    <span className="text-on-surface-variant font-medium text-body-sm">/ term</span>
+                  </div>
+                  <hr className="border-outline-variant" />
+                  <ul className="flex flex-col gap-sm">
+                    {[
+                      'Everything in Premium',
+                      'Consolidated Director dashboards',
+                      'Consolidated multi-school reporting',
+                      'Consolidated financials auditer',
+                      'Priority 24/7 technical SLAs',
+                      'Custom school subdomains',
+                      'Dedicated database backups',
+                    ].map(feat => (
+                      <li key={feat} className="flex items-start gap-xs text-body-sm text-on-surface-variant">
+                        <span className="material-symbols-outlined text-primary shrink-0 text-[18px]">check_circle</span>
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <button className="mt-lg w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-md text-label-md py-sm rounded-xl transition-all cursor-pointer border border-outline-variant">
+                  Contact Sales
+                </button>
               </div>
 
             </div>
