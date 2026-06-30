@@ -4,6 +4,7 @@ import { Header } from '../components/HeadTeacherDashboard/Header';
 import { Sidebar } from '../components/HeadTeacherDashboard/Sidebar';
 import { BottomNav } from '../components/HeadTeacherDashboard/BottomNav';
 import { useQuery, useMutation } from '../hooks/useApi';
+import { api } from '../services/api';
 
 type Tab = 'staff' | 'students';
 
@@ -188,6 +189,27 @@ export const HeadTeacherPeople: React.FC = () => {
       showSuccessToast(msg);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const [deletingStudentId, setDeletingStudentId] = useState<string | null>(null);
+
+  const handleDeleteStudent = async (studentId: string) => {
+    if (!window.confirm('Are you sure you want to delete this student? This action will disable their user account, delete their student profile, and remove all parent associations.')) {
+      return;
+    }
+
+    setDeletingStudentId(studentId);
+    try {
+      await api.delete(`/people/students/${studentId}`);
+      showSuccessToast('Student successfully deleted.');
+      setSelectedStudent(null);
+      refetchStudents();
+    } catch (err: any) {
+      console.error('Failed to delete student:', err);
+      alert(err.response?.data?.message || 'Failed to delete student.');
+    } finally {
+      setDeletingStudentId(null);
     }
   };
 
@@ -656,6 +678,18 @@ export const HeadTeacherPeople: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              <div className="flex gap-2 border-t border-outline-variant pt-4 mt-6">
+                <button
+                  onClick={() => handleDeleteStudent(selectedStudent.id)}
+                  disabled={deletingStudentId === selectedStudent.id}
+                  className="w-full py-2.5 border border-error text-error hover:bg-error/10 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1 disabled:opacity-50"
+                  title="Delete Student"
+                >
+                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                  {deletingStudentId === selectedStudent.id ? 'Deleting...' : 'Delete Student'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -375,4 +375,45 @@ router.get(
   })
 );
 
+// ---- Delete Student ----
+router.delete(
+  '/students/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { id } = req.params; // StudentProfile ID
+
+    const studentProfile = await prisma.studentProfile.findFirst({
+      where: { id, schoolId, isDeleted: false },
+      include: { user: true },
+    });
+
+    if (!studentProfile) {
+      throw new NotFoundError('Student');
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Soft delete StudentProfile
+      await tx.studentProfile.update({
+        where: { id: studentProfile.id },
+        data: { isDeleted: true },
+      });
+
+      // 2. Soft delete student User record & deactivate
+      await tx.user.update({
+        where: { id: studentProfile.userId },
+        data: { isDeleted: true, isActive: false },
+      });
+
+      // 3. Soft delete ParentStudent relationships
+      await tx.parentStudent.updateMany({
+        where: { studentUserId: studentProfile.userId, isDeleted: false },
+        data: { isDeleted: true },
+      });
+    });
+
+    sendSuccess(res, null, 'Student deleted successfully');
+  })
+);
+
 export default router;

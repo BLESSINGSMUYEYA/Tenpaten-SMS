@@ -3,6 +3,7 @@ import { Header } from '../components/DeputyHeadDashboard/Header';
 import { Sidebar } from '../components/DeputyHeadDashboard/Sidebar';
 import { BottomNav } from '../components/DeputyHeadDashboard/BottomNav';
 import { useQuery, useMutation } from '../hooks/useApi';
+import { api } from '../services/api';
 
 // ── API shapes ──────────────────────────────────────────────
 interface ClassRecord {
@@ -151,6 +152,27 @@ export const DeputyHeadStudents: React.FC = () => {
       showSuccessToast(msg);
     } catch (err) {
       console.error('Failed to register student:', err);
+    }
+  };
+
+  const [deletingStudentId, setDeletingStudentId] = useState<string | null>(null);
+
+  const handleDeleteStudent = async (studentId: string) => {
+    if (!window.confirm('Are you sure you want to delete this student? This action will disable their user account, delete their student profile, and remove all parent associations.')) {
+      return;
+    }
+
+    setDeletingStudentId(studentId);
+    try {
+      await api.delete(`/people/students/${studentId}`);
+      showSuccessToast('Student successfully deleted.');
+      setSelectedStudent(null);
+      refetch();
+    } catch (err: any) {
+      console.error('Failed to delete student:', err);
+      alert(err.response?.data?.message || 'Failed to delete student.');
+    } finally {
+      setDeletingStudentId(null);
     }
   };
 
@@ -580,6 +602,15 @@ export const DeputyHeadStudents: React.FC = () => {
               <div className="flex gap-2 border-t border-outline-variant pt-4">
                 <button className="flex-1 px-4 py-2.5 border border-outline hover:bg-surface-container rounded-lg font-bold text-xs text-on-surface-variant transition-all">
                   Edit Profile
+                </button>
+                <button
+                  onClick={() => handleDeleteStudent(selectedStudent.id)}
+                  disabled={deletingStudentId === selectedStudent.id}
+                  className="px-3 py-2.5 border border-error text-error hover:bg-error/10 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1 disabled:opacity-50 flex-shrink-0"
+                  title="Delete Student"
+                >
+                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                  {deletingStudentId === selectedStudent.id ? 'Deleting...' : 'Delete'}
                 </button>
                 {selectedStudent.parentRelations[0]?.parent.phone && (
                   <a
