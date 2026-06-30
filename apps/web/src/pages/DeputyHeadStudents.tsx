@@ -20,6 +20,8 @@ interface ParentRelation {
     lastName: string;
     email: string;
     phone?: string;
+    username?: string | null;
+    tempPassword?: string | null;
   };
   relationship: string;
 }
@@ -40,6 +42,8 @@ interface StudentProfile {
     email: string;
     phone?: string;
     photoUrl?: string;
+    username?: string | null;
+    tempPassword?: string | null;
   };
   parentRelations: ParentRelation[];
 }
@@ -442,6 +446,105 @@ export const DeputyHeadStudents: React.FC = () => {
                     <span className="text-body-md text-on-surface font-semibold break-all">{selectedStudent.user.email}</span>
                   </div>
                 </div>
+
+                {/* Temporary Login Details (shows only if password hasn't been changed yet) */}
+                {(selectedStudent.user.tempPassword || selectedStudent.parentRelations.some(r => r.parent.tempPassword)) && (
+                  <div className="bg-warning-container/30 border border-warning/30 rounded-xl p-4 my-4 space-y-3">
+                    <div className="flex items-center gap-2 text-warning font-bold">
+                      <span className="material-symbols-outlined text-[20px]">security</span>
+                      <h5 className="font-bold text-xs uppercase tracking-wider">Temporary Login Credentials</h5>
+                    </div>
+                    <p className="text-[11px] text-on-surface-variant">
+                      These temporary credentials will disappear once the user logs in and changes their password.
+                    </p>
+
+                    {selectedStudent.user.tempPassword && (
+                      <div className="bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/60 space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-primary">Student Account</span>
+                          <span className="px-1.5 py-0.5 bg-warning/15 text-warning text-[10px] rounded font-semibold uppercase">Pending Use</span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-1.5">
+                          <div className="flex justify-between items-center bg-surface-container p-2 rounded">
+                            <div className="overflow-hidden mr-2">
+                              <span className="block text-[10px] text-outline uppercase font-bold">Username</span>
+                              <span className="font-mono font-semibold break-all">{selectedStudent.user.username || selectedStudent.admissionNumber}</span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(selectedStudent.user.username || selectedStudent.admissionNumber);
+                                showSuccessToast('Student username copied!');
+                              }}
+                              className="text-primary hover:text-primary-hover flex items-center justify-center p-1 rounded hover:bg-surface-container-high flex-shrink-0"
+                              title="Copy Username"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">content_copy</span>
+                            </button>
+                          </div>
+                          <div className="flex justify-between items-center bg-surface-container p-2 rounded">
+                            <div className="overflow-hidden mr-2">
+                              <span className="block text-[10px] text-outline uppercase font-bold">Temporary Password</span>
+                              <span className="font-mono font-semibold text-warning break-all">{selectedStudent.user.tempPassword}</span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(selectedStudent.user.tempPassword || '');
+                                showSuccessToast('Student temporary password copied!');
+                              }}
+                              className="text-primary hover:text-primary-hover flex items-center justify-center p-1 rounded hover:bg-surface-container-high flex-shrink-0"
+                              title="Copy Password"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">content_copy</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedStudent.parentRelations.map((rel, idx) => rel.parent.tempPassword && (
+                      <div key={idx} className="bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/60 space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-primary">Parent/Guardian ({rel.relationship})</span>
+                          <span className="px-1.5 py-0.5 bg-warning/15 text-warning text-[10px] rounded font-semibold uppercase">Pending Use</span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-1.5">
+                          <div className="flex justify-between items-center bg-surface-container p-2 rounded">
+                            <div className="overflow-hidden mr-2">
+                              <span className="block text-[10px] text-outline uppercase font-bold">Username / Email</span>
+                              <span className="font-mono font-semibold break-all">{rel.parent.email || rel.parent.username}</span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(rel.parent.email || rel.parent.username || '');
+                                showSuccessToast('Parent username copied!');
+                              }}
+                              className="text-primary hover:text-primary-hover flex items-center justify-center p-1 rounded hover:bg-surface-container-high flex-shrink-0"
+                              title="Copy Username"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">content_copy</span>
+                            </button>
+                          </div>
+                          <div className="flex justify-between items-center bg-surface-container p-2 rounded">
+                            <div className="overflow-hidden mr-2">
+                              <span className="block text-[10px] text-outline uppercase font-bold">Temporary Password</span>
+                              <span className="font-mono font-semibold text-warning break-all">{rel.parent.tempPassword}</span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(rel.parent.tempPassword || '');
+                                showSuccessToast('Parent temporary password copied!');
+                              }}
+                              className="text-primary hover:text-primary-hover flex items-center justify-center p-1 rounded hover:bg-surface-container-high flex-shrink-0"
+                              title="Copy Password"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">content_copy</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Guardian section */}
                 <div className="py-6 space-y-4">

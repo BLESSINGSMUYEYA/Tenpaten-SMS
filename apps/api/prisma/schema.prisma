@@ -65,6 +65,7 @@ model User {
   role                    UserRole
   isActive                Boolean              @default(true)
   mustChangePassword      Boolean              @default(false)
+  tempPassword            String?
   lastLogin               DateTime?
   photoUrl                String?
   createdAt               DateTime             @default(now())

@@ -427,7 +427,7 @@ class AuthService {
     await prisma.$transaction([
       prisma.user.update({
         where: { id: resetToken.userId },
-        data: { passwordHash, mustChangePassword: false, tokenVersion: { increment: 1 } },
+        data: { passwordHash, mustChangePassword: false, tempPassword: null, tokenVersion: { increment: 1 } },
       }),
       prisma.passwordResetToken.update({
         where: { id: resetToken.id },
@@ -470,7 +470,7 @@ class AuthService {
 
     await prisma.user.update({
       where: { id: userId },
-      data: { passwordHash, mustChangePassword: false, tokenVersion: { increment: 1 } },
+      data: { passwordHash, mustChangePassword: false, tempPassword: null, tokenVersion: { increment: 1 } },
     });
 
     // Revoke all existing refresh tokens — user must log in again on all devices

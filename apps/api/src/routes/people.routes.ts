@@ -160,6 +160,8 @@ router.get(
             email: true,
             phone: true,
             photoUrl: true,
+            username: true,
+            tempPassword: true,
             studentRelations: {
               where: { isDeleted: false },
               include: {
@@ -170,6 +172,8 @@ router.get(
                     lastName: true,
                     email: true,
                     phone: true,
+                    username: true,
+                    tempPassword: true,
                   },
                 },
               },
@@ -276,6 +280,7 @@ router.post(
             role: UserRole.parent,
             isActive: true,
             mustChangePassword: true,
+            tempPassword: parentTempPass,
           },
         });
 
@@ -303,6 +308,7 @@ router.post(
           role: UserRole.student,
           isActive: true,
           mustChangePassword: true,
+          tempPassword,
           photoUrl,
         },
       });

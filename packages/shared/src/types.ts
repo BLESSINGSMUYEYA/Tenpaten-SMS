@@ -87,6 +87,7 @@ export interface User extends BaseModel {
   role: UserRole;
   isActive: boolean;
   mustChangePassword: boolean;
+  tempPassword?: string | null;
   lastLogin?: string;
   photoUrl?: string;
   school?: School;
