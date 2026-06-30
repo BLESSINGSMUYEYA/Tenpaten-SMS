@@ -5,6 +5,7 @@ import { Sidebar } from '../components/HeadTeacherDashboard/Sidebar';
 import { BottomNav } from '../components/HeadTeacherDashboard/BottomNav';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { api } from '../services/api';
+import { BulkImportModal } from '../components/BulkImportModal';
 
 type Tab = 'staff' | 'students';
 
@@ -89,6 +90,8 @@ export const HeadTeacherPeople: React.FC = () => {
   const { mutate: enrollStudent, loading: creatingStudent, error: studentCreateError } = useMutation('/people/students', 'post');
 
   // Modals & Forms states
+  const [isBulkStudentModalOpen, setIsBulkStudentModalOpen] = useState(false);
+  const [isBulkStaffModalOpen, setIsBulkStaffModalOpen] = useState(false);
   const [addStaffOpen, setAddStaffOpen] = useState(false);
   const [sFirstName, setSFirstName] = useState('');
   const [sLastName, setSLastName] = useState('');
@@ -370,28 +373,46 @@ export const HeadTeacherPeople: React.FC = () => {
             <h1 className="dash-page-title">People Management</h1>
             <p className="text-sm text-on-surface-variant mt-1">Manage staff and student records, {fullName}.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             {tab === 'staff' ? (
-              <button
-                onClick={() => setAddStaffOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm text-sm"
-              >
-                <span className="material-symbols-outlined text-[18px]">badge</span>
-                Add Staff
-              </button>
+              <>
+                <button
+                  onClick={() => setIsBulkStaffModalOpen(true)}
+                  className="flex items-center gap-1.5 px-4 py-2.5 border border-outline hover:bg-surface-container text-on-surface-variant rounded-lg font-bold transition-all text-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                  Import Bulk
+                </button>
+                <button
+                  onClick={() => setAddStaffOpen(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm text-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">badge</span>
+                  Add Staff
+                </button>
+              </>
             ) : (
-              <button
-                onClick={() => {
-                  if (classList && classList.length > 0 && !stClassId) {
-                    setStClassId(classList[0].id);
-                  }
-                  setAddStudentOpen(true);
-                }}
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm text-sm"
-              >
-                <span className="material-symbols-outlined text-[18px]">person_add</span>
-                Enroll Student
-              </button>
+              <>
+                <button
+                  onClick={() => setIsBulkStudentModalOpen(true)}
+                  className="flex items-center gap-1.5 px-4 py-2.5 border border-outline hover:bg-surface-container text-on-surface-variant rounded-lg font-bold transition-all text-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                  Import Bulk
+                </button>
+                <button
+                  onClick={() => {
+                    if (classList && classList.length > 0 && !stClassId) {
+                      setStClassId(classList[0].id);
+                    }
+                    setAddStudentOpen(true);
+                  }}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm text-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">person_add</span>
+                  Enroll Student
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -1161,6 +1182,23 @@ export const HeadTeacherPeople: React.FC = () => {
           </div>
         </div>
       )}
+
+      <BulkImportModal
+        isOpen={isBulkStudentModalOpen}
+        onClose={() => setIsBulkStudentModalOpen(false)}
+        onSuccess={() => refetchStudents()}
+        type="student"
+        classesList={classList || []}
+        showSuccessToast={showSuccessToast}
+      />
+
+      <BulkImportModal
+        isOpen={isBulkStaffModalOpen}
+        onClose={() => setIsBulkStaffModalOpen(false)}
+        onSuccess={() => refetchStaff()}
+        type="staff"
+        showSuccessToast={showSuccessToast}
+      />
     </>
   );
 };

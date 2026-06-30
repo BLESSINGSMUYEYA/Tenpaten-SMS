@@ -638,4 +638,266 @@ router.put(
   })
 );
 
+// ---- Bulk Onboard Students ----
+router.post(
+  '/students/bulk',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { students } = req.body;
+
+    if (!students || !Array.isArray(students)) {
+      throw new ValidationError({ students: ['An array of students is required'] });
+    }
+
+    const school = await prisma.school.findFirst({
+      where: { id: schoolId },
+    });
+
+    if (!school) {
+      throw new NotFoundError('School');
+    }
+
+    const classes = await prisma.class.findMany({
+      where: { schoolId, isDeleted: false },
+    });
+
+    const enrolledStudents: any[] = [];
+    const commonSalt = await bcrypt.genSalt(10);
+    let studentCount = await prisma.studentProfile.count({
+      where: { schoolId },
+    });
+
+    await prisma.$transaction(async (tx) => {
+      for (const row of students) {
+        const {
+          firstName,
+          lastName,
+          gender,
+          dateOfBirth,
+          classIdOrName,
+          boardingStatus,
+          guardianName,
+          guardianPhone,
+          guardianEmail,
+          guardianRelationship,
+        } = row;
+
+        if (!firstName || !lastName || !classIdOrName || !guardianName || !guardianPhone) {
+          throw new ValidationError({ body: ['Missing required student or guardian fields'] });
+        }
+
+        // Find class
+        let matchedClass = classes.find(c => c.id === classIdOrName);
+        if (!matchedClass) {
+          matchedClass = classes.find(
+            c =>
+              c.name.toLowerCase() === classIdOrName.toLowerCase() ||
+              c.displayName.toLowerCase() === classIdOrName.toLowerCase()
+          );
+        }
+
+        if (!matchedClass) {
+          throw new ValidationError({ class: [`Class '${classIdOrName}' not found in school`] });
+        }
+
+        // Check if guardian email already exists
+        let parentUser = null;
+        if (guardianEmail) {
+          parentUser = await tx.user.findFirst({
+            where: { email: guardianEmail.trim().toLowerCase(), schoolId, isDeleted: false },
+          });
+        }
+
+        studentCount++;
+        const admissionNumber = generateAdmissionNumber(
+          school.schoolCode,
+          new Date().getFullYear(),
+          studentCount
+        );
+
+        const tempPassword = generateTempPassword();
+        const studentPasswordHash = await bcrypt.hash(tempPassword, commonSalt);
+
+        let parentTempPassword: string | null = null;
+        const cleanParentUsername = `parent.${admissionNumber.replace(/\//g, '.')}`;
+
+        if (!parentUser) {
+          const guardianNames = guardianName.trim().split(/\s+/);
+          const parentFirstName = guardianNames[0] || 'Parent';
+          const parentLastName = guardianNames.slice(1).join(' ') || 'Guardian';
+          const parentTempPass = generateTempPassword();
+          parentTempPassword = parentTempPass;
+          const parentHash = await bcrypt.hash(parentTempPass, commonSalt);
+          const parentEmail = guardianEmail ? guardianEmail.trim().toLowerCase() : null;
+          const parentUsername = parentEmail ? null : cleanParentUsername;
+
+          parentUser = await tx.user.create({
+            data: {
+              schoolId,
+              firstName: parentFirstName,
+              lastName: parentLastName,
+              email: parentEmail,
+              username: parentUsername,
+              phone: guardianPhone,
+              passwordHash: parentHash,
+              role: UserRole.parent,
+              isActive: true,
+              mustChangePassword: true,
+              tempPassword: parentTempPass,
+            },
+          });
+        }
+
+        const stdUser = await tx.user.create({
+          data: {
+            schoolId,
+            firstName,
+            lastName,
+            username: admissionNumber,
+            passwordHash: studentPasswordHash,
+            role: UserRole.student,
+            isActive: true,
+            mustChangePassword: true,
+            tempPassword,
+          },
+        });
+
+        const stdProfile = await tx.studentProfile.create({
+          data: {
+            schoolId,
+            userId: stdUser.id,
+            admissionNumber,
+            classId: matchedClass.id,
+            gender: gender || 'male',
+            boardingStatus: boardingStatus || 'day',
+            dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+            enrollmentDate: new Date(),
+            status: StudentStatus.active,
+          },
+        });
+
+        await tx.parentStudent.create({
+          data: {
+            parentUserId: parentUser.id,
+            studentUserId: stdUser.id,
+            relationship: guardianRelationship || 'parent',
+          },
+        });
+
+        enrolledStudents.push({
+          id: stdProfile.id,
+          admissionNumber,
+          firstName,
+          lastName,
+          className: matchedClass.displayName,
+          studentUsername: admissionNumber,
+          studentTempPassword: tempPassword,
+          parentUsername: parentUser.email || parentUser.username,
+          parentTempPassword,
+        });
+      }
+    });
+
+    sendSuccess(res, enrolledStudents, `${enrolledStudents.length} students enrolled successfully`);
+  })
+);
+
+// ---- Bulk Onboard Staff ----
+router.post(
+  '/staff/bulk',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { staff } = req.body;
+
+    if (!staff || !Array.isArray(staff)) {
+      throw new ValidationError({ staff: ['An array of staff members is required'] });
+    }
+
+    const school = await prisma.school.findFirst({
+      where: { id: schoolId },
+    });
+
+    if (!school) {
+      throw new NotFoundError('School');
+    }
+
+    const onboardedStaff: any[] = [];
+    const commonSalt = await bcrypt.genSalt(10);
+
+    await prisma.$transaction(async (tx) => {
+      for (const row of staff) {
+        const { firstName, lastName, role, email, phone } = row;
+
+        if (!firstName || !lastName || !role) {
+          throw new ValidationError({ body: ['Missing required staff fields (firstName, lastName, role)'] });
+        }
+
+        // Validate Role is a valid staff role
+        const validRoles = [UserRole.teacher, UserRole.bursar, UserRole.deputy_head, UserRole.head_teacher, UserRole.director, UserRole.school_director];
+        if (!validRoles.includes(role as any)) {
+          throw new ValidationError({ role: [`Role '${role}' is not a valid staff role`] });
+        }
+
+        // Check if email already exists
+        if (email) {
+          const existing = await tx.user.findFirst({
+            where: { email: email.trim().toLowerCase(), schoolId, isDeleted: false },
+          });
+          if (existing) {
+            throw new ValidationError({ email: [`Staff with email '${email}' already exists`] });
+          }
+        }
+
+        // Generate unique username
+        const cleanFirst = firstName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanLast = lastName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const baseUsername = `${cleanFirst}.${cleanLast}`;
+        let username = baseUsername;
+        let counter = 1;
+
+        while (true) {
+          const existingUser = await tx.user.findFirst({
+            where: { username, schoolId, isDeleted: false },
+          });
+          if (!existingUser) break;
+          counter++;
+          username = `${baseUsername}${counter}`;
+        }
+
+        const tempPassword = generateTempPassword();
+        const passwordHash = await bcrypt.hash(tempPassword, commonSalt);
+
+        const newUser = await tx.user.create({
+          data: {
+            schoolId,
+            firstName,
+            lastName,
+            email: email ? email.trim().toLowerCase() : null,
+            username,
+            phone,
+            passwordHash,
+            role: role as UserRole,
+            isActive: true,
+            mustChangePassword: true,
+            tempPassword,
+          },
+        });
+
+        onboardedStaff.push({
+          id: newUser.id,
+          firstName,
+          lastName,
+          role,
+          username,
+          tempPassword,
+        });
+      }
+    });
+
+    sendSuccess(res, onboardedStaff, `${onboardedStaff.length} staff members onboarded successfully`);
+  })
+);
+
 export default router;

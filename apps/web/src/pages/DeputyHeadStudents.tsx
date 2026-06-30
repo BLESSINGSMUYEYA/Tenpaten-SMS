@@ -4,6 +4,7 @@ import { Sidebar } from '../components/DeputyHeadDashboard/Sidebar';
 import { BottomNav } from '../components/DeputyHeadDashboard/BottomNav';
 import { useQuery, useMutation } from '../hooks/useApi';
 import { api } from '../services/api';
+import { BulkImportModal } from '../components/BulkImportModal';
 
 // ── API shapes ──────────────────────────────────────────────
 interface ClassRecord {
@@ -99,6 +100,7 @@ export const DeputyHeadStudents: React.FC = () => {
   const [guardianRelationship, setGuardianRelationship] = useState('parent');
 
   // ── Edit Form state ───────────────────────────────────────────
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editFirstName, setEditFirstName] = useState('');
   const [editLastName, setEditLastName] = useState('');
@@ -323,13 +325,22 @@ export const DeputyHeadStudents: React.FC = () => {
               Access emergency parent contact details, fee standings, and student profiles.
             </p>
           </div>
-          <button
-            onClick={() => setIsRegisterModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm self-start md:self-end text-xs"
-          >
-            <span className="material-symbols-outlined text-[18px]">person_add</span>
-            Register New Student
-          </button>
+          <div className="flex gap-2 self-start md:self-end">
+            <button
+              onClick={() => setIsBulkModalOpen(true)}
+              className="flex items-center justify-center gap-1.5 px-4 py-3 border border-outline hover:bg-surface-container text-on-surface-variant rounded-lg font-bold transition-all text-xs"
+            >
+              <span className="material-symbols-outlined text-[18px]">upload_file</span>
+              Import Bulk
+            </button>
+            <button
+              onClick={() => setIsRegisterModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm text-xs"
+            >
+              <span className="material-symbols-outlined text-[18px]">person_add</span>
+              Register New Student
+            </button>
+          </div>
         </div>
 
         {/* Metrics */}
@@ -1107,6 +1118,15 @@ export const DeputyHeadStudents: React.FC = () => {
             </div>
           </div>
         )}
+
+        <BulkImportModal
+          isOpen={isBulkModalOpen}
+          onClose={() => setIsBulkModalOpen(false)}
+          onSuccess={() => refetch()}
+          type="student"
+          classesList={classes || []}
+          showSuccessToast={showSuccessToast}
+        />
       </main>
       <BottomNav />
     </>
