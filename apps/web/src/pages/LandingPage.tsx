@@ -6,16 +6,52 @@ export const LandingPage: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = React.useState<any>(null);
   const [showInstructions, setShowInstructions] = React.useState(false);
   const [platform, setPlatform] = React.useState<'ios' | 'android' | 'desktop'>('desktop');
+  const [isStandalone, setIsStandalone] = React.useState(false);
+  const [showMobilePrompt, setShowMobilePrompt] = React.useState(false);
 
   React.useEffect(() => {
+    // Detect standalone mode
+    const checkStandalone = () => {
+      const isStandaloneMode = 
+        window.matchMedia('(display-mode: standalone)').matches || 
+        (navigator as any).standalone;
+      setIsStandalone(!!isStandaloneMode);
+      return !!isStandaloneMode;
+    };
+    const alreadyInstalled = checkStandalone();
+
+    // Listen for media query change to update dynamically if launched as PWA
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleMediaChange = (e: MediaQueryListEvent) => {
+      setIsStandalone(e.matches);
+    };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleMediaChange);
+    } else {
+      mediaQuery.addListener(handleMediaChange);
+    }
+
     // Detect platform
     const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    let currentPlatform: 'ios' | 'android' | 'desktop' = 'desktop';
     if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+      currentPlatform = 'ios';
       setPlatform('ios');
     } else if (/android/i.test(userAgent)) {
+      currentPlatform = 'android';
       setPlatform('android');
     } else {
+      currentPlatform = 'desktop';
       setPlatform('desktop');
+    }
+
+    const isMobile = currentPlatform === 'ios' || currentPlatform === 'android';
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (isMobile && !alreadyInstalled) {
+      timer = setTimeout(() => {
+        setShowMobilePrompt(true);
+      }, 1500);
     }
 
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -27,6 +63,8 @@ export const LandingPage: React.FC = () => {
 
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
+      setIsStandalone(true);
+      setShowMobilePrompt(false);
       console.log('MyKlasi PWA was installed successfully');
     };
     window.addEventListener('appinstalled', handleAppInstalled);
@@ -34,6 +72,14 @@ export const LandingPage: React.FC = () => {
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleMediaChange);
+      } else {
+        mediaQuery.removeListener(handleMediaChange);
+      }
+      if (timer) {
+        clearTimeout(timer);
+      }
     };
   }, []);
 
@@ -41,9 +87,8 @@ export const LandingPage: React.FC = () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
-      }
+      console.log(`User choice outcome: ${outcome}`);
+      setDeferredPrompt(null);
     } else {
       setShowInstructions(true);
     }
@@ -557,14 +602,16 @@ export const LandingPage: React.FC = () => {
             ))}
             
             {/* PWA Download Button */}
-            <button
-              onClick={handleInstallClick}
-              className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary font-label-sm text-label-sm px-4 py-1.5 rounded-full transition-all active:scale-95 border border-primary/20 cursor-pointer shadow-sm md:ml-4"
-              title="Install MyKlasi App on your device"
-            >
-              <span className="material-symbols-outlined text-[16px]">install_mobile</span>
-              <span>Download App</span>
-            </button>
+            {!isStandalone && (
+              <button
+                onClick={handleInstallClick}
+                className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary font-label-sm text-label-sm px-4 py-1.5 rounded-full transition-all active:scale-95 border border-primary/20 cursor-pointer shadow-sm md:ml-4"
+                title="Install MyKlasi App on your device"
+              >
+                <span className="material-symbols-outlined text-[16px]">install_mobile</span>
+                <span>Download App</span>
+              </button>
+            )}
           </div>
           <div className="font-label-sm text-label-sm text-on-surface-variant text-center md:text-right">
             © {new Date().getFullYear()} MyKlasi School Management System. All rights reserved.
@@ -655,6 +702,60 @@ export const LandingPage: React.FC = () => {
         </div>
       )}
 
+      {/* ─── Mobile PWA Install Auto-Prompt (Bottom Sheet) ─── */}
+      {showMobilePrompt && !isStandalone && (
+        <div 
+          className="fixed bottom-0 left-0 right-0 z-40 bg-surface-container-highest/95 backdrop-blur-lg border-t border-outline-variant rounded-t-3xl shadow-2xl p-5 pb-8 flex flex-col gap-4 md:hidden"
+          style={{ animation: 'tpSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
+        >
+          {/* Top handle bar to mimic native bottom sheet */}
+          <div className="w-12 h-1.5 bg-outline-variant/60 rounded-full mx-auto" />
+          
+          <div className="flex items-start gap-4 mt-2">
+            {/* App Icon */}
+            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 shrink-0">
+              <span className="material-symbols-outlined text-primary text-[28px]">install_mobile</span>
+            </div>
+            
+            {/* Description */}
+            <div className="flex-grow space-y-0.5 text-left">
+              <h4 className="font-title-medium text-title-medium text-on-surface font-bold">Install MyKlasi App</h4>
+              <p className="font-body-small text-body-small text-on-surface-variant leading-relaxed">
+                Add to your home screen for rapid offline access, instant notifications, and a full-screen experience.
+              </p>
+            </div>
+            
+            {/* Close Button */}
+            <button
+              onClick={() => setShowMobilePrompt(false)}
+              className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-lowest rounded-full p-1.5 transition-all cursor-pointer flex items-center justify-center"
+              aria-label="Dismiss"
+            >
+              <span className="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+          
+          {/* Actions */}
+          <div className="flex gap-3 mt-1">
+            <button
+              onClick={() => {
+                setShowMobilePrompt(false);
+                handleInstallClick();
+              }}
+              className="flex-grow bg-primary hover:bg-primary/90 text-on-primary font-label-large text-label-large py-3 rounded-xl transition-all cursor-pointer active:scale-[0.98] text-center font-bold shadow-md"
+            >
+              Install Now
+            </button>
+            <button
+              onClick={() => setShowMobilePrompt(false)}
+              className="px-5 border border-outline hover:bg-surface-container-lowest text-on-surface font-label-large text-label-large py-3 rounded-xl transition-all cursor-pointer active:scale-[0.98] text-center font-medium"
+            >
+              Not Now
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Scoped keyframes — staggered hero entrance */}
       <style>{`
         @keyframes tpFadeUp {
@@ -668,6 +769,10 @@ export const LandingPage: React.FC = () => {
         @keyframes tpScaleIn {
           from { opacity: 0; transform: scale(0.95); }
           to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes tpSlideUp {
+          from { transform: translateY(100%); }
+          to   { transform: translateY(0); }
         }
       `}</style>
 
