@@ -98,6 +98,92 @@ export const DeputyHeadStudents: React.FC = () => {
   const [guardianEmail, setGuardianEmail] = useState('');
   const [guardianRelationship, setGuardianRelationship] = useState('parent');
 
+  // ── Edit Form state ───────────────────────────────────────────
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editLastName, setEditLastName] = useState('');
+  const [editGender, setEditGender] = useState('male');
+  const [editDOB, setEditDOB] = useState('');
+  const [editClassId, setEditClassId] = useState('');
+  const [editBoardingStatus, setEditBoardingStatus] = useState('day');
+  const [editStatus, setEditStatus] = useState('active');
+  // Guardian
+  const [editGuardianFullName, setEditGuardianFullName] = useState('');
+  const [editGuardianPhone, setEditGuardianPhone] = useState('');
+  const [editGuardianEmail, setEditGuardianEmail] = useState('');
+  const [editGuardianRelationship, setEditGuardianRelationship] = useState('parent');
+
+  const [updatingStudent, setUpdatingStudent] = useState(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
+
+  const openEditModal = (student: StudentProfile) => {
+    setEditFirstName(student.user.firstName);
+    setEditLastName(student.user.lastName);
+    setEditGender(student.gender || 'male');
+    setEditDOB(student.dateOfBirth ? student.dateOfBirth.split('T')[0] : '');
+    setEditClassId(student.class?.id || '');
+    setEditBoardingStatus(student.boardingStatus || 'day');
+    setEditStatus(student.status || 'active');
+    setUpdateError(null);
+    
+    if (student.parentRelations && student.parentRelations.length > 0) {
+      const rel = student.parentRelations[0];
+      setEditGuardianFullName(`${rel.parent.firstName} ${rel.parent.lastName}`.trim());
+      setEditGuardianPhone(rel.parent.phone || '');
+      setEditGuardianEmail(rel.parent.email || '');
+      setEditGuardianRelationship(rel.relationship || 'parent');
+    } else {
+      setEditGuardianFullName('');
+      setEditGuardianPhone('');
+      setEditGuardianEmail('');
+      setEditGuardianRelationship('parent');
+    }
+    
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditStudentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudent) return;
+    if (!editFirstName || !editLastName || !editClassId || !editGuardianFullName || !editGuardianPhone) {
+      setUpdateError('Please fill in all required fields.');
+      return;
+    }
+
+    setUpdatingStudent(true);
+    setUpdateError(null);
+    try {
+      const response = await api.put(`/people/students/${selectedStudent.id}`, {
+        firstName: editFirstName,
+        lastName: editLastName,
+        gender: editGender,
+        dateOfBirth: editDOB || null,
+        classId: editClassId,
+        boardingStatus: editBoardingStatus,
+        status: editStatus,
+        guardian: {
+          fullName: editGuardianFullName,
+          phone: editGuardianPhone,
+          email: editGuardianEmail || null,
+          relationship: editGuardianRelationship,
+        },
+      });
+
+      const updated = response.data.data;
+      showSuccessToast(`✅ Student details updated successfully.`);
+      setIsEditModalOpen(false);
+      
+      // Update selectedStudent in drawer
+      setSelectedStudent(updated);
+      refetch();
+    } catch (err: any) {
+      console.error('Failed to update student:', err);
+      setUpdateError(err.response?.data?.message || 'Failed to update student details.');
+    } finally {
+      setUpdatingStudent(false);
+    }
+  };
+
   const resetForm = () => {
     setNewFirstName('');
     setNewLastName('');
@@ -600,7 +686,10 @@ export const DeputyHeadStudents: React.FC = () => {
               </div>
 
               <div className="flex gap-2 border-t border-outline-variant pt-4">
-                <button className="flex-1 px-4 py-2.5 border border-outline hover:bg-surface-container rounded-lg font-bold text-xs text-on-surface-variant transition-all">
+                <button
+                  onClick={() => openEditModal(selectedStudent)}
+                  className="flex-1 px-4 py-2.5 border border-outline hover:bg-surface-container rounded-lg font-bold text-xs text-on-surface-variant transition-all"
+                >
                   Edit Profile
                 </button>
                 <button
@@ -809,6 +898,200 @@ export const DeputyHeadStudents: React.FC = () => {
                     className="px-6 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all text-xs disabled:opacity-50"
                   >
                     {registering ? 'Registering…' : 'Register Student'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ── Edit Student Modal ── */}
+        {isEditModalOpen && selectedStudent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl w-full max-w-lg shadow-2xl p-6 relative animate-slide-in-bottom max-h-[92vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-headline-sm text-primary flex items-center gap-2">
+                  <span className="material-symbols-outlined">edit</span>
+                  Edit Student Information
+                </h3>
+                <button
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              {updateError && (
+                <div className="mb-4 p-3 bg-error-container border border-error/20 text-on-error-container text-xs rounded-lg">
+                  Update failed: {updateError}
+                </div>
+              )}
+
+              <form onSubmit={handleEditStudentSubmit} className="space-y-4">
+                {/* Name */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-label-md text-on-surface-variant mb-1 font-bold">First Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editFirstName}
+                      onChange={e => setEditFirstName(e.target.value)}
+                      className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Last Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editLastName}
+                      onChange={e => setEditLastName(e.target.value)}
+                      className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {/* Gender & DOB */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Gender</label>
+                    <select
+                      value={editGender}
+                      onChange={e => setEditGender(e.target.value)}
+                      className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-surface-container text-on-surface font-body-md transition-colors"
+                    >
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Date of Birth</label>
+                    <input
+                      type="date"
+                      value={editDOB}
+                      onChange={e => setEditDOB(e.target.value)}
+                      className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {/* Class & Boarding & Status */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Class *</label>
+                    <select
+                      required
+                      value={editClassId}
+                      onChange={e => setEditClassId(e.target.value)}
+                      className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-surface-container text-on-surface font-body-md transition-colors"
+                    >
+                      <option value="" disabled>Select Class</option>
+                      {(classes || []).map(cls => (
+                        <option key={cls.id} value={cls.id}>
+                          {cls.displayName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Type</label>
+                    <select
+                      value={editBoardingStatus}
+                      onChange={e => setEditBoardingStatus(e.target.value)}
+                      className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-surface-container text-on-surface font-body-md transition-colors"
+                    >
+                      <option value="day">Day scholar</option>
+                      <option value="boarding">Boarding</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Status</label>
+                    <select
+                      value={editStatus}
+                      onChange={e => setEditStatus(e.target.value)}
+                      className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-surface-container text-on-surface font-body-md transition-colors"
+                    >
+                      <option value="active">Active</option>
+                      <option value="suspended_fees">Suspended (Fees)</option>
+                      <option value="suspended_discipline">Suspended (Discipline)</option>
+                      <option value="graduated">Graduated</option>
+                      <option value="withdrawn">Withdrawn</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Guardian Info */}
+                <div className="bg-surface-container/30 border border-outline-variant p-4 rounded-xl space-y-3">
+                  <h5 className="font-bold text-primary text-sm">Parent / Guardian Information</h5>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Guardian Full Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={editGuardianFullName}
+                        onChange={e => setEditGuardianFullName(e.target.value)}
+                        className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Guardian Phone *</label>
+                      <input
+                        type="text"
+                        required
+                        value={editGuardianPhone}
+                        onChange={e => setEditGuardianPhone(e.target.value)}
+                        className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Email</label>
+                      <input
+                        type="email"
+                        placeholder="guardian@email.com"
+                        value={editGuardianEmail}
+                        onChange={e => setEditGuardianEmail(e.target.value)}
+                        className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-transparent text-on-surface font-body-md transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-label-md text-on-surface-variant mb-1 font-bold">Relationship</label>
+                      <select
+                        value={editGuardianRelationship}
+                        onChange={e => setEditGuardianRelationship(e.target.value)}
+                        className="w-full px-3 py-2 border-b-2 border-outline-variant focus:border-primary outline-none bg-surface-container text-on-surface font-body-md transition-colors"
+                      >
+                        <option value="parent">Parent</option>
+                        <option value="guardian">Guardian</option>
+                        <option value="sibling">Sibling</option>
+                        <option value="uncle">Uncle</option>
+                        <option value="aunt">Aunt</option>
+                        <option value="grandparent">Grandparent</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4 border-t border-outline-variant">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditModalOpen(false)}
+                    className="px-6 py-2.5 border border-outline text-on-surface-variant font-bold rounded-lg hover:bg-surface-container active:scale-95 transition-all text-xs"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updatingStudent}
+                    className="px-6 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all text-xs disabled:opacity-50"
+                  >
+                    {updatingStudent ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
               </form>

@@ -416,4 +416,226 @@ router.delete(
   })
 );
 
+// ---- Update Student ----
+router.put(
+  '/students/:id',
+  requireHeadOrDeputy(),
+  asyncHandler(async (req, res) => {
+    const schoolId = req.user!.schoolId!;
+    const { id } = req.params; // StudentProfile ID
+    const {
+      firstName,
+      lastName,
+      gender,
+      dateOfBirth,
+      classId,
+      boardingStatus,
+      status,
+      guardian,
+    } = req.body;
+
+    // 1. Find StudentProfile
+    const studentProfile = await prisma.studentProfile.findFirst({
+      where: { id, schoolId, isDeleted: false },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!studentProfile) {
+      throw new NotFoundError('Student');
+    }
+
+    // 2. Verify class exists in the school if classId is updated
+    if (classId) {
+      const classRecord = await prisma.class.findFirst({
+        where: { id: classId, schoolId, isDeleted: false },
+      });
+      if (!classRecord) {
+        throw new NotFoundError('Class');
+      }
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // 3. Update User associated with Student
+      await tx.user.update({
+        where: { id: studentProfile.userId },
+        data: {
+          firstName: firstName !== undefined ? firstName : undefined,
+          lastName: lastName !== undefined ? lastName : undefined,
+        },
+      });
+
+      // 4. Update StudentProfile
+      await tx.studentProfile.update({
+        where: { id: studentProfile.id },
+        data: {
+          gender: gender !== undefined ? gender : undefined,
+          dateOfBirth: dateOfBirth !== undefined ? (dateOfBirth ? new Date(dateOfBirth) : null) : undefined,
+          classId: classId !== undefined ? classId : undefined,
+          boardingStatus: boardingStatus !== undefined ? boardingStatus : undefined,
+          status: status !== undefined ? status : undefined,
+        },
+      });
+
+      // 5. Update Guardian / Parent info
+      if (guardian) {
+        // Find existing parent relation
+        const relation = await tx.parentStudent.findFirst({
+          where: { studentUserId: studentProfile.userId, isDeleted: false },
+          include: { parent: true },
+        });
+
+        if (relation) {
+          // Split guardian name
+          const guardianNames = (guardian.fullName || '').trim().split(/\s+/);
+          const parentFirstName = guardianNames[0] || 'Parent';
+          const parentLastName = guardianNames.slice(1).join(' ') || 'Guardian';
+
+          // Update relationship
+          if (guardian.relationship) {
+            await tx.parentStudent.update({
+              where: { id: relation.id },
+              data: { relationship: guardian.relationship },
+            });
+          }
+
+          // Update parent User details
+          const currentParent = relation.parent;
+          let emailUpdate = undefined;
+          if (guardian.email !== undefined) {
+            const newEmail = guardian.email ? guardian.email.trim().toLowerCase() : null;
+            if (newEmail !== currentParent.email) {
+              if (newEmail) {
+                const collision = await tx.user.findFirst({
+                  where: { email: newEmail, schoolId, isDeleted: false, NOT: { id: currentParent.id } },
+                });
+                if (collision) {
+                  throw new ValidationError({ email: ['Parent with this email already exists'] });
+                }
+              }
+              emailUpdate = newEmail;
+            }
+          }
+
+          await tx.user.update({
+            where: { id: currentParent.id },
+            data: {
+              firstName: guardian.fullName ? parentFirstName : undefined,
+              lastName: guardian.fullName ? parentLastName : undefined,
+              email: emailUpdate,
+              phone: guardian.phone !== undefined ? guardian.phone : undefined,
+            },
+          });
+        } else {
+          // Create parent relation if none existed
+          const guardianNames = (guardian.fullName || '').trim().split(/\s+/);
+          const parentFirstName = guardianNames[0] || 'Parent';
+          const parentLastName = guardianNames.slice(1).join(' ') || 'Guardian';
+          const cleanParentUsername = `parent.${studentProfile.admissionNumber.replace(/\//g, '.')}`;
+
+          let parentUser = null;
+          if (guardian.email) {
+            parentUser = await tx.user.findFirst({
+              where: { email: guardian.email, schoolId, isDeleted: false },
+            });
+          }
+
+          if (!parentUser) {
+            const commonSalt = await bcrypt.genSalt(10);
+            const parentTempPass = generateTempPassword();
+            const parentHash = await bcrypt.hash(parentTempPass, commonSalt);
+            const parentEmail = guardian.email || null;
+            const parentUsername = parentEmail ? null : cleanParentUsername;
+
+            parentUser = await tx.user.create({
+              data: {
+                schoolId,
+                firstName: parentFirstName,
+                lastName: parentLastName,
+                email: parentEmail,
+                username: parentUsername,
+                phone: guardian.phone,
+                passwordHash: parentHash,
+                role: UserRole.parent,
+                isActive: true,
+                mustChangePassword: true,
+                tempPassword: parentTempPass,
+              },
+            });
+          }
+
+          await tx.parentStudent.create({
+            data: {
+              parentUserId: parentUser.id,
+              studentUserId: studentProfile.userId,
+              relationship: guardian.relationship || 'parent',
+            },
+          });
+        }
+      }
+    });
+
+    // Fetch updated student profile to return
+    const updatedStudent = await prisma.studentProfile.findFirst({
+      where: { id, schoolId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+            photoUrl: true,
+            username: true,
+            tempPassword: true,
+            studentRelations: {
+              where: { isDeleted: false },
+              include: {
+                parent: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    phone: true,
+                    username: true,
+                    tempPassword: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        class: true,
+      },
+    });
+
+    if (!updatedStudent) {
+      throw new NotFoundError('Student');
+    }
+
+    const mapped = {
+      ...updatedStudent,
+      user: {
+        id: updatedStudent.user.id,
+        firstName: updatedStudent.user.firstName,
+        lastName: updatedStudent.user.lastName,
+        email: updatedStudent.user.email,
+        phone: updatedStudent.user.phone,
+        photoUrl: updatedStudent.user.photoUrl,
+        username: updatedStudent.user.username,
+        tempPassword: updatedStudent.user.tempPassword,
+      },
+      parentRelations: updatedStudent.user.studentRelations.map(r => ({
+        relationship: r.relationship,
+        parent: r.parent,
+      })),
+    };
+
+    sendSuccess(res, mapped, 'Student updated successfully');
+  })
+);
+
 export default router;
